@@ -1,0 +1,48 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  name         String
+  credits      Int      @default(0)   // 충전된 시간(분) 또는 크레딧
+  refreshToken String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  payments Payment[]
+
+  @@map("users")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  orderId       String        @unique  // 토스 주문 ID
+  paymentKey    String?       // 토스 결제 키 (승인 후)
+  amount        Int           // 결제 금액 (원)
+  creditsAdded  Int           // 충전된 크레딧
+  status        PaymentStatus @default(PENDING)
+  method        String?       // 카드, 가상계좌 등
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  DONE
+  FAILED
+  CANCELED
+}
