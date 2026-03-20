@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>리모트원 — 집에서 즐기는 고사양 PC방</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Oxanium:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --p1:#0ea5e9;--p2:#6366f1;--p3:#8b5cf6;
+  --bg:#ffffff;--bg2:#f8faff;--bg3:#f1f5f9;
+  --tx:#0f172a;--tx2:#475569;--tx3:#94a3b8;
+  --bd:#e2e8f0;--bd2:#cbd5e1;
+  --sans:'Noto Sans KR',sans-serif;
+  --head:'Oxanium',sans-serif;
+  --mono:'DM Mono',monospace;
+  --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:#fff;color:var(--tx);line-height:1.6;font-size:15px;overflow-x:hidden}
+
+/* ── OVERLAY / MODAL ── */
+.ov{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:20px}
+.ov.open{display:flex}
+.md{background:#fff;border-radius:20px;padding:40px;width:100%;max-width:440px;position:relative;animation:mdUp .22s ease}
+@keyframes mdUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.md-x{position:absolute;top:16px;right:20px;font-size:24px;cursor:pointer;color:var(--tx3);background:none;border:none;line-height:1;padding:4px}
+.md h2{font-size:22px;font-weight:700;margin-bottom:4px;font-family:var(--head)}
+.md-sub{font-size:13px;color:var(--tx3);margin-bottom:24px}
+.md-label{display:block;font-size:13px;font-weight:500;color:var(--tx2);margin-bottom:6px}
+.md-input{width:100%;padding:11px 14px;border:1.5px solid var(--bd);border-radius:9px;font-size:14px;font-family:var(--sans);margin-bottom:14px;outline:none;transition:border .15s,box-shadow .15s;background:var(--bg2)}
+.md-input:focus{border-color:var(--p1);background:#fff;box-shadow:0 0 0 3px rgba(14,165,233,.12)}
+.md-hint{font-size:11px;color:var(--tx3);margin-top:-10px;margin-bottom:14px}
+.md-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s;font-family:var(--sans);letter-spacing:-.2px}
+.md-btn:hover{opacity:.88}
+.md-sw{text-align:center;font-size:13px;color:var(--tx3);margin-top:16px}
+.md-sw a{color:var(--p1);cursor:pointer;font-weight:600;text-decoration:none}
+.msg-ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px}
+.msg-err{background:#fff1f2;border:1px solid #fecdd3;color:#be123c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px}
+
+/* charge items */
+.ci{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1.5px solid var(--bd);border-radius:10px;cursor:pointer;transition:all .15s;margin-bottom:10px}
+.ci:hover,.ci.on{border-color:var(--p1);background:#f0f9ff}
+.ci-l .cin{font-size:14px;font-weight:700}.ci-l .cit{font-size:12px;color:var(--tx3);font-family:var(--mono)}
+.ci-r .cip{font-size:16px;font-weight:800;color:var(--p1)}.ci-r .cib{font-size:11px;font-weight:600;color:#15803d;background:#dcfce7;padding:2px 7px;border-radius:12px;display:inline-block;margin-top:2px}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:500;background:rgba(255,255,255,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd)}
+.nav-w{max-width:1160px;margin:0 auto;padding:0 24px;height:66px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+/* LOGO */
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;flex-shrink:0}
+.logo-icon{width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,var(--p1),var(--p2));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(14,165,233,.35)}
+.logo-name{font-family:var(--head);font-size:24px;font-weight:800;letter-spacing:.5px;background:linear-gradient(135deg,var(--p1),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;align-items:center;gap:22px}
+.nav-links a{font-size:14px;font-weight:500;color:var(--tx2);text-decoration:none;transition:color .15s;white-space:nowrap}
+.nav-links a:hover{color:var(--p1)}
+.nav-r{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn-ghost{padding:8px 18px;border:1.5px solid var(--bd);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:var(--tx);transition:all .15s;font-family:var(--sans)}
+.btn-ghost:hover{border-color:var(--p1);color:var(--p1)}
+.btn-fill{padding:8px 18px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;transition:opacity .15s;font-family:var(--sans)}
+.btn-fill:hover{opacity:.87}
+.upill{display:none;align-items:center;gap:8px}
+.uav{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.unm{font-size:13px;font-weight:600}
+.ucr{font-family:var(--mono);font-size:12px;color:var(--p1);font-weight:600;background:#e0f2fe;padding:3px 9px;border-radius:20px}
+.uout{font-size:12px;color:var(--tx3);cursor:pointer;border:none;background:none;padding:2px 6px}
+.uout:hover{color:var(--p1)}
+
+/* ── HERO ── */
+.hero{position:relative;overflow:hidden;background:#fff;padding:0}
+.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none}
+/* PC방 그리드 패턴 배경 */
+.hero-bg svg{width:100%;height:100%;opacity:.055}
+.hero-bg-grad{position:absolute;inset:0;background:linear-gradient(170deg,rgba(255,255,255,.0) 0%,rgba(248,250,255,.6) 50%,rgba(255,255,255,.98) 100%)}
+.hero-inner{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:96px 24px 80px;display:grid;grid-template-columns:1fr 480px;gap:56px;align-items:center}
+.hero-tag{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#dbeafe,#ede9fe);color:var(--p2);font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;margin-bottom:22px;font-family:var(--mono);letter-spacing:.5px}
+.hero-tag::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--p1);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)}}
+.hero h1{font-family:var(--head);font-size:54px;font-weight:800;line-height:1.1;letter-spacing:-1.5px;margin-bottom:20px;color:var(--tx)}
+.hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--p1),var(--p2),var(--p3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-desc{font-size:16px;color:var(--tx2);line-height:1.8;margin-bottom:36px;max-width:500px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:44px}
+.btn-hero{padding:15px 30px;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);transition:all .18s;display:inline-flex;align-items:center;gap:9px;letter-spacing:-.2px}
+.btn-hero.main{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;box-shadow:0 6px 24px rgba(14,165,233,.3)}
+.btn-hero.main:hover{opacity:.88;transform:translateY(-1px)}
+.btn-hero.sub{background:#fff;color:var(--tx);border:1.5px solid var(--bd);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.btn-hero.sub:hover{border-color:var(--p1);color:var(--p1)}
+.hero-stats{display:flex;gap:36px}
+.hs-num{font-family:var(--head);font-size:30px;font-weight:800;background:linear-gradient(135deg,var(--p1),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hs-lbl{font-size:12px;color:var(--tx3);margin-top:2px}
+
+/* HERO VISUAL — Windows Remote Desktop */
+.hero-visual{position:relative;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(14,165,233,.18),0 8px 24px rgba(0,0,0,.1);border:1px solid rgba(14,165,233,.2)}
+.hv-remote-bar{background:linear-gradient(90deg,#1e40af,#1d4ed8);padding:8px 16px;display:flex;align-items:center;justify-content:space-between}
+.hv-remote-bar-left{display:flex;align-items:center;gap:8px}
+.hv-remote-logo{display:flex;align-items:center;gap:6px}
+.hv-conn-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 1.6s infinite}
+.hv-remote-info{font-family:var(--mono);font-size:10px;color:#93c5fd;letter-spacing:.3px}
+.hv-winctrls{display:flex;gap:5px}
+.hv-wc{width:12px;height:12px;border-radius:50%;cursor:pointer}
+/* Windows Desktop */
+.hv-desktop{background:linear-gradient(160deg,#1a237e 0%,#1565c0 55%,#0d47a1 100%);padding:16px;min-height:270px;position:relative}
+.hv-icons{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+.hv-ico{text-align:center;cursor:pointer;padding:6px 4px;border-radius:6px;transition:background .15s}
+.hv-ico:hover{background:rgba(255,255,255,.15)}
+.hv-ico-img{width:38px;height:38px;border-radius:8px;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.hv-ico-lbl{font-size:8.5px;color:#e0f2fe;text-shadow:0 1px 4px rgba(0,0,0,.8);line-height:1.2;font-weight:500}
+/* 열려있는 게임창 느낌 */
+.hv-game-window{background:#111;border-radius:6px;padding:8px 10px;margin-bottom:10px;border:1px solid rgba(255,255,255,.1)}
+.hv-game-titlebar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.hv-game-title{font-family:var(--mono);font-size:9px;color:#7dd3fc;display:flex;align-items:center;gap:5px}
+.hv-game-ctrl{display:flex;gap:4px}
+.hv-game-ctrl span{font-size:8px;color:#64748b;cursor:pointer}
+.hv-game-screen{background:linear-gradient(135deg,#0f172a,#1e1b4b);border-radius:4px;height:56px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.hv-game-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(45deg,transparent 30%,rgba(99,102,241,.15) 50%,transparent 70%);animation:shimmer 2.4s ease-in-out infinite}
+@keyframes shimmer{0%,100%{opacity:0}50%{opacity:1}}
+.hv-game-txt{font-family:var(--head);font-size:11px;color:#c7d2fe;letter-spacing:1px;z-index:1;position:relative}
+/* 상태 오버레이 */
+.hv-status{background:rgba(0,0,0,.6);backdrop-filter:blur(8px);border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between}
+.hv-st-live{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:#4ade80;font-weight:600}
+.hv-st-stats{display:flex;gap:14px}
+.hv-st-stat{font-family:var(--mono);font-size:10px;color:#94a3b8}
+.hv-st-stat b{color:#fde68a}
+.hv-st-stat.ok b{color:#4ade80}
+/* Taskbar */
+.hv-taskbar{background:#0f172a;padding:6px 14px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.08)}
+.hv-tb-l{display:flex;align-items:center;gap:6px}
+.hv-tb-start{width:26px;height:26px;border-radius:5px;background:linear-gradient(135deg,var(--p1),var(--p2));display:flex;align-items:center;justify-content:center;cursor:pointer}
+.hv-tb-app{width:30px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;border-bottom:2px solid transparent}
+.hv-tb-app.active{border-bottom-color:var(--p1);background:rgba(14,165,233,.1)}
+.hv-tb-r{font-family:var(--mono);font-size:9px;color:#475569}
+
+/* ── GAME MARQUEE ── */
+.marquee-wrap{background:#fff;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:18px 0;overflow:hidden;position:relative}
+.marquee-fade-l{position:absolute;left:0;top:0;width:100px;height:100%;background:linear-gradient(90deg,#fff,transparent);z-index:2;pointer-events:none}
+.marquee-fade-r{position:absolute;right:0;top:0;width:100px;height:100%;background:linear-gradient(270deg,#fff,transparent);z-index:2;pointer-events:none}
+.marquee-track{display:flex;gap:0;animation:mq 32s linear infinite;width:max-content}
+.marquee-track:hover{animation-play-state:paused}
+.marquee-set{display:flex;gap:10px;padding:0 5px}
+.gchip{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:var(--bg2);border:1px solid var(--bd);border-radius:20px;font-size:13px;font-weight:500;color:var(--tx2);white-space:nowrap;cursor:default;transition:all .15s;user-select:none}
+.gchip:hover{border-color:var(--p1);color:var(--p1);background:#e0f2fe;transform:translateY(-1px)}
+@keyframes mq{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ── SECTION BASE ── */
+section{padding:84px 24px}
+.sec-w{max-width:1160px;margin:0 auto}
+.sec-tag{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--p1);text-transform:uppercase;margin-bottom:10px;font-weight:600}
+.sec-h{font-family:var(--head);font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:10px}
+.sec-sub{font-size:15px;color:var(--tx2);margin-bottom:52px;max-width:540px;line-height:1.7}
+.div-line{border:none;border-top:1px solid var(--bd)}
+
+/* ── FEATURES ── */
+.feat-g{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.feat-c{background:#fff;border:1px solid var(--bd);border-radius:16px;padding:28px 24px;transition:all .22s;cursor:default}
+.feat-c:hover{border-color:var(--p1);transform:translateY(-4px);box-shadow:0 16px 40px rgba(14,165,233,.1)}
+.feat-ico{width:50px;height:50px;border-radius:13px;background:linear-gradient(135deg,#dbeafe,#ede9fe);display:flex;align-items:center;justify-content:center;margin-bottom:18px;font-size:24px}
+.feat-title{font-size:16px;font-weight:700;margin-bottom:8px;font-family:var(--head)}
+.feat-desc{font-size:13px;color:var(--tx2);line-height:1.75}
+
+/* ── HOW TO ── */
+.how-g{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.how-c{background:#fff;border:1px solid var(--bd);border-radius:18px;padding:36px 28px;text-align:center;position:relative}
+.how-c::after{content:'→';position:absolute;right:-18px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--bd2);font-weight:300}
+.how-c:last-child::after{display:none}
+.how-n{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--p1);background:#e0f2fe;padding:3px 12px;border-radius:20px;display:inline-block;margin-bottom:18px}
+.how-ico{font-size:42px;margin-bottom:16px;display:block}
+.how-title{font-size:17px;font-weight:700;margin-bottom:10px;font-family:var(--head)}
+.how-desc{font-size:13px;color:var(--tx2);line-height:1.75}
+
+/* ── PRICING ── */
+.price-g{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.price-c{background:#fff;border:1.5px solid var(--bd);border-radius:20px;padding:34px 30px;transition:all .2s}
+.price-c.hot{border-color:var(--p1);background:linear-gradient(170deg,#f0f9ff,#f5f3ff);position:relative}
+.price-hot{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:11px;font-weight:700;padding:4px 18px;border-radius:20px;white-space:nowrap;font-family:var(--mono)}
+.pname{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--tx3);margin-bottom:8px;letter-spacing:1px}
+.pamount{font-family:var(--head);font-size:40px;font-weight:800;letter-spacing:-2px;margin-bottom:4px}
+.ptime{font-size:13px;color:var(--tx3);margin-bottom:6px}
+.pbonus{font-size:12px;font-weight:600;color:#15803d;background:#dcfce7;padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:24px}
+.plist{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.plist li{font-size:13px;color:var(--tx2);display:flex;align-items:center;gap:8px}
+.plist li::before{content:'';width:16px;height:16px;border-radius:50%;flex-shrink:0;background:#e0f2fe url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpolyline points='3,8 6,11 13,5' stroke='%230ea5e9' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") center/cover}
+.pbtn{width:100%;padding:13px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid var(--bd);background:#fff;color:var(--tx);transition:all .15s;font-family:var(--sans)}
+.pbtn:hover{border-color:var(--p1);color:var(--p1)}
+.price-c.hot .pbtn{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none}
+.price-c.hot .pbtn:hover{opacity:.87}
+
+/* ── DOWNLOAD ── */
+.dl-wrap{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border-radius:24px;padding:56px;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.dl-l h3{font-family:var(--head);font-size:28px;font-weight:800;color:#fff;margin-bottom:10px}
+.dl-l p{font-size:14px;color:#94a3b8;line-height:1.75;margin-bottom:28px}
+.dl-tags{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px}
+.dl-tag{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:6px 14px;font-size:12px;color:#cbd5e1;font-family:var(--mono)}
+.btn-dl{display:inline-flex;align-items:center;gap:10px;padding:14px 28px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);transition:all .15s;box-shadow:0 6px 20px rgba(14,165,233,.35)}
+.btn-dl:hover{opacity:.88;transform:translateY(-1px)}
+.btn-dl-ghost{display:inline-flex;align-items:center;gap:8px;padding:14px 24px;background:rgba(255,255,255,.08);color:#94a3b8;border:1px solid rgba(255,255,255,.15);border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .15s}
+.btn-dl-ghost:hover{background:rgba(255,255,255,.14);color:#cbd5e1}
+.dl-r{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:28px}
+.dl-step{display:flex;gap:14px;align-items:flex-start;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.dl-step:last-child{border:none}
+.dl-sn{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono)}
+.dl-st{font-size:13px;color:#cbd5e1;line-height:1.65}
+
+/* ── NOTICE ── */
+.notice-g{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.nb{background:#fff;border:1px solid var(--bd);border-radius:18px;padding:30px}
+.nb-head{font-size:17px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;font-family:var(--head)}
+.nb-more{font-size:12px;color:var(--p1);font-weight:500;cursor:pointer;font-family:var(--sans)}
+.ni{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--bd);cursor:pointer;transition:all .12s}
+.ni:last-child{border:none}
+.ni:hover .ni-title{color:var(--p1)}
+.nbadge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;font-family:var(--mono);white-space:nowrap}
+.b-noti{background:#fef9c3;color:#854d0e}
+.b-evt{background:#dcfce7;color:#166534}
+.b-upd{background:#dbeafe;color:#1e40af}
+.ni-title{flex:1;font-size:13px;color:var(--tx);transition:color .12s}
+.ni-date{font-size:11px;color:var(--tx3);font-family:var(--mono);white-space:nowrap}
+
+/* ── REVIEWS ── */
+.rv-g{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+.rv-c{background:#fff;border:1px solid var(--bd);border-radius:14px;padding:24px}
+.rv-stars{color:#f59e0b;font-size:15px;margin-bottom:10px;letter-spacing:1px}
+.rv-text{font-size:13px;color:var(--tx2);line-height:1.75;margin-bottom:16px}
+.rv-au{display:flex;align-items:center;gap:10px}
+.rv-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.rv-nm{font-size:13px;font-weight:600}
+.rv-dt{font-size:11px;color:var(--tx3)}
+/* 후기 폼 */
+.rv-form{background:var(--bg2);border:1px solid var(--bd);border-radius:18px;padding:32px}
+.rv-form h3{font-size:18px;font-weight:700;margin-bottom:22px;font-family:var(--head)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.fld label{display:block;font-size:13px;font-weight:500;color:var(--tx2);margin-bottom:6px}
+.fld input,.fld textarea,.fld select{width:100%;padding:10px 13px;border:1.5px solid var(--bd);border-radius:9px;font-size:14px;font-family:var(--sans);outline:none;transition:border .15s,box-shadow .15s;background:#fff;color:var(--tx)}
+.fld input:focus,.fld textarea:focus{border-color:var(--p1);box-shadow:0 0 0 3px rgba(14,165,233,.1)}
+.fld textarea{resize:none;height:100px;line-height:1.6}
+.star-row{display:flex;gap:5px;margin-bottom:14px}
+.star-row span{font-size:28px;cursor:pointer;filter:grayscale(1) opacity(.4);transition:all .1s;line-height:1}
+.star-row span.on{filter:none}
+.btn-rv{padding:12px 32px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);transition:opacity .15s}
+.btn-rv:hover{opacity:.88}
+
+/* ── CTA BANNER ── */
+.cta-sec{background:linear-gradient(135deg,var(--p1),var(--p2),var(--p3));padding:80px 24px;text-align:center;position:relative;overflow:hidden}
+.cta-sec::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(255,255,255,.15)'/%3E%3C/svg%3E") repeat;pointer-events:none}
+.cta-sec h2{font-family:var(--head);font-size:40px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:12px;position:relative}
+.cta-sec p{font-size:16px;color:rgba(255,255,255,.8);margin-bottom:36px;position:relative}
+.btn-cta{display:inline-flex;align-items:center;gap:9px;padding:16px 44px;background:#fff;color:var(--p2);border:none;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;font-family:var(--head);transition:all .18s;position:relative}
+.btn-cta:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,.2)}
+
+/* ── FOOTER ── */
+footer{background:#0f172a;padding:60px 24px 32px}
+.ft-w{max-width:1160px;margin:0 auto}
+.ft-top{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:44px;margin-bottom:44px}
+.ft-logo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.ft-logo-ico{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--p1),var(--p2));display:flex;align-items:center;justify-content:center}
+.ft-logo-nm{font-family:var(--head);font-size:16px;font-weight:800;color:#fff;letter-spacing:.5px}
+.ft-tagline{font-size:13px;color:#475569;margin-bottom:18px;line-height:1.75}
+.ft-info{font-size:12px;color:#334155;line-height:2.1}
+.ft-col h4{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#475569;font-family:var(--mono);text-transform:uppercase;margin-bottom:18px}
+.ft-col a{display:block;font-size:13px;color:#64748b;text-decoration:none;margin-bottom:10px;transition:color .15s}
+.ft-col a:hover{color:var(--p1)}
+.ft-bot{padding-top:24px;border-top:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#334155;flex-wrap:wrap;gap:8px}
+
+@media(max-width:960px){
+  .hero-inner,.dl-wrap,.notice-g,.ft-top{grid-template-columns:1fr}
+  .hero-visual{display:none}
+  .hero h1{font-size:36px}
+  .feat-g,.how-g,.price-g,.rv-g{grid-template-columns:1fr}
+  .frow{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .how-c::after{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ MODALS ══════════════ -->
+
+<!-- 로그인 -->
+<div class="ov" id="mdLogin">
+  <div class="md">
+    <button class="md-x" onclick="closeModal('mdLogin')">×</button>
+    <h2>로그인</h2><p class="md-sub">리모트원에 오신 것을 환영합니다</p>
+    <div id="lgMsg"></div>
+    <label class="md-label">이메일</label>
+    <input class="md-input" type="email" id="lg_e" placeholder="you@example.com"/>
+    <label class="md-label">비밀번호</label>
+    <input class="md-input" type="password" id="lg_p" placeholder="비밀번호 입력"/>
+    <button class="md-btn" onclick="doLogin()">로그인</button>
+    <div class="md-sw">계정이 없으신가요? <a onclick="sw('mdLogin','mdSignup')">회원가입</a></div>
+  </div>
+</div>
+
+<!-- 회원가입 -->
+<div class="ov" id="mdSignup">
+  <div class="md">
+    <button class="md-x" onclick="closeModal('mdSignup')">×</button>
+    <h2>회원가입</h2><p class="md-sub">가입하고 무료 30분 크레딧을 받으세요!</p>
+    <div id="suMsg"></div>
+    <label class="md-label">이름</label>
+    <input class="md-input" type="text" id="su_n" placeholder="홍길동"/>
+    <label class="md-label">이메일</label>
+    <input class="md-input" type="email" id="su_e" placeholder="you@example.com"/>
+    <label class="md-label">비밀번호</label>
+    <input class="md-input" type="password" id="su_p" placeholder="영문+숫자 8자 이상"/>
+    <div class="md-hint">영문과 숫자를 포함해 8자 이상</div>
+    <button class="md-btn" onclick="doSignup()">무료로 시작하기</button>
+    <div class="md-sw">이미 계정이 있으신가요? <a onclick="sw('mdSignup','mdLogin')">로그인</a></div>
+  </div>
+</div>
+
+<!-- 충전 -->
+<div class="ov" id="mdCharge">
+  <div class="md">
+    <button class="md-x" onclick="closeModal('mdCharge')">×</button>
+    <h2>시간 충전</h2><p class="md-sub">충전할 패키지를 선택하세요</p>
+    <div class="ci" onclick="selCharge(this,'스타터','11,000원')">
+      <div class="ci-l"><div class="cin">스타터</div><div class="cit">10시간 이용권</div></div>
+      <div class="ci-r"><div class="cip">11,000원</div></div>
+    </div>
+    <div class="ci on" onclick="selCharge(this,'스탠다드','30,000원')">
+      <div class="ci-l"><div class="cin">스탠다드</div><div class="cit">30시간 + 보너스 1시간</div></div>
+      <div class="ci-r"><div class="cip">30,000원</div><div class="cib">+3% 보너스</div></div>
+    </div>
+    <div class="ci" onclick="selCharge(this,'프리미엄','100,000원')">
+      <div class="ci-l"><div class="cin">프리미엄</div><div class="cit">100시간 + 보너스 10시간</div></div>
+      <div class="ci-r"><div class="cip">100,000원</div><div class="cib">+10% 보너스</div></div>
+    </div>
+    <button class="md-btn" onclick="doCharge()">토스페이먼츠로 결제하기</button>
+  </div>
+</div>
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav>
+  <div class="nav-w">
+    <a class="logo" href="#">
+      <div class="logo-icon">
+        <svg width="32" height="32" viewBox="0 0 32 32">
+          <rect x="2" y="6" width="28" height="19" rx="4" fill="none" stroke="#fff" stroke-width="2"/>
+          <rect x="5" y="9" width="22" height="13" rx="2" fill="rgba(255,255,255,.1)"/>
+          <path d="M7 19 Q16 10 25 19" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M10 22 Q16 15 22 22" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M13 24.5 Q16 21 19 24.5" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="16" cy="25.5" r="2" fill="#fff"/>
+          <line x1="11" y1="28" x2="21" y2="28" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+          <line x1="16" y1="25.5" x2="16" y2="28" stroke="#fff" stroke-width="2.2"/>
+        </svg>
+      </div>
+      <div class="logo-name">REMOTE1</div>
+    </a>
+    <div class="nav-links">
+      <a href="#features">서비스 특징</a>
+      <a href="#how">이용방법</a>
+      <a href="#pricing">요금제</a>
+      <a href="#download">다운로드</a>
+      <a href="#notice">공지사항</a>
+      <a href="#reviews">이용후기</a>
+    </div>
+    <div class="nav-r">
+      <div id="navGuest" style="display:flex;gap:8px">
+        <button class="btn-ghost" onclick="openModal('mdLogin')">로그인</button>
+        <button class="btn-fill" onclick="openModal('mdSignup')">회원가입</button>
+      </div>
+      <div id="navUser" class="upill">
+        <div class="uav" id="navAv"></div>
+        <span class="unm" id="navNm"></span>
+        <span class="ucr" id="navCr">0분</span>
+        <button class="btn-ghost" style="font-size:12px;padding:6px 13px" onclick="openModal('mdCharge')">충전</button>
+        <button class="uout" onclick="doLogout()">로그아웃</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section style="padding:0;background:#fff">
+  <div class="hero">
+    <div class="hero-bg">
+      <svg viewBox="0 0 1400 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1400" height="700" fill="#0ea5e9"/>
+        <!-- PC방 좌석 행렬 배경 -->
+        <g stroke="#ffffff" stroke-width="2.5" fill="rgba(255,255,255,.06)">
+          <!-- Row 1 -->
+          <rect x="30" y="40" width="140" height="90" rx="6"/><rect x="190" y="40" width="140" height="90" rx="6"/><rect x="350" y="40" width="140" height="90" rx="6"/><rect x="510" y="40" width="140" height="90" rx="6"/><rect x="670" y="40" width="140" height="90" rx="6"/><rect x="830" y="40" width="140" height="90" rx="6"/><rect x="990" y="40" width="140" height="90" rx="6"/><rect x="1150" y="40" width="140" height="90" rx="6"/><rect x="1310" y="40" width="100" height="90" rx="6"/>
+          <!-- Row 2 -->
+          <rect x="30" y="160" width="140" height="90" rx="6"/><rect x="190" y="160" width="140" height="90" rx="6"/><rect x="350" y="160" width="140" height="90" rx="6"/><rect x="510" y="160" width="140" height="90" rx="6"/><rect x="670" y="160" width="140" height="90" rx="6"/><rect x="830" y="160" width="140" height="90" rx="6"/><rect x="990" y="160" width="140" height="90" rx="6"/><rect x="1150" y="160" width="140" height="90" rx="6"/><rect x="1310" y="160" width="100" height="90" rx="6"/>
+          <!-- Row 3 -->
+          <rect x="30" y="280" width="140" height="90" rx="6"/><rect x="190" y="280" width="140" height="90" rx="6"/><rect x="350" y="280" width="140" height="90" rx="6"/><rect x="510" y="280" width="140" height="90" rx="6"/><rect x="670" y="280" width="140" height="90" rx="6"/><rect x="830" y="280" width="140" height="90" rx="6"/><rect x="990" y="280" width="140" height="90" rx="6"/><rect x="1150" y="280" width="140" height="90" rx="6"/><rect x="1310" y="280" width="100" height="90" rx="6"/>
+          <!-- Row 4 -->
+          <rect x="30" y="400" width="140" height="90" rx="6"/><rect x="190" y="400" width="140" height="90" rx="6"/><rect x="350" y="400" width="140" height="90" rx="6"/><rect x="510" y="400" width="140" height="90" rx="6"/><rect x="670" y="400" width="140" height="90" rx="6"/><rect x="830" y="400" width="140" height="90" rx="6"/><rect x="990" y="400" width="140" height="90" rx="6"/><rect x="1150" y="400" width="140" height="90" rx="6"/>
+          <!-- Row 5 -->
+          <rect x="30" y="520" width="140" height="90" rx="6"/><rect x="190" y="520" width="140" height="90" rx="6"/><rect x="350" y="520" width="140" height="90" rx="6"/><rect x="510" y="520" width="140" height="90" rx="6"/><rect x="670" y="520" width="140" height="90" rx="6"/><rect x="830" y="520" width="140" height="90" rx="6"/><rect x="990" y="520" width="140" height="90" rx="6"/><rect x="1150" y="520" width="140" height="90" rx="6"/>
+        </g>
+      </svg>
+      <div class="hero-bg-grad"></div>
+    </div>
+    <div class="hero-inner">
+      <div style="animation:fadeIn .7s ease">
+        <div class="hero-tag">원격 PC방 서비스 No.1</div>
+        <h1>집에서 즐기는<br/><em>고사양 PC방</em></h1>
+        <p class="hero-desc">RTX 4090 · i9 프로세서 · 초저지연 P2P 연결<br/>전국 가맹 PC방을 집에서, 카페에서, 어디서나.</p>
+        <div class="hero-actions">
+          <button class="btn-hero main" onclick="scrollTo({top:document.getElementById('download').offsetTop-70,behavior:'smooth'})">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            클라이언트 다운로드
+          </button>
+          <button class="btn-hero sub" onclick="openModal('mdSignup')">무료로 시작하기 →</button>
+        </div>
+        <div class="hero-stats">
+          <div><div class="hs-num">5,200+</div><div class="hs-lbl">월간 이용자</div></div>
+          <div><div class="hs-num">99.9%</div><div class="hs-lbl">서버 가동률</div></div>
+          <div><div class="hs-num">28ms</div><div class="hs-lbl">평균 레이턴시</div></div>
+        </div>
+      </div>
+
+      <!-- 윈도우 원격화면 목업 -->
+      <div class="hero-visual" style="animation:fadeIn .9s .2s ease both">
+        <!-- 원격접속 상단바 -->
+        <div class="hv-remote-bar">
+          <div class="hv-remote-bar-left">
+            <div class="hv-remote-logo">
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <rect x="2" y="5" width="20" height="14" rx="3" fill="none" stroke="#93c5fd" stroke-width="1.6"/>
+                <path d="M6 15 Q12 9 18 15" fill="none" stroke="#93c5fd" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="12" cy="18" r="1.2" fill="#93c5fd"/>
+                <line x1="9" y1="19.5" x2="15" y2="19.5" stroke="#93c5fd" stroke-width="1.6" stroke-linecap="round"/>
+                <line x1="12" y1="18" x2="12" y2="19.5" stroke="#93c5fd" stroke-width="1.6"/>
+              </svg>
+            </div>
+            <div class="hv-conn-dot"></div>
+            <span class="hv-remote-info">REMOTE1 연결됨 — 서울강남점 PC-007</span>
+          </div>
+          <div class="hv-winctrls">
+            <div class="hv-wc" style="background:#fbbf24"></div>
+            <div class="hv-wc" style="background:#4ade80"></div>
+            <div class="hv-wc" style="background:#f87171"></div>
+          </div>
+        </div>
+
+        <!-- 윈도우 바탕화면 -->
+        <div class="hv-desktop">
+          <!-- 바탕화면 아이콘 -->
+          <div class="hv-icons">
+            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#f97316,#dc2626)">💣</div><div class="hv-ico-lbl">배틀그라운드</div></div>
+            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#dc2626,#7c3aed)">🎯</div><div class="hv-ico-lbl">발로란트</div></div>
+            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#0ea5e9,#1d4ed8)">🏆</div><div class="hv-ico-lbl">리그오브레전드</div></div>
+            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)">⚔️</div><div class="hv-ico-lbl">로스트아크</div></div>
+            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#f59e0b,#d97706)">⚡</div><div class="hv-ico-lbl">메이플</div></div>
+            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#10b981,#047857)">⚽</div><div class="hv-ico-lbl">FC온라인</div></div>
+            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#ec4899,#9d174d)">🌸</div><div class="hv-ico-lbl">블소</div></div>
+            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#06b6d4,#0284c7)">🌊</div><div class="hv-ico-lbl">검은사막</div></div>
+            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#64748b,#334155)">🚀</div><div class="hv-ico-lbl">스타크래프트</div></div>
+            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#a78bfa,#7c3aed)">🧙</div><div class="hv-ico-lbl">디아블로4</div></div>
+          </div>
+
+          <!-- 열려있는 게임 창 -->
+          <div class="hv-game-window">
+            <div class="hv-game-titlebar">
+              <div class="hv-game-title">
+                <span style="color:#fde68a">🎯</span> VALORANT — PC방 프리미엄
+              </div>
+              <div class="hv-game-ctrl">
+                <span>－</span><span>□</span><span style="color:#f87171">✕</span>
+              </div>
+            </div>
+            <div class="hv-game-screen">
+              <div class="hv-game-txt">▶ LOADING... 83%</div>
+            </div>
+          </div>
+
+          <!-- 실시간 상태 -->
+          <div class="hv-status">
+            <div class="hv-st-live">
+              <span>●</span> 실시간 연결
+            </div>
+            <div class="hv-st-stats">
+              <span class="hv-st-stat ok">핑 <b>28ms</b></span>
+              <span class="hv-st-stat">GPU <b>RTX 4090</b></span>
+              <span class="hv-st-stat ok">FPS <b>144</b></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 윈도우 태스크바 -->
+        <div class="hv-taskbar">
+          <div class="hv-tb-l">
+            <div class="hv-tb-start">
+              <svg width="14" height="14" viewBox="0 0 14 14"><rect width="6" height="6" rx="1" fill="#fff" opacity=".9"/><rect x="8" width="6" height="6" rx="1" fill="#fff" opacity=".9"/><rect y="8" width="6" height="6" rx="1" fill="#fff" opacity=".9"/><rect x="8" y="8" width="6" height="6" rx="1" fill="#fff" opacity=".9"/></svg>
+            </div>
+            <div class="hv-tb-app active" style="background:rgba(220,38,38,.15);border-bottom-color:#dc2626">🎯</div>
+            <div class="hv-tb-app">🏆</div>
+            <div class="hv-tb-app">⚽</div>
+          </div>
+          <div class="hv-tb-r">오후 11:42 · 2026-03-18</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 게임 마퀴 ══ -->
+<div class="marquee-wrap">
+  <div class="marquee-fade-l"></div>
+  <div class="marquee-fade-r"></div>
+  <div class="marquee-track">
+    <div class="marquee-set">
+      <div class="gchip">💣 배틀그라운드</div><div class="gchip">🎯 발로란트</div><div class="gchip">🏆 리그오브레전드</div><div class="gchip">⚔️ 로스트아크</div><div class="gchip">⚡ 메이플스토리</div><div class="gchip">⚽ FC온라인</div><div class="gchip">🛡️ 오버워치2</div><div class="gchip">🧙 디아블로4</div><div class="gchip">🚀 스타크래프트2</div><div class="gchip">👑 리니지M</div><div class="gchip">🔥 던전앤파이터</div><div class="gchip">🌆 사이버펑크2077</div><div class="gchip">⚗️ 엘든링</div><div class="gchip">🌊 검은사막</div><div class="gchip">🌸 블레이드앤소울</div><div class="gchip">🏎️ 카트라이더</div><div class="gchip">🎵 마비노기</div><div class="gchip">✨ 아이온2</div><div class="gchip">🐉 테라</div><div class="gchip">🎮 스팀 전체 지원</div>
+    </div>
+    <div class="marquee-set" aria-hidden="true">
+      <div class="gchip">💣 배틀그라운드</div><div class="gchip">🎯 발로란트</div><div class="gchip">🏆 리그오브레전드</div><div class="gchip">⚔️ 로스트아크</div><div class="gchip">⚡ 메이플스토리</div><div class="gchip">⚽ FC온라인</div><div class="gchip">🛡️ 오버워치2</div><div class="gchip">🧙 디아블로4</div><div class="gchip">🚀 스타크래프트2</div><div class="gchip">👑 리니지M</div><div class="gchip">🔥 던전앤파이터</div><div class="gchip">🌆 사이버펑크2077</div><div class="gchip">⚗️ 엘든링</div><div class="gchip">🌊 검은사막</div><div class="gchip">🌸 블레이드앤소울</div><div class="gchip">🏎️ 카트라이더</div><div class="gchip">🎵 마비노기</div><div class="gchip">✨ 아이온2</div><div class="gchip">🐉 테라</div><div class="gchip">🎮 스팀 전체 지원</div>
+    </div>
+  </div>
+</div>
+
+<hr class="div-line"/>
+
+<!-- ══ FEATURES ══ -->
+<section id="features" style="background:var(--bg2)">
+  <div class="sec-w">
+    <div class="sec-tag">WHY REMOTE1</div>
+    <h2 class="sec-h">왜 리모트원인가요?</h2>
+    <p class="sec-sub">클라우드 게이밍의 새로운 기준을 제시합니다</p>
+    <div class="feat-g">
+      <div class="feat-c"><div class="feat-ico">⚡</div><div class="feat-title">초저지연 P2P 연결</div><div class="feat-desc">클라우드 중계 없이 PC방과 직접 연결되는 P2P 기술로 FPS·리듬게임도 끊김 없이 즐기세요.</div></div>
+      <div class="feat-c"><div class="feat-ico">🛡️</div><div class="feat-title">독자 원격 기술</div><div class="feat-desc">별도 계정 연동 없이 즉시 접속. 세션 종료 시 자동 초기화로 개인정보 걱정이 없습니다.</div></div>
+      <div class="feat-c"><div class="feat-ico">💰</div><div class="feat-title">합리적인 요금</div><div class="feat-desc">분 단위 과금으로 필요한 만큼만 사용. 10분에 약 100원 수준의 압도적 가성비.</div></div>
+      <div class="feat-c"><div class="feat-ico">🌐</div><div class="feat-title">전국 가맹점</div><div class="feat-desc">전국 어디서나 동일한 서비스. 가까운 지역 PC방을 선택해 더 빠른 연결을 경험하세요.</div></div>
+      <div class="feat-c"><div class="feat-ico">🖥️</div><div class="feat-title">고사양 PC 제공</div><div class="feat-desc">RTX 4090 · i9 · DDR5 64GB. 집에 구형 PC가 있어도 최고 사양으로 즐길 수 있습니다.</div></div>
+      <div class="feat-c"><div class="feat-ico">💬</div><div class="feat-title">실시간 고객지원</div><div class="feat-desc">문제 발생 시 실시간 채팅 상담. 평일 08:00~익일 02:00 빠른 문제 해결을 도와드립니다.</div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="div-line"/>
+
+<!-- ══ HOW TO ══ -->
+<section id="how">
+  <div class="sec-w">
+    <div class="sec-tag">HOW TO USE</div>
+    <h2 class="sec-h">단 3단계로 시작하세요</h2>
+    <p class="sec-sub">복잡한 설정 없이 3분이면 게임을 시작할 수 있습니다</p>
+    <div class="how-g">
+      <div class="how-c">
+        <div class="how-n">STEP 01</div>
+        <span class="how-ico">👤</span>
+        <div class="how-title">회원가입 & 충전</div>
+        <div class="how-desc">이메일로 30초 만에 회원가입. 가입 즉시 무료 30분 크레딧 지급. 카드·토스페이로 간편 충전.</div>
+      </div>
+      <div class="how-c">
+        <div class="how-n">STEP 02</div>
+        <span class="how-ico">⬇️</span>
+        <div class="how-title">클라이언트 설치</div>
+        <div class="how-desc">전용 클라이언트를 다운로드하고 계정으로 로그인. 간단한 설치로 바로 준비 완료!</div>
+      </div>
+      <div class="how-c">
+        <div class="how-n">STEP 03</div>
+        <span class="how-ico">🎮</span>
+        <div class="how-title">PC 선택 & 게임 시작</div>
+        <div class="how-desc">원하는 PC방·사양을 선택하면 30초 내 자동 좌석 배정. 바로 게임 시작!</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="div-line"/>
+
+<!-- ══ PRICING ══ -->
+<section id="pricing" style="background:var(--bg2)">
+  <div class="sec-w">
+    <div class="sec-tag">PRICING</div>
+    <h2 class="sec-h">요금 안내</h2>
+    <p class="sec-sub">전국 모든 가맹점에서 동일하게 적용됩니다</p>
+    <div class="price-g">
+      <div class="price-c">
+        <div class="pname">STARTER</div>
+        <div class="pamount">₩11,000</div>
+        <div class="ptime">10시간 이용권</div>
+        <div style="height:28px"></div>
+        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 30일</li></ul>
+        <button class="pbtn" onclick="chkLogin()">구매하기</button>
+      </div>
+      <div class="price-c hot">
+        <div class="price-hot">🔥 가장 인기</div>
+        <div class="pname">STANDARD</div>
+        <div class="pamount">₩30,000</div>
+        <div class="ptime">30시간 이용권</div>
+        <div class="pbonus">+보너스 1시간 (3%)</div>
+        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 30일</li><li>보너스 시간 지급</li></ul>
+        <button class="pbtn" onclick="chkLogin()">구매하기</button>
+      </div>
+      <div class="price-c">
+        <div class="pname">PREMIUM</div>
+        <div class="pamount">₩100,000</div>
+        <div class="ptime">100시간 이용권</div>
+        <div class="pbonus">+보너스 10시간 (10%)</div>
+        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 90일</li><li>보너스 10시간 지급</li><li>우선 좌석 배정</li></ul>
+        <button class="pbtn" onclick="chkLogin()">구매하기</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="div-line"/>
+
+<!-- ══ DOWNLOAD ══ -->
+<section id="download">
+  <div class="sec-w">
+    <div class="dl-wrap">
+      <div class="dl-l">
+        <h3>클라이언트 다운로드</h3>
+        <p>리모트원 전용 클라이언트를 설치하고 바로 시작하세요.<br/>간단한 설치로 전국 PC방에 즉시 접속 가능합니다.</p>
+        <div class="dl-tags">
+          <span class="dl-tag">Windows 10/11</span>
+          <span class="dl-tag">v2.1.0</span>
+          <span class="dl-tag">약 48MB</span>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn-dl">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Windows 다운로드
+          </button>
+          <button class="btn-dl-ghost">macOS (준비중)</button>
+        </div>
+      </div>
+      <div class="dl-r">
+        <div style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:18px;font-family:var(--mono);letter-spacing:2px">설치 안내</div>
+        <div class="dl-step"><div class="dl-sn">1</div><div class="dl-st">다운로드한 설치 파일(.exe)을 실행합니다</div></div>
+        <div class="dl-step"><div class="dl-sn">2</div><div class="dl-st">설치 마법사 안내에 따라 설치를 완료합니다</div></div>
+        <div class="dl-step"><div class="dl-sn">3</div><div class="dl-st">프로그램 실행 후 회원 계정으로 로그인합니다</div></div>
+        <div class="dl-step"><div class="dl-sn">4</div><div class="dl-st">원하는 PC를 선택하고 접속 버튼을 클릭합니다</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="div-line"/>
+
+<!-- ══ NOTICE ══ -->
+<section id="notice" style="background:var(--bg2)">
+  <div class="sec-w">
+    <div class="sec-tag">NOTICE</div>
+    <h2 class="sec-h">공지사항 & 이벤트</h2>
+    <p class="sec-sub">서비스 관련 최신 소식을 확인하세요</p>
+    <div class="notice-g">
+      <div class="nb">
+        <div class="nb-head">공지사항 <span class="nb-more">더보기 →</span></div>
+        <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">2026년 3월 서버 점검 안내 (3/20 새벽 2~4시)</span><span class="ni-date">03.18</span></div>
+        <div class="ni"><span class="nbadge b-upd">업데이트</span><span class="ni-title">클라이언트 v2.1.0 — 연결 안정성 대폭 개선</span><span class="ni-date">03.10</span></div>
+        <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">개인정보 처리방침 개정 안내 (4/1 시행)</span><span class="ni-date">03.01</span></div>
+        <div class="ni"><span class="nbadge b-upd">업데이트</span><span class="ni-title">RTX 4090 서버 20대 추가 확충 완료</span><span class="ni-date">02.20</span></div>
+        <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">발로란트, 오버워치2 PC방 혜택 정상 적용 안내</span><span class="ni-date">02.10</span></div>
+      </div>
+      <div class="nb">
+        <div class="nb-head">이벤트 <span class="nb-more">더보기 →</span></div>
+        <div class="ni"><span class="nbadge b-evt">이벤트</span><span class="ni-title">🌸 봄맞이 신규가입 무료 60분 지급 이벤트</span><span class="ni-date">03.15</span></div>
+        <div class="ni"><span class="nbadge b-evt">이벤트</span><span class="ni-title">친구 초대 시 양쪽 모두 30분 추가 지급</span><span class="ni-date">03.01</span></div>
+        <div class="ni"><span class="nbadge b-evt">이벤트</span><span class="ni-title">프리미엄 첫 구매 고객 15% 보너스 지급</span><span class="ni-date">02.15</span></div>
+        <div class="ni"><span class="nbadge b-evt">이벤트</span><span class="ni-title">메이플스토리 핫타임 이벤트 참여 가능 안내</span><span class="ni-date">02.01</span></div>
+        <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">설 연휴 24시간 고객지원 정상 운영 안내</span><span class="ni-date">01.25</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="div-line"/>
+
+<!-- ══ REVIEWS ══ -->
+<section id="reviews">
+  <div class="sec-w">
+    <div class="sec-tag">REVIEWS</div>
+    <h2 class="sec-h">이용 후기</h2>
+    <p class="sec-sub">실제 이용자들의 솔직한 후기를 확인하세요</p>
+    <div class="rv-g">
+      <div class="rv-c">
+        <div class="rv-stars">★★★★★</div>
+        <div class="rv-text">레이턴시가 걱정됐는데 발로란트 하는데 전혀 문제없어요. 오히려 집 인터넷보다 핑이 더 안정적인 것 같기도 하고요. 가성비 진짜 최고입니다.</div>
+        <div class="rv-au"><div class="rv-av">김</div><div><div class="rv-nm">김게임러</div><div class="rv-dt">2026.03.15</div></div></div>
+      </div>
+      <div class="rv-c">
+        <div class="rv-stars">★★★★★</div>
+        <div class="rv-text">노트북으로 RTX 4090 성능을 쓸 수 있다니 너무 좋아요. 메이플 빠른 렙업 이벤트 때 항상 애용합니다. 클라이언트 설치도 쉬워요.</div>
+        <div class="rv-au"><div class="rv-av">이</div><div><div class="rv-nm">이메이플러</div><div class="rv-dt">2026.03.08</div></div></div>
+      </div>
+      <div class="rv-c">
+        <div class="rv-stars">★★★★☆</div>
+        <div class="rv-text">처음엔 반신반의했는데 실제로 써보니 진짜 PC방 앉아 있는 느낌이에요. 사무실 점심시간에도 즐길 수 있어서 강추합니다!</div>
+        <div class="rv-au"><div class="rv-av">박</div><div><div class="rv-nm">박직장인</div><div class="rv-dt">2026.02.28</div></div></div>
+      </div>
+    </div>
+    <!-- 이용후기 페이지 이동 버튼 -->
+    <div style="text-align:center;margin-top:8px">
+      <button onclick="openReviewPage()" style="display:inline-flex;align-items:center;gap:8px;padding:13px 36px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);transition:opacity .15s" onmouseover="this.style.opacity='.87'" onmouseout="this.style.opacity='1'">
+        ✏️ 이용후기 전체보기 &amp; 후기 작성
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 이용후기 전체 페이지 (숨김) ══ -->
+<div id="reviewPage" style="display:none;position:fixed;inset:0;background:#fff;z-index:800;overflow-y:auto">
+  <div style="max-width:860px;margin:0 auto;padding:40px 24px">
+    <!-- 헤더 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;padding-bottom:20px;border-bottom:1px solid var(--bd)">
+      <div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--p1);margin-bottom:6px">REVIEWS</div>
+        <h2 style="font-family:var(--head);font-size:28px;font-weight:800;letter-spacing:-1px">이용 후기</h2>
+      </div>
+      <button onclick="closeReviewPage()" style="display:flex;align-items:center;gap:6px;padding:9px 20px;border:1.5px solid var(--bd);border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--tx);font-family:var(--sans)" onmouseover="this.style.borderColor='var(--p1)';this.style.color='var(--p1)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx)'">← 메인으로</button>
+    </div>
+
+    <!-- 후기 목록 -->
+    <div id="rvList" style="display:flex;flex-direction:column;gap:16px;margin-bottom:40px">
+      <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:24px">
+        <div style="color:#f59e0b;font-size:15px;margin-bottom:8px;letter-spacing:1px">★★★★★</div>
+        <div style="font-size:14px;color:var(--tx2);line-height:1.75;margin-bottom:14px">레이턴시가 걱정됐는데 발로란트 하는데 전혀 문제없어요. 오히려 집 인터넷보다 핑이 더 안정적인 것 같기도 하고요. 가성비 진짜 최고입니다.</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">김</div>
+          <div><div style="font-size:13px;font-weight:600">김게임러</div><div style="font-size:11px;color:var(--tx3)">발로란트 · 2026.03.15</div></div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:24px">
+        <div style="color:#f59e0b;font-size:15px;margin-bottom:8px;letter-spacing:1px">★★★★★</div>
+        <div style="font-size:14px;color:var(--tx2);line-height:1.75;margin-bottom:14px">노트북으로 RTX 4090 성능을 쓸 수 있다니 너무 좋아요. 메이플 빠른 렙업 이벤트 때 항상 애용합니다. 클라이언트 설치도 쉬워요.</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">이</div>
+          <div><div style="font-size:13px;font-weight:600">이메이플러</div><div style="font-size:11px;color:var(--tx3)">메이플스토리 · 2026.03.08</div></div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:24px">
+        <div style="color:#f59e0b;font-size:15px;margin-bottom:8px;letter-spacing:1px">★★★★☆</div>
+        <div style="font-size:14px;color:var(--tx2);line-height:1.75;margin-bottom:14px">처음엔 반신반의했는데 실제로 써보니 진짜 PC방 앉아 있는 느낌이에요. 사무실 점심시간에도 즐길 수 있어서 강추합니다!</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">박</div>
+          <div><div style="font-size:13px;font-weight:600">박직장인</div><div style="font-size:11px;color:var(--tx3)">FC온라인 · 2026.02.28</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 후기 작성 폼 -->
+    <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:18px;padding:32px">
+      <h3 style="font-family:var(--head);font-size:20px;font-weight:700;margin-bottom:22px">✏️ 후기 작성</h3>
+      <div id="rvPageMsg"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--tx2);margin-bottom:6px">닉네임</label>
+          <input id="rvp_n" type="text" placeholder="닉네임을 입력하세요" style="width:100%;padding:10px 13px;border:1.5px solid var(--bd);border-radius:9px;font-size:14px;font-family:var(--sans);outline:none;background:#fff;color:var(--tx)" onfocus="this.style.borderColor='var(--p1)'" onblur="this.style.borderColor='var(--bd)'"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--tx2);margin-bottom:6px">플레이한 게임</label>
+          <input id="rvp_g" type="text" placeholder="예: 발로란트, 메이플스토리" style="width:100%;padding:10px 13px;border:1.5px solid var(--bd);border-radius:9px;font-size:14px;font-family:var(--sans);outline:none;background:#fff;color:var(--tx)" onfocus="this.style.borderColor='var(--p1)'" onblur="this.style.borderColor='var(--bd)'"/>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:13px;font-weight:500;color:var(--tx2);margin-bottom:8px">별점</label>
+        <div id="rvpStars" style="display:flex;gap:5px">
+          <span onclick="setRvpStar(1)" style="font-size:30px;cursor:pointer;filter:grayscale(1) opacity(.4);transition:all .1s;line-height:1">★</span>
+          <span onclick="setRvpStar(2)" style="font-size:30px;cursor:pointer;filter:grayscale(1) opacity(.4);transition:all .1s;line-height:1">★</span>
+          <span onclick="setRvpStar(3)" style="font-size:30px;cursor:pointer;filter:grayscale(1) opacity(.4);transition:all .1s;line-height:1">★</span>
+          <span onclick="setRvpStar(4)" style="font-size:30px;cursor:pointer;filter:grayscale(1) opacity(.4);transition:all .1s;line-height:1">★</span>
+          <span onclick="setRvpStar(5)" style="font-size:30px;cursor:pointer;filter:none;transition:all .1s;line-height:1">★</span>
+        </div>
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="display:block;font-size:13px;font-weight:500;color:var(--tx2);margin-bottom:6px">후기 내용</label>
+        <textarea id="rvp_t" placeholder="이용 경험을 자유롭게 작성해주세요 (최소 20자 이상)" style="width:100%;padding:10px 13px;border:1.5px solid var(--bd);border-radius:9px;font-size:14px;font-family:var(--sans);outline:none;background:#fff;color:var(--tx);resize:none;height:120px;line-height:1.6" onfocus="this.style.borderColor='var(--p1)'" onblur="this.style.borderColor='var(--bd)'"></textarea>
+      </div>
+      <button onclick="submitRvPage()" style="padding:13px 36px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);transition:opacity .15s" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">후기 등록하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CTA ══ -->
+<div class="cta-sec">
+  <h2>지금 바로 시작하세요!</h2>
+  <p>회원가입하고 무료 30분 체험 크레딧을 받아보세요</p>
+  <button class="btn-cta" onclick="openModal('mdSignup')">
+    무료 회원가입 →
+  </button>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="ft-w">
+    <div class="ft-top">
+      <div>
+        <div class="ft-logo">
+          <div class="ft-logo-ico">
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <rect x="2" y="5" width="20" height="14" rx="3" fill="none" stroke="#fff" stroke-width="1.6"/>
+              <path d="M6 15 Q12 9 18 15" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M8 17 Q12 13 16 17" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="12" cy="18" r="1.3" fill="#fff"/>
+              <line x1="9" y1="19.5" x2="15" y2="19.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="12" y1="18" x2="12" y2="19.5" stroke="#fff" stroke-width="1.8"/>
+            </svg>
+          </div>
+          <div class="ft-logo-nm">REMOTE1</div>
+        </div>
+        <div class="ft-tagline">집에서 즐기는 고사양 PC방<br/>언제 어디서나 리모트원</div>
+        <div class="ft-info">
+          (주)리모트원 | 대표: 홍길동<br/>
+          사업자등록번호: 123-45-67890<br/>
+          통신판매업신고: 제2026-서울강남-0000호<br/>
+          고객센터: 1588-0000<br/>
+          운영: 평일 08:00~익일 02:00 / 공휴일 10:00~22:00
+        </div>
+      </div>
+      <div class="ft-col">
+        <h4>서비스</h4>
+        <a href="#features">서비스 특징</a>
+        <a href="#how">이용방법</a>
+        <a href="#pricing">요금제</a>
+        <a href="#download">다운로드</a>
+      </div>
+      <div class="ft-col">
+        <h4>고객지원</h4>
+        <a href="#notice">공지사항</a>
+        <a href="#reviews">후기게시판</a>
+        <a href="#">1:1 문의</a>
+        <a href="#">자주 묻는 질문</a>
+      </div>
+      <div class="ft-col">
+        <h4>정책</h4>
+        <a href="#">이용약관</a>
+        <a href="#">개인정보처리방침</a>
+        <a href="#">환불정책</a>
+        <a href="#">가맹점 문의</a>
+      </div>
+    </div>
+    <div class="ft-bot">
+      <span>© 2026 REMOTE1. All rights reserved.</span>
+      <span>카카오채널: @remote1 | 입금계좌: 하나은행 000-000000-00000 예금주: (주)리모트원</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+</style>
+
+<script>
+// ── STATE
+let user = JSON.parse(sessionStorage.getItem('r1u')||'null');
+let selStar = 5;
+let selChargePkg = {n:'스탠다드',p:'30,000원'};
+
+// ── NAV UPDATE
+function upNav(){
+  const g=document.getElementById('navGuest');
+  const u=document.getElementById('navUser');
+  if(user){
+    g.style.display='none';
+    u.style.display='flex';
+    document.getElementById('navAv').textContent=user.name[0].toUpperCase();
+    document.getElementById('navNm').textContent=user.name+'님';
+    document.getElementById('navCr').textContent=(user.credits||30)+'분';
+  } else {
+    g.style.display='flex';
+    u.style.display='none';
+  }
+}
+upNav();
+
+// ── MODAL
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  ['lgMsg','suMsg'].forEach(i=>{ const el=document.getElementById(i); if(el) el.innerHTML=''; });
+}
+function sw(a,b){ closeModal(a); openModal(b); }
+document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
+function msg(id,txt,t){ document.getElementById(id).innerHTML=`<div class="${t==='ok'?'msg-ok':'msg-err'}">${txt}</div>`; }
+
+// ── AUTH
+function doLogin(){
+  const e=document.getElementById('lg_e').value.trim();
+  const p=document.getElementById('lg_p').value;
+  if(!e||!p){ msg('lgMsg','이메일과 비밀번호를 입력해주세요','err'); return; }
+  const users=JSON.parse(localStorage.getItem('r1users')||'[]');
+  const f=users.find(u=>u.email===e&&u.pw===p);
+  if(!f){ msg('lgMsg','이메일 또는 비밀번호가 올바르지 않습니다','err'); return; }
+  user={name:f.name,email:f.email,credits:f.credits||30};
+  sessionStorage.setItem('r1u',JSON.stringify(user));
+  closeModal('mdLogin'); upNav();
+}
+function doSignup(){
+  const n=document.getElementById('su_n').value.trim();
+  const e=document.getElementById('su_e').value.trim();
+  const p=document.getElementById('su_p').value;
+  if(!n||!e||!p){ msg('suMsg','모든 항목을 입력해주세요','err'); return; }
+  if(p.length<8||!/[a-zA-Z]/.test(p)||!/[0-9]/.test(p)){ msg('suMsg','비밀번호는 영문+숫자 8자 이상이어야 합니다','err'); return; }
+  const users=JSON.parse(localStorage.getItem('r1users')||'[]');
+  if(users.find(u=>u.email===e)){ msg('suMsg','이미 사용 중인 이메일입니다','err'); return; }
+  users.push({name:n,email:e,pw:p,credits:30});
+  localStorage.setItem('r1users',JSON.stringify(users));
+  user={name:n,email:e,credits:30};
+  sessionStorage.setItem('r1u',JSON.stringify(user));
+  closeModal('mdSignup'); upNav();
+}
+function doLogout(){ user=null; sessionStorage.removeItem('r1u'); upNav(); }
+function chkLogin(){ if(!user){ openModal('mdLogin'); return; } openModal('mdCharge'); }
+
+// ── CHARGE
+function selCharge(el,n,p){
+  document.querySelectorAll('.ci').forEach(i=>i.classList.remove('on'));
+  el.classList.add('on');
+  selChargePkg={n,p};
+}
+function doCharge(){
+  if(!user){ closeModal('mdCharge'); openModal('mdLogin'); return; }
+  alert(`[테스트 모드]\n${selChargePkg.n} (${selChargePkg.p}) 결제창\n실제 서비스에서는 토스페이먼츠 결제창이 열립니다.`);
+  closeModal('mdCharge');
+}
+
+// ── REVIEW PAGE
+let rvpStar = 5;
+function openReviewPage(){ document.getElementById('reviewPage').style.display='block'; window.scrollTo(0,0); }
+function closeReviewPage(){ document.getElementById('reviewPage').style.display='none'; }
+function setRvpStar(n){
+  rvpStar=n;
+  document.querySelectorAll('#rvpStars span').forEach((s,i)=>{
+    s.style.filter = i<n ? 'none' : 'grayscale(1) opacity(.4)';
+  });
+}
+function submitRvPage(){
+  const n=document.getElementById('rvp_n').value.trim();
+  const t=document.getElementById('rvp_t').value.trim();
+  const g=document.getElementById('rvp_g').value.trim();
+  const msgEl=document.getElementById('rvPageMsg');
+  if(!n){ msgEl.innerHTML='<div class="msg-err">닉네임을 입력해주세요</div>'; return; }
+  if(t.length<20){ msgEl.innerHTML='<div class="msg-err">후기는 20자 이상 입력해주세요</div>'; return; }
+  // 새 후기 카드를 목록 맨 위에 추가
+  const stars = '★'.repeat(rvpStar) + '☆'.repeat(5-rvpStar);
+  const card = document.createElement('div');
+  card.style.cssText='background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:24px;animation:fadeIn .3s ease';
+  card.innerHTML=`
+    <div style="color:#f59e0b;font-size:15px;margin-bottom:8px;letter-spacing:1px">${stars}</div>
+    <div style="font-size:14px;color:var(--tx2);line-height:1.75;margin-bottom:14px">${t}</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">${n[0]}</div>
+      <div><div style="font-size:13px;font-weight:600">${n}</div><div style="font-size:11px;color:var(--tx3)">${g||'리모트원 이용자'} · 방금</div></div>
+    </div>`;
+  document.getElementById('rvList').prepend(card);
+  msgEl.innerHTML='<div class="msg-ok">✓ 후기가 등록되었습니다! 감사합니다 😊</div>';
+  document.getElementById('rvp_n').value='';
+  document.getElementById('rvp_g').value='';
+  document.getElementById('rvp_t').value='';
+  setRvpStar(5);
+  setTimeout(()=>{ msgEl.innerHTML=''; },3000);
+}
+</script>
+</body>
+</html>
