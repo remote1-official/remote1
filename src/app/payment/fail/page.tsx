@@ -1,5 +1,6 @@
 'use client'
-import { useSearchParams, Suspense } from 'next/navigation'
+import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 function FailContent() {
