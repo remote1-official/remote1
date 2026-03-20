@@ -1,9 +1,8 @@
 'use client'
-// src/app/payment/fail/page.tsx
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, Suspense } from 'next/navigation'
 import Link from 'next/link'
 
-export default function PaymentFailPage() {
+function FailContent() {
   const searchParams = useSearchParams()
   const code = searchParams.get('code')
   const message = searchParams.get('message')
@@ -17,10 +16,12 @@ export default function PaymentFailPage() {
         <h2 className="text-xl font-semibold text-gray-900 mb-2">결제 실패</h2>
         {message && <p className="text-gray-500 mb-2">{message}</p>}
         {code && <p className="text-xs text-gray-400 mb-6">오류 코드: {code}</p>}
-        <Link href="/dashboard" className="btn-primary inline-block">
-          다시 시도하기
-        </Link>
+        <Link href="/dashboard" className="btn-primary inline-block">다시 시도하기</Link>
       </div>
     </div>
   )
+}
+
+export default function PaymentFailPage() {
+  return <Suspense fallback={<div>로딩중...</div>}><FailContent /></Suspense>
 }
