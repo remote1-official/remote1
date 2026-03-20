@@ -68,16 +68,16 @@ nav{position:sticky;top:0;z-index:500;background:rgba(255,255,255,.95);backdrop-
 .uout:hover{color:var(--p1)}
 
 /* ── HERO ── */
-.hero{position:relative;overflow:hidden;background:#fff;padding:0}
-.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none}
+.hero{position:relative;overflow:visible;background:#fff;padding:0}
+.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 /* PC방 그리드 패턴 배경 */
 .hero-bg svg{width:100%;height:100%;opacity:.055}
-.hero-bg-grad{position:absolute;inset:0;background:linear-gradient(170deg,rgba(255,255,255,.0) 0%,rgba(248,250,255,.6) 50%,rgba(255,255,255,.98) 100%)}
-.hero-inner{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:96px 24px 80px;display:grid;grid-template-columns:1fr 480px;gap:56px;align-items:center}
+.hero-bg-grad{position:absolute;inset:0;background:linear-gradient(100deg,rgba(255,255,255,.97) 0%,rgba(248,250,255,.93) 38%,rgba(240,245,255,.75) 58%,rgba(220,235,255,.0) 100%)}
+.hero-inner{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:104px 24px 80px;display:grid;grid-template-columns:1fr 480px;gap:56px;align-items:center}
 .hero-tag{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#dbeafe,#ede9fe);color:var(--p2);font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;margin-bottom:22px;font-family:var(--mono);letter-spacing:.5px}
 .hero-tag::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--p1);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)}}
-.hero h1{font-family:var(--head);font-size:54px;font-weight:800;line-height:1.1;letter-spacing:-1.5px;margin-bottom:20px;color:var(--tx)}
+.hero h1{font-family:var(--head);font-size:54px;font-weight:800;line-height:1.3;letter-spacing:-1px;margin-bottom:20px;color:var(--tx);padding:4px 2px 0 2px}
 .hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--p1),var(--p2),var(--p3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .hero-desc{font-size:16px;color:var(--tx2);line-height:1.8;margin-bottom:36px;max-width:500px}
 .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:44px}
@@ -138,8 +138,9 @@ nav{position:sticky;top:0;z-index:500;background:rgba(255,255,255,.95);backdrop-
 .marquee-track{display:flex;gap:0;animation:mq 32s linear infinite;width:max-content}
 .marquee-track:hover{animation-play-state:paused}
 .marquee-set{display:flex;gap:10px;padding:0 5px}
-.gchip{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:var(--bg2);border:1px solid var(--bd);border-radius:20px;font-size:13px;font-weight:500;color:var(--tx2);white-space:nowrap;cursor:default;transition:all .15s;user-select:none}
-.gchip:hover{border-color:var(--p1);color:var(--p1);background:#e0f2fe;transform:translateY(-1px)}
+.gchip{display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;white-space:nowrap;cursor:default;transition:all .18s;user-select:none;border:1.5px solid transparent}
+.gchip:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.gchip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 @keyframes mq{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
 /* ── SECTION BASE ── */
@@ -252,7 +253,7 @@ footer{background:#0f172a;padding:60px 24px 32px}
 .ft-w{max-width:1160px;margin:0 auto}
 .ft-top{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:44px;margin-bottom:44px}
 .ft-logo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.ft-logo-ico{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--p1),var(--p2));display:flex;align-items:center;justify-content:center}
+.ft-logo-ico{width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,var(--p1),var(--p2));display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(14,165,233,.3)}
 .ft-logo-nm{font-family:var(--head);font-size:16px;font-weight:800;color:#fff;letter-spacing:.5px}
 .ft-tagline{font-size:13px;color:#475569;margin-bottom:18px;line-height:1.75}
 .ft-info{font-size:12px;color:#334155;line-height:2.1}
@@ -287,6 +288,11 @@ footer{background:#0f172a;padding:60px 24px 32px}
     <label class="md-label">비밀번호</label>
     <input class="md-input" type="password" id="lg_p" placeholder="비밀번호 입력"/>
     <button class="md-btn" onclick="doLogin()">로그인</button>
+    <div style="display:flex;justify-content:center;gap:16px;margin-top:12px;font-size:13px">
+      <a onclick="sw('mdLogin','mdFindId')" style="color:var(--tx3);cursor:pointer;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--p1)'" onmouseout="this.style.color='var(--tx3)'">아이디 찾기</a>
+      <span style="color:var(--bd2)">|</span>
+      <a onclick="sw('mdLogin','mdFindPw')" style="color:var(--tx3);cursor:pointer;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--p1)'" onmouseout="this.style.color='var(--tx3)'">비밀번호 찾기</a>
+    </div>
     <div class="md-sw">계정이 없으신가요? <a onclick="sw('mdLogin','mdSignup')">회원가입</a></div>
   </div>
 </div>
@@ -301,11 +307,91 @@ footer{background:#0f172a;padding:60px 24px 32px}
     <input class="md-input" type="text" id="su_n" placeholder="홍길동"/>
     <label class="md-label">이메일</label>
     <input class="md-input" type="email" id="su_e" placeholder="you@example.com"/>
+    <label class="md-label">휴대폰 번호</label>
+    <input class="md-input" type="tel" id="su_phone" placeholder="010-0000-0000" oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/^(\d{3})(\d{4})(\d{4})$/,'$1-$2-$3')"/>
     <label class="md-label">비밀번호</label>
     <input class="md-input" type="password" id="su_p" placeholder="영문+숫자 8자 이상"/>
     <div class="md-hint">영문과 숫자를 포함해 8자 이상</div>
     <button class="md-btn" onclick="doSignup()">무료로 시작하기</button>
     <div class="md-sw">이미 계정이 있으신가요? <a onclick="sw('mdSignup','mdLogin')">로그인</a></div>
+  </div>
+</div>
+
+<!-- 아이디 찾기 -->
+<div class="ov" id="mdFindId">
+  <div class="md">
+    <button class="md-x" onclick="closeModal('mdFindId')">×</button>
+    <h2>아이디 찾기</h2>
+    <p class="md-sub">가입 시 등록한 휴대폰 번호로 인증하세요</p>
+    <div id="fiMsg"></div>
+
+    <!-- STEP 1: 번호 입력 -->
+    <div id="fi_step1">
+      <label class="md-label">휴대폰 번호</label>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <input class="md-input" type="tel" id="fi_phone" placeholder="010-0000-0000" style="margin-bottom:0;flex:1" oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/^(\d{3})(\d{4})(\d{4})$/,'$1-$2-$3')"/>
+        <button onclick="sendFindIdCode()" style="padding:0 16px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--sans)">인증번호 전송</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: 인증번호 입력 (처음엔 숨김) -->
+    <div id="fi_step2" style="display:none">
+      <label class="md-label">인증번호 <span id="fi_timer" style="color:var(--p1);font-family:var(--mono);font-size:12px"></span></label>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <input class="md-input" type="text" id="fi_code" placeholder="인증번호 6자리 입력" maxlength="6" style="margin-bottom:0;flex:1;letter-spacing:3px;font-family:var(--mono)"/>
+        <button onclick="verifyFindIdCode()" style="padding:0 16px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--sans)">확인</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: 결과 (처음엔 숨김) -->
+    <div id="fi_result" style="display:none;background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:20px;text-align:center;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--tx3);margin-bottom:6px">회원님의 아이디(이메일)</div>
+      <div id="fi_email" style="font-size:18px;font-weight:700;color:var(--p1);font-family:var(--mono)"></div>
+    </div>
+
+    <button id="fi_loginBtn" style="display:none;width:100%;padding:13px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans)" onclick="sw('mdFindId','mdLogin')">로그인하러 가기</button>
+    <div class="md-sw" style="margin-top:14px"><a onclick="sw('mdFindId','mdLogin')">← 로그인으로 돌아가기</a></div>
+  </div>
+</div>
+
+<!-- 비밀번호 찾기 -->
+<div class="ov" id="mdFindPw">
+  <div class="md">
+    <button class="md-x" onclick="closeModal('mdFindPw')">×</button>
+    <h2>비밀번호 찾기</h2>
+    <p class="md-sub">휴대폰 인증 후 새 비밀번호를 설정하세요</p>
+    <div id="fpMsg"></div>
+
+    <!-- STEP 1: 번호 입력 -->
+    <div id="fp_step1">
+      <label class="md-label">휴대폰 번호</label>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <input class="md-input" type="tel" id="fp_phone" placeholder="010-0000-0000" style="margin-bottom:0;flex:1" oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/^(\d{3})(\d{4})(\d{4})$/,'$1-$2-$3')"/>
+        <button onclick="sendFindPwCode()" style="padding:0 16px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--sans)">인증번호 전송</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: 인증번호 -->
+    <div id="fp_step2" style="display:none">
+      <label class="md-label">인증번호 <span id="fp_timer" style="color:var(--p1);font-family:var(--mono);font-size:12px"></span></label>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <input class="md-input" type="text" id="fp_code" placeholder="인증번호 6자리 입력" maxlength="6" style="margin-bottom:0;flex:1;letter-spacing:3px;font-family:var(--mono)"/>
+        <button onclick="verifyFindPwCode()" style="padding:0 16px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--sans)">확인</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: 아이디 + 새 비밀번호 -->
+    <div id="fp_step3" style="display:none">
+      <label class="md-label">아이디(이메일)</label>
+      <input class="md-input" type="email" id="fp_email" placeholder="가입한 이메일 입력"/>
+      <label class="md-label">새 비밀번호</label>
+      <input class="md-input" type="password" id="fp_pw1" placeholder="새 비밀번호 (영문+숫자 8자 이상)"/>
+      <label class="md-label">새 비밀번호 확인</label>
+      <input class="md-input" type="password" id="fp_pw2" placeholder="새 비밀번호 재입력"/>
+      <button onclick="doChangePw()" style="width:100%;padding:13px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans)">비밀번호 변경하기</button>
+    </div>
+
+    <div class="md-sw" style="margin-top:14px"><a onclick="sw('mdFindPw','mdLogin')">← 로그인으로 돌아가기</a></div>
   </div>
 </div>
 
@@ -377,19 +463,71 @@ footer{background:#0f172a;padding:60px 24px 32px}
   <div class="hero">
     <div class="hero-bg">
       <svg viewBox="0 0 1400 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-        <rect width="1400" height="700" fill="#0ea5e9"/>
-        <!-- PC방 좌석 행렬 배경 -->
-        <g stroke="#ffffff" stroke-width="2.5" fill="rgba(255,255,255,.06)">
-          <!-- Row 1 -->
-          <rect x="30" y="40" width="140" height="90" rx="6"/><rect x="190" y="40" width="140" height="90" rx="6"/><rect x="350" y="40" width="140" height="90" rx="6"/><rect x="510" y="40" width="140" height="90" rx="6"/><rect x="670" y="40" width="140" height="90" rx="6"/><rect x="830" y="40" width="140" height="90" rx="6"/><rect x="990" y="40" width="140" height="90" rx="6"/><rect x="1150" y="40" width="140" height="90" rx="6"/><rect x="1310" y="40" width="100" height="90" rx="6"/>
-          <!-- Row 2 -->
-          <rect x="30" y="160" width="140" height="90" rx="6"/><rect x="190" y="160" width="140" height="90" rx="6"/><rect x="350" y="160" width="140" height="90" rx="6"/><rect x="510" y="160" width="140" height="90" rx="6"/><rect x="670" y="160" width="140" height="90" rx="6"/><rect x="830" y="160" width="140" height="90" rx="6"/><rect x="990" y="160" width="140" height="90" rx="6"/><rect x="1150" y="160" width="140" height="90" rx="6"/><rect x="1310" y="160" width="100" height="90" rx="6"/>
-          <!-- Row 3 -->
-          <rect x="30" y="280" width="140" height="90" rx="6"/><rect x="190" y="280" width="140" height="90" rx="6"/><rect x="350" y="280" width="140" height="90" rx="6"/><rect x="510" y="280" width="140" height="90" rx="6"/><rect x="670" y="280" width="140" height="90" rx="6"/><rect x="830" y="280" width="140" height="90" rx="6"/><rect x="990" y="280" width="140" height="90" rx="6"/><rect x="1150" y="280" width="140" height="90" rx="6"/><rect x="1310" y="280" width="100" height="90" rx="6"/>
-          <!-- Row 4 -->
-          <rect x="30" y="400" width="140" height="90" rx="6"/><rect x="190" y="400" width="140" height="90" rx="6"/><rect x="350" y="400" width="140" height="90" rx="6"/><rect x="510" y="400" width="140" height="90" rx="6"/><rect x="670" y="400" width="140" height="90" rx="6"/><rect x="830" y="400" width="140" height="90" rx="6"/><rect x="990" y="400" width="140" height="90" rx="6"/><rect x="1150" y="400" width="140" height="90" rx="6"/>
-          <!-- Row 5 -->
-          <rect x="30" y="520" width="140" height="90" rx="6"/><rect x="190" y="520" width="140" height="90" rx="6"/><rect x="350" y="520" width="140" height="90" rx="6"/><rect x="510" y="520" width="140" height="90" rx="6"/><rect x="670" y="520" width="140" height="90" rx="6"/><rect x="830" y="520" width="140" height="90" rx="6"/><rect x="990" y="520" width="140" height="90" rx="6"/><rect x="1150" y="520" width="140" height="90" rx="6"/>
+        <rect width="1400" height="700" fill="#0d1b3e"/>
+        <!-- 배경 그리드 라인 -->
+        <g stroke="#1e3a6e" stroke-width="0.6" opacity="0.6">
+          <line x1="0" y1="100" x2="1400" y2="100"/><line x1="0" y1="200" x2="1400" y2="200"/>
+          <line x1="0" y1="300" x2="1400" y2="300"/><line x1="0" y1="400" x2="1400" y2="400"/>
+          <line x1="0" y1="500" x2="1400" y2="500"/><line x1="0" y1="600" x2="1400" y2="600"/>
+          <line x1="100" y1="0" x2="100" y2="700"/><line x1="200" y1="0" x2="200" y2="700"/>
+          <line x1="300" y1="0" x2="300" y2="700"/><line x1="400" y1="0" x2="400" y2="700"/>
+          <line x1="500" y1="0" x2="500" y2="700"/><line x1="600" y1="0" x2="600" y2="700"/>
+          <line x1="700" y1="0" x2="700" y2="700"/><line x1="800" y1="0" x2="800" y2="700"/>
+          <line x1="900" y1="0" x2="900" y2="700"/><line x1="1000" y1="0" x2="1000" y2="700"/>
+          <line x1="1100" y1="0" x2="1100" y2="700"/><line x1="1200" y1="0" x2="1200" y2="700"/>
+          <line x1="1300" y1="0" x2="1300" y2="700"/>
+        </g>
+        <!-- 회로 경로 라인 -->
+        <g stroke="#1a56ff" stroke-width="1.5" fill="none" opacity="0.5">
+          <polyline points="0,150 200,150 200,250 500,250 500,150 800,150 800,350 1100,350 1100,200 1400,200"/>
+          <polyline points="0,400 300,400 300,300 600,300 600,450 900,450 900,300 1200,300 1200,500 1400,500"/>
+          <polyline points="100,0 100,180 400,180 400,380 700,380 700,180 1000,180 1000,420 1300,420 1300,0"/>
+          <polyline points="0,550 250,550 250,480 550,480 550,600 850,600 850,480 1150,480 1150,600 1400,600"/>
+        </g>
+        <!-- 회로 강조 라인 (밝은 색) -->
+        <g stroke="#0ea5e9" stroke-width="2" fill="none" opacity="0.7">
+          <polyline points="0,250 150,250 150,350 450,350 450,250 750,250 750,450 1050,450 1050,250 1400,250"/>
+          <polyline points="0,500 200,500 200,600 600,600 600,400 1000,400 1000,600 1400,600"/>
+        </g>
+        <!-- 네트워크 노드 (교차점 원) -->
+        <g fill="#0ea5e9" opacity="0.9">
+          <circle cx="200" cy="250" r="4"/><circle cx="500" cy="250" r="4"/><circle cx="800" cy="350" r="4"/>
+          <circle cx="1100" cy="350" r="4"/><circle cx="300" cy="400" r="4"/><circle cx="600" cy="300" r="4"/>
+          <circle cx="900" cy="450" r="4"/><circle cx="1200" cy="300" r="4"/><circle cx="150" cy="350" r="4"/>
+          <circle cx="450" cy="350" r="4"/><circle cx="750" cy="450" r="4"/><circle cx="1050" cy="450" r="4"/>
+          <circle cx="200" cy="500" r="4"/><circle cx="600" cy="400" r="4"/><circle cx="1000" cy="400" r="4"/>
+        </g>
+        <!-- 큰 강조 노드 -->
+        <g fill="none" stroke="#0ea5e9" opacity="0.6">
+          <circle cx="200" cy="250" r="10" stroke-width="1.5"/>
+          <circle cx="750" cy="250" r="10" stroke-width="1.5"/>
+          <circle cx="1050" cy="450" r="10" stroke-width="1.5"/>
+          <circle cx="600" cy="600" r="10" stroke-width="1.5"/>
+        </g>
+        <!-- 빛나는 점 (밝은 노드) -->
+        <g fill="#60a5fa" opacity="0.8">
+          <circle cx="500" cy="150" r="5"/><circle cx="700" cy="380" r="5"/>
+          <circle cx="1100" cy="200" r="5"/><circle cx="250" cy="550" r="5"/>
+          <circle cx="850" cy="600" r="5"/><circle cx="1300" cy="420" r="5"/>
+        </g>
+        <!-- 대형 반투명 원 (배경 분위기) -->
+        <circle cx="700" cy="350" r="280" fill="none" stroke="#1a56ff" stroke-width="0.8" opacity="0.2"/>
+        <circle cx="700" cy="350" r="180" fill="none" stroke="#0ea5e9" stroke-width="0.6" opacity="0.15"/>
+        <circle cx="1100" cy="150" r="160" fill="none" stroke="#1a56ff" stroke-width="0.6" opacity="0.15"/>
+        <circle cx="300" cy="550" r="120" fill="none" stroke="#0ea5e9" stroke-width="0.6" opacity="0.12"/>
+        <!-- 대각선 회로 라인 -->
+        <g stroke="#6366f1" stroke-width="1.2" fill="none" opacity="0.35">
+          <line x1="0" y1="0" x2="350" y2="350"/><line x1="1400" y1="0" x2="1050" y2="350"/>
+          <line x1="0" y1="700" x2="350" y2="350"/><line x1="1400" y1="700" x2="1050" y2="350"/>
+        </g>
+        <!-- 소형 사각 요소 (회로기판 컴포넌트) -->
+        <g fill="none" stroke="#1a56ff" stroke-width="1" opacity="0.4">
+          <rect x="190" y="240" width="20" height="20" rx="2"/>
+          <rect x="490" y="140" width="20" height="20" rx="2"/>
+          <rect x="740" y="240" width="20" height="20" rx="2"/>
+          <rect x="1090" y="190" width="20" height="20" rx="2"/>
+          <rect x="590" y="390" width="20" height="20" rx="2"/>
+          <rect x="990" y="390" width="20" height="20" rx="2"/>
         </g>
       </svg>
       <div class="hero-bg-grad"></div>
@@ -397,101 +535,59 @@ footer{background:#0f172a;padding:60px 24px 32px}
     <div class="hero-inner">
       <div style="animation:fadeIn .7s ease">
         <div class="hero-tag">원격 PC방 서비스 No.1</div>
-        <h1>집에서 즐기는<br/><em>고사양 PC방</em></h1>
+        <h1>집에서 즐기는<br/><em>원격 PC방</em></h1>
         <p class="hero-desc">RTX 4090 · i9 프로세서 · 초저지연 P2P 연결<br/>전국 가맹 PC방을 집에서, 카페에서, 어디서나.</p>
         <div class="hero-actions">
           <button class="btn-hero main" onclick="scrollTo({top:document.getElementById('download').offsetTop-70,behavior:'smooth'})">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             클라이언트 다운로드
           </button>
-          <button class="btn-hero sub" onclick="openModal('mdSignup')">무료로 시작하기 →</button>
         </div>
-        <div class="hero-stats">
-          <div><div class="hs-num">5,200+</div><div class="hs-lbl">월간 이용자</div></div>
-          <div><div class="hs-num">99.9%</div><div class="hs-lbl">서버 가동률</div></div>
-          <div><div class="hs-num">28ms</div><div class="hs-lbl">평균 레이턴시</div></div>
-        </div>
+
       </div>
 
-      <!-- 윈도우 원격화면 목업 -->
-      <div class="hero-visual" style="animation:fadeIn .9s .2s ease both">
-        <!-- 원격접속 상단바 -->
-        <div class="hv-remote-bar">
-          <div class="hv-remote-bar-left">
-            <div class="hv-remote-logo">
-              <svg width="18" height="18" viewBox="0 0 24 24">
-                <rect x="2" y="5" width="20" height="14" rx="3" fill="none" stroke="#93c5fd" stroke-width="1.6"/>
-                <path d="M6 15 Q12 9 18 15" fill="none" stroke="#93c5fd" stroke-width="1.8" stroke-linecap="round"/>
-                <circle cx="12" cy="18" r="1.2" fill="#93c5fd"/>
-                <line x1="9" y1="19.5" x2="15" y2="19.5" stroke="#93c5fd" stroke-width="1.6" stroke-linecap="round"/>
-                <line x1="12" y1="18" x2="12" y2="19.5" stroke="#93c5fd" stroke-width="1.6"/>
-              </svg>
-            </div>
-            <div class="hv-conn-dot"></div>
-            <span class="hv-remote-info">REMOTE1 연결됨 — 서울강남점 PC-007</span>
+      <!-- 공지사항 카드 -->
+      <div style="animation:fadeIn .9s .2s ease both;background:#fff;border-radius:18px;border:1px solid var(--bd);overflow:hidden;box-shadow:0 8px 32px rgba(14,165,233,.08)">
+        <!-- 카드 헤더 -->
+        <div style="padding:18px 22px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#f8faff,#f0f4ff)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--p1);animation:pulse 2s infinite"></div>
+            <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--p1);letter-spacing:1px">NOTICE</span>
           </div>
-          <div class="hv-winctrls">
-            <div class="hv-wc" style="background:#fbbf24"></div>
-            <div class="hv-wc" style="background:#4ade80"></div>
-            <div class="hv-wc" style="background:#f87171"></div>
+          <span style="font-size:12px;color:var(--p1);cursor:pointer;font-weight:500" onclick="document.getElementById('notice').scrollIntoView({behavior:'smooth'})">더보기 →</span>
+        </div>
+        <!-- 공지 목록 -->
+        <div style="padding:8px 0">
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 20px;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .12s" onmouseover="this.style.background='#f8faff'" onmouseout="this.style.background='transparent'">
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#fef9c3;color:#854d0e;font-family:var(--mono);white-space:nowrap">공지</span>
+            <span style="flex:1;font-size:13px;color:var(--tx)">2026년 3월 서버 점검 안내 (3/20 새벽 2~4시)</span>
+            <span style="font-size:11px;color:var(--tx3);font-family:var(--mono);white-space:nowrap">03.18</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 20px;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .12s" onmouseover="this.style.background='#f8faff'" onmouseout="this.style.background='transparent'">
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#dbeafe;color:#1e40af;font-family:var(--mono);white-space:nowrap">업데이트</span>
+            <span style="flex:1;font-size:13px;color:var(--tx)">클라이언트 v2.1.0 — 연결 안정성 대폭 개선</span>
+            <span style="font-size:11px;color:var(--tx3);font-family:var(--mono);white-space:nowrap">03.10</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 20px;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .12s" onmouseover="this.style.background='#f8faff'" onmouseout="this.style.background='transparent'">
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#fef9c3;color:#854d0e;font-family:var(--mono);white-space:nowrap">공지</span>
+            <span style="flex:1;font-size:13px;color:var(--tx)">개인정보 처리방침 개정 안내 (4/1 시행)</span>
+            <span style="font-size:11px;color:var(--tx3);font-family:var(--mono);white-space:nowrap">03.01</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 20px;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .12s" onmouseover="this.style.background='#f8faff'" onmouseout="this.style.background='transparent'">
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#dbeafe;color:#1e40af;font-family:var(--mono);white-space:nowrap">업데이트</span>
+            <span style="flex:1;font-size:13px;color:var(--tx)">RTX 4090 서버 20대 추가 확충 완료</span>
+            <span style="font-size:11px;color:var(--tx3);font-family:var(--mono);white-space:nowrap">02.20</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 20px;cursor:pointer;transition:background .12s" onmouseover="this.style.background='#f8faff'" onmouseout="this.style.background='transparent'">
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#fef9c3;color:#854d0e;font-family:var(--mono);white-space:nowrap">공지</span>
+            <span style="flex:1;font-size:13px;color:var(--tx)">발로란트, 오버워치2 PC방 혜택 정상 적용 안내</span>
+            <span style="font-size:11px;color:var(--tx3);font-family:var(--mono);white-space:nowrap">02.10</span>
           </div>
         </div>
-
-        <!-- 윈도우 바탕화면 -->
-        <div class="hv-desktop">
-          <!-- 바탕화면 아이콘 -->
-          <div class="hv-icons">
-            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#f97316,#dc2626)">💣</div><div class="hv-ico-lbl">배틀그라운드</div></div>
-            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#dc2626,#7c3aed)">🎯</div><div class="hv-ico-lbl">발로란트</div></div>
-            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#0ea5e9,#1d4ed8)">🏆</div><div class="hv-ico-lbl">리그오브레전드</div></div>
-            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)">⚔️</div><div class="hv-ico-lbl">로스트아크</div></div>
-            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#f59e0b,#d97706)">⚡</div><div class="hv-ico-lbl">메이플</div></div>
-            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#10b981,#047857)">⚽</div><div class="hv-ico-lbl">FC온라인</div></div>
-            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#ec4899,#9d174d)">🌸</div><div class="hv-ico-lbl">블소</div></div>
-            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#06b6d4,#0284c7)">🌊</div><div class="hv-ico-lbl">검은사막</div></div>
-            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#64748b,#334155)">🚀</div><div class="hv-ico-lbl">스타크래프트</div></div>
-            <div class="hv-ico"><div class="hv-ico-img" style="background:linear-gradient(135deg,#a78bfa,#7c3aed)">🧙</div><div class="hv-ico-lbl">디아블로4</div></div>
-          </div>
-
-          <!-- 열려있는 게임 창 -->
-          <div class="hv-game-window">
-            <div class="hv-game-titlebar">
-              <div class="hv-game-title">
-                <span style="color:#fde68a">🎯</span> VALORANT — PC방 프리미엄
-              </div>
-              <div class="hv-game-ctrl">
-                <span>－</span><span>□</span><span style="color:#f87171">✕</span>
-              </div>
-            </div>
-            <div class="hv-game-screen">
-              <div class="hv-game-txt">▶ LOADING... 83%</div>
-            </div>
-          </div>
-
-          <!-- 실시간 상태 -->
-          <div class="hv-status">
-            <div class="hv-st-live">
-              <span>●</span> 실시간 연결
-            </div>
-            <div class="hv-st-stats">
-              <span class="hv-st-stat ok">핑 <b>28ms</b></span>
-              <span class="hv-st-stat">GPU <b>RTX 4090</b></span>
-              <span class="hv-st-stat ok">FPS <b>144</b></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 윈도우 태스크바 -->
-        <div class="hv-taskbar">
-          <div class="hv-tb-l">
-            <div class="hv-tb-start">
-              <svg width="14" height="14" viewBox="0 0 14 14"><rect width="6" height="6" rx="1" fill="#fff" opacity=".9"/><rect x="8" width="6" height="6" rx="1" fill="#fff" opacity=".9"/><rect y="8" width="6" height="6" rx="1" fill="#fff" opacity=".9"/><rect x="8" y="8" width="6" height="6" rx="1" fill="#fff" opacity=".9"/></svg>
-            </div>
-            <div class="hv-tb-app active" style="background:rgba(220,38,38,.15);border-bottom-color:#dc2626">🎯</div>
-            <div class="hv-tb-app">🏆</div>
-            <div class="hv-tb-app">⚽</div>
-          </div>
-          <div class="hv-tb-r">오후 11:42 · 2026-03-18</div>
+        <!-- 카드 하단 -->
+        <div style="padding:14px 20px;background:#f8faff;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:12px;color:var(--tx3)">최근 업데이트 <b style="color:var(--tx2)">2026.03.18</b></span>
+          <button onclick="openModal('mdSignup')" style="padding:7px 16px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans)">무료 시작하기</button>
         </div>
       </div>
     </div>
@@ -504,10 +600,10 @@ footer{background:#0f172a;padding:60px 24px 32px}
   <div class="marquee-fade-r"></div>
   <div class="marquee-track">
     <div class="marquee-set">
-      <div class="gchip">💣 배틀그라운드</div><div class="gchip">🎯 발로란트</div><div class="gchip">🏆 리그오브레전드</div><div class="gchip">⚔️ 로스트아크</div><div class="gchip">⚡ 메이플스토리</div><div class="gchip">⚽ FC온라인</div><div class="gchip">🛡️ 오버워치2</div><div class="gchip">🧙 디아블로4</div><div class="gchip">🚀 스타크래프트2</div><div class="gchip">👑 리니지M</div><div class="gchip">🔥 던전앤파이터</div><div class="gchip">🌆 사이버펑크2077</div><div class="gchip">⚗️ 엘든링</div><div class="gchip">🌊 검은사막</div><div class="gchip">🌸 블레이드앤소울</div><div class="gchip">🏎️ 카트라이더</div><div class="gchip">🎵 마비노기</div><div class="gchip">✨ 아이온2</div><div class="gchip">🐉 테라</div><div class="gchip">🎮 스팀 전체 지원</div>
+      <div class="gchip">⚔️ 로스트아크</div><div class="gchip">⚡ 메이플스토리</div><div class="gchip">⚽ FC온라인</div><div class="gchip">🧙 디아블로4</div><div class="gchip">🚀 스타크래프트2</div><div class="gchip">👑 리니지M</div><div class="gchip">🔥 던전앤파이터</div><div class="gchip">🌆 사이버펑크2077</div><div class="gchip">⚗️ 엘든링</div><div class="gchip">🌊 검은사막</div><div class="gchip">🌸 블레이드앤소울</div><div class="gchip">🏎️ 카트라이더</div><div class="gchip">🎵 마비노기</div><div class="gchip">✨ 아이온2</div><div class="gchip">🐉 테라</div><div class="gchip">🎮 스팀 전체 지원</div>
     </div>
     <div class="marquee-set" aria-hidden="true">
-      <div class="gchip">💣 배틀그라운드</div><div class="gchip">🎯 발로란트</div><div class="gchip">🏆 리그오브레전드</div><div class="gchip">⚔️ 로스트아크</div><div class="gchip">⚡ 메이플스토리</div><div class="gchip">⚽ FC온라인</div><div class="gchip">🛡️ 오버워치2</div><div class="gchip">🧙 디아블로4</div><div class="gchip">🚀 스타크래프트2</div><div class="gchip">👑 리니지M</div><div class="gchip">🔥 던전앤파이터</div><div class="gchip">🌆 사이버펑크2077</div><div class="gchip">⚗️ 엘든링</div><div class="gchip">🌊 검은사막</div><div class="gchip">🌸 블레이드앤소울</div><div class="gchip">🏎️ 카트라이더</div><div class="gchip">🎵 마비노기</div><div class="gchip">✨ 아이온2</div><div class="gchip">🐉 테라</div><div class="gchip">🎮 스팀 전체 지원</div>
+      <div class="gchip">⚔️ 로스트아크</div><div class="gchip">⚡ 메이플스토리</div><div class="gchip">⚽ FC온라인</div><div class="gchip">🧙 디아블로4</div><div class="gchip">🚀 스타크래프트2</div><div class="gchip">👑 리니지M</div><div class="gchip">🔥 던전앤파이터</div><div class="gchip">🌆 사이버펑크2077</div><div class="gchip">⚗️ 엘든링</div><div class="gchip">🌊 검은사막</div><div class="gchip">🌸 블레이드앤소울</div><div class="gchip">🏎️ 카트라이더</div><div class="gchip">🎵 마비노기</div><div class="gchip">✨ 아이온2</div><div class="gchip">🐉 테라</div><div class="gchip">🎮 스팀 전체 지원</div>
     </div>
   </div>
 </div>
@@ -639,25 +735,15 @@ footer{background:#0f172a;padding:60px 24px 32px}
 <section id="notice" style="background:var(--bg2)">
   <div class="sec-w">
     <div class="sec-tag">NOTICE</div>
-    <h2 class="sec-h">공지사항 & 이벤트</h2>
+    <h2 class="sec-h">공지사항</h2>
     <p class="sec-sub">서비스 관련 최신 소식을 확인하세요</p>
-    <div class="notice-g">
-      <div class="nb">
-        <div class="nb-head">공지사항 <span class="nb-more">더보기 →</span></div>
-        <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">2026년 3월 서버 점검 안내 (3/20 새벽 2~4시)</span><span class="ni-date">03.18</span></div>
-        <div class="ni"><span class="nbadge b-upd">업데이트</span><span class="ni-title">클라이언트 v2.1.0 — 연결 안정성 대폭 개선</span><span class="ni-date">03.10</span></div>
-        <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">개인정보 처리방침 개정 안내 (4/1 시행)</span><span class="ni-date">03.01</span></div>
-        <div class="ni"><span class="nbadge b-upd">업데이트</span><span class="ni-title">RTX 4090 서버 20대 추가 확충 완료</span><span class="ni-date">02.20</span></div>
-        <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">발로란트, 오버워치2 PC방 혜택 정상 적용 안내</span><span class="ni-date">02.10</span></div>
-      </div>
-      <div class="nb">
-        <div class="nb-head">이벤트 <span class="nb-more">더보기 →</span></div>
-        <div class="ni"><span class="nbadge b-evt">이벤트</span><span class="ni-title">🌸 봄맞이 신규가입 무료 60분 지급 이벤트</span><span class="ni-date">03.15</span></div>
-        <div class="ni"><span class="nbadge b-evt">이벤트</span><span class="ni-title">친구 초대 시 양쪽 모두 30분 추가 지급</span><span class="ni-date">03.01</span></div>
-        <div class="ni"><span class="nbadge b-evt">이벤트</span><span class="ni-title">프리미엄 첫 구매 고객 15% 보너스 지급</span><span class="ni-date">02.15</span></div>
-        <div class="ni"><span class="nbadge b-evt">이벤트</span><span class="ni-title">메이플스토리 핫타임 이벤트 참여 가능 안내</span><span class="ni-date">02.01</span></div>
-        <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">설 연휴 24시간 고객지원 정상 운영 안내</span><span class="ni-date">01.25</span></div>
-      </div>
+    <div class="nb" style="max-width:100%">
+      <div class="nb-head">공지사항 <span class="nb-more">더보기 →</span></div>
+      <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">2026년 3월 서버 점검 안내 (3/20 새벽 2~4시)</span><span class="ni-date">03.18</span></div>
+      <div class="ni"><span class="nbadge b-upd">업데이트</span><span class="ni-title">클라이언트 v2.1.0 — 연결 안정성 대폭 개선</span><span class="ni-date">03.10</span></div>
+      <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">개인정보 처리방침 개정 안내 (4/1 시행)</span><span class="ni-date">03.01</span></div>
+      <div class="ni"><span class="nbadge b-upd">업데이트</span><span class="ni-title">RTX 4090 서버 20대 추가 확충 완료</span><span class="ni-date">02.20</span></div>
+      <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">발로란트, 오버워치2 PC방 혜택 정상 적용 안내</span><span class="ni-date">02.10</span></div>
     </div>
   </div>
 </section>
@@ -785,13 +871,15 @@ footer{background:#0f172a;padding:60px 24px 32px}
       <div>
         <div class="ft-logo">
           <div class="ft-logo-ico">
-            <svg width="18" height="18" viewBox="0 0 24 24">
-              <rect x="2" y="5" width="20" height="14" rx="3" fill="none" stroke="#fff" stroke-width="1.6"/>
-              <path d="M6 15 Q12 9 18 15" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-              <path d="M8 17 Q12 13 16 17" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round"/>
-              <circle cx="12" cy="18" r="1.3" fill="#fff"/>
-              <line x1="9" y1="19.5" x2="15" y2="19.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-              <line x1="12" y1="18" x2="12" y2="19.5" stroke="#fff" stroke-width="1.8"/>
+            <svg width="32" height="32" viewBox="0 0 32 32">
+              <rect x="2" y="6" width="28" height="19" rx="4" fill="none" stroke="#fff" stroke-width="2"/>
+              <rect x="5" y="9" width="22" height="13" rx="2" fill="rgba(255,255,255,.1)"/>
+              <path d="M7 19 Q16 10 25 19" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M10 22 Q16 15 22 22" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2" stroke-linecap="round"/>
+              <path d="M13 24.5 Q16 21 19 24.5" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="16" cy="25.5" r="2" fill="#fff"/>
+              <line x1="11" y1="28" x2="21" y2="28" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="16" y1="25.5" x2="16" y2="28" stroke="#fff" stroke-width="2.2"/>
             </svg>
           </div>
           <div class="ft-logo-nm">REMOTE1</div>
@@ -886,12 +974,14 @@ function doLogin(){
 function doSignup(){
   const n=document.getElementById('su_n').value.trim();
   const e=document.getElementById('su_e').value.trim();
+  const phone=document.getElementById('su_phone').value.trim();
   const p=document.getElementById('su_p').value;
-  if(!n||!e||!p){ msg('suMsg','모든 항목을 입력해주세요','err'); return; }
+  if(!n||!e||!phone||!p){ msg('suMsg','모든 항목을 입력해주세요','err'); return; }
+  if(!/^010-\d{4}-\d{4}$/.test(phone)){ msg('suMsg','휴대폰 번호를 올바르게 입력해주세요 (010-0000-0000)','err'); return; }
   if(p.length<8||!/[a-zA-Z]/.test(p)||!/[0-9]/.test(p)){ msg('suMsg','비밀번호는 영문+숫자 8자 이상이어야 합니다','err'); return; }
   const users=JSON.parse(localStorage.getItem('r1users')||'[]');
   if(users.find(u=>u.email===e)){ msg('suMsg','이미 사용 중인 이메일입니다','err'); return; }
-  users.push({name:n,email:e,pw:p,credits:30});
+  users.push({name:n,email:e,phone,pw:p,credits:30});
   localStorage.setItem('r1users',JSON.stringify(users));
   user={name:n,email:e,credits:30};
   sessionStorage.setItem('r1u',JSON.stringify(user));
@@ -910,6 +1000,97 @@ function doCharge(){
   if(!user){ closeModal('mdCharge'); openModal('mdLogin'); return; }
   alert(`[테스트 모드]\n${selChargePkg.n} (${selChargePkg.p}) 결제창\n실제 서비스에서는 토스페이먼츠 결제창이 열립니다.`);
   closeModal('mdCharge');
+}
+
+// ── 아이디 찾기
+let fiTimer=null, fiCode='', fiVerified=false;
+let fpTimer=null, fpCode='', fpVerified=false;
+
+function sendFindIdCode(){
+  const phone=document.getElementById('fi_phone').value.trim();
+  if(!/^010-\d{4}-\d{4}$/.test(phone)){ msg('fiMsg','휴대폰 번호를 올바르게 입력해주세요','err'); return; }
+  const users=JSON.parse(localStorage.getItem('r1users')||'[]');
+  if(!users.find(u=>u.phone===phone)){ msg('fiMsg','가입된 휴대폰 번호가 아닙니다','err'); return; }
+  // 6자리 코드 생성 (테스트용: 항상 123456)
+  fiCode='123456';
+  fiVerified=false;
+  document.getElementById('fi_step2').style.display='block';
+  document.getElementById('fi_code').value='';
+  msg('fiMsg','인증번호가 전송되었습니다. (테스트: <b style="font-family:var(--mono)">123456</b>)','ok');
+  startTimer('fi_timer', 180, ()=>{ fiCode=''; msg('fiMsg','인증번호가 만료되었습니다. 다시 전송해주세요','err'); });
+}
+function verifyFindIdCode(){
+  const input=document.getElementById('fi_code').value.trim();
+  if(input!==fiCode||!fiCode){ msg('fiMsg','인증번호가 올바르지 않습니다','err'); return; }
+  clearInterval(fiTimer);
+  fiVerified=true;
+  const phone=document.getElementById('fi_phone').value.trim();
+  const users=JSON.parse(localStorage.getItem('r1users')||'[]');
+  const found=users.find(u=>u.phone===phone);
+  // 이메일 마스킹: abc****@gmail.com
+  const em=found.email;
+  const at=em.indexOf('@');
+  const masked=em.slice(0,Math.min(3,at))+'****'+em.slice(at);
+  document.getElementById('fi_email').textContent=masked;
+  document.getElementById('fi_result').style.display='block';
+  document.getElementById('fi_loginBtn').style.display='block';
+  document.getElementById('fi_step2').style.display='none';
+  msg('fiMsg','인증이 완료되었습니다','ok');
+}
+
+// ── 비밀번호 찾기
+function sendFindPwCode(){
+  const phone=document.getElementById('fp_phone').value.trim();
+  if(!/^010-\d{4}-\d{4}$/.test(phone)){ msg('fpMsg','휴대폰 번호를 올바르게 입력해주세요','err'); return; }
+  const users=JSON.parse(localStorage.getItem('r1users')||'[]');
+  if(!users.find(u=>u.phone===phone)){ msg('fpMsg','가입된 휴대폰 번호가 아닙니다','err'); return; }
+  fpCode='123456';
+  fpVerified=false;
+  document.getElementById('fp_step2').style.display='block';
+  document.getElementById('fp_code').value='';
+  msg('fpMsg','인증번호가 전송되었습니다. (테스트: <b style="font-family:var(--mono)">123456</b>)','ok');
+  startTimer('fp_timer', 180, ()=>{ fpCode=''; msg('fpMsg','인증번호가 만료되었습니다. 다시 전송해주세요','err'); });
+}
+function verifyFindPwCode(){
+  const input=document.getElementById('fp_code').value.trim();
+  if(input!==fpCode||!fpCode){ msg('fpMsg','인증번호가 올바르지 않습니다','err'); return; }
+  clearInterval(fpTimer);
+  fpVerified=true;
+  document.getElementById('fp_step3').style.display='block';
+  document.getElementById('fp_step2').style.display='none';
+  msg('fpMsg','인증 완료! 새 비밀번호를 입력해주세요','ok');
+}
+function doChangePw(){
+  if(!fpVerified){ msg('fpMsg','먼저 휴대폰 인증을 완료해주세요','err'); return; }
+  const email=document.getElementById('fp_email').value.trim();
+  const pw1=document.getElementById('fp_pw1').value;
+  const pw2=document.getElementById('fp_pw2').value;
+  const phone=document.getElementById('fp_phone').value.trim();
+  if(!email){ msg('fpMsg','아이디(이메일)를 입력해주세요','err'); return; }
+  if(pw1.length<8||!/[a-zA-Z]/.test(pw1)||!/[0-9]/.test(pw1)){ msg('fpMsg','비밀번호는 영문+숫자 8자 이상이어야 합니다','err'); return; }
+  if(pw1!==pw2){ msg('fpMsg','비밀번호가 일치하지 않습니다','err'); return; }
+  const users=JSON.parse(localStorage.getItem('r1users')||'[]');
+  const idx=users.findIndex(u=>u.email===email&&u.phone===phone);
+  if(idx===-1){ msg('fpMsg','아이디와 휴대폰 번호가 일치하지 않습니다','err'); return; }
+  users[idx].pw=pw1;
+  localStorage.setItem('r1users',JSON.stringify(users));
+  msg('fpMsg','비밀번호가 변경되었습니다! 새 비밀번호로 로그인해주세요','ok');
+  setTimeout(()=>{ closeModal('mdFindPw'); openModal('mdLogin'); }, 1800);
+}
+
+// ── 타이머 유틸
+function startTimer(elId, sec, onEnd){
+  let s=sec;
+  const el=document.getElementById(elId);
+  const tick=()=>{
+    const m=String(Math.floor(s/60)).padStart(2,'0');
+    const ss=String(s%60).padStart(2,'0');
+    el.textContent=`(${m}:${ss})`;
+    if(--s<0){ clearInterval(t); el.textContent=''; onEnd(); }
+  };
+  tick();
+  const t=setInterval(tick,1000);
+  return t;
 }
 
 // ── REVIEW PAGE
@@ -948,6 +1129,211 @@ function submitRvPage(){
   setRvpStar(5);
   setTimeout(()=>{ msgEl.innerHTML=''; },3000);
 }
+</script>
+<!-- ══ 실시간 상담 채팅 위젯 ══ -->
+<style>
+#chatWidget{position:fixed;bottom:28px;right:28px;z-index:9000;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+#chatBtn{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(14,165,233,.4);transition:transform .2s;position:relative}
+#chatBtn:hover{transform:scale(1.08)}
+#chatBadge{position:absolute;top:-3px;right:-3px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;font-family:var(--mono)}
+#chatTooltip{background:#0f172a;color:#fff;font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;white-space:nowrap;animation:fadeInRight .3s ease;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+@keyframes fadeInRight{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
+#chatBox{display:none;width:320px;background:#fff;border-radius:18px;box-shadow:0 16px 48px rgba(0,0,0,.15);overflow:hidden;animation:chatPop .22s ease}
+@keyframes chatPop{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+#chatHeader{background:linear-gradient(135deg,var(--p1),var(--p2));padding:16px 18px;display:flex;align-items:center;justify-content:space-between}
+#chatHeader-l{display:flex;align-items:center;gap:10px}
+#chatHeader-av{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:18px}
+#chatHeader-info{}
+#chatHeader-name{font-size:14px;font-weight:700;color:#fff}
+#chatHeader-status{display:flex;align-items:center;gap:4px;font-size:11px;color:rgba(255,255,255,.8)}
+#chatHeader-status::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block}
+#chatClose{background:none;border:none;color:rgba(255,255,255,.8);font-size:20px;cursor:pointer;padding:2px;line-height:1}
+#chatClose:hover{color:#fff}
+#chatMsgs{height:260px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:#f8faff}
+.chat-msg{max-width:80%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.55}
+.chat-msg.from{background:#fff;border:1px solid var(--border);color:var(--tx);border-radius:14px 14px 14px 4px;align-self:flex-start}
+.chat-msg.to{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border-radius:14px 14px 4px 14px;align-self:flex-end}
+.chat-time{font-size:10px;color:var(--tx3);margin-top:3px}
+.chat-typing{display:flex;align-items:center;gap:4px;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:14px 14px 14px 4px;align-self:flex-start;width:56px}
+.chat-typing span{width:7px;height:7px;border-radius:50%;background:var(--tx3);animation:typing .9s ease-in-out infinite}
+.chat-typing span:nth-child(2){animation-delay:.2s}
+.chat-typing span:nth-child(3){animation-delay:.4s}
+@keyframes typing{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+#chatQuicks{padding:10px 14px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--border);background:#fff}
+.cq{padding:5px 11px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:20px;font-size:11px;color:var(--p1);cursor:pointer;font-weight:600;transition:all .15s;white-space:nowrap}
+.cq:hover{background:var(--p1);color:#fff;border-color:var(--p1)}
+#chatInputArea{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);background:#fff}
+#chatInput{flex:1;padding:9px 13px;border:1.5px solid var(--border);border-radius:22px;font-size:13px;font-family:var(--sans);outline:none;transition:border .15s;background:#f8faff}
+#chatInput:focus{border-color:var(--p1);background:#fff}
+#chatSend{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
+#chatSend:hover{opacity:.87}
+</style>
+
+<div id="chatWidget">
+  <div id="chatTooltip">💬 실시간 상담</div>
+  <div id="chatBox">
+    <div id="chatHeader">
+      <div id="chatHeader-l">
+        <div id="chatHeader-av">🎧</div>
+        <div id="chatHeader-info">
+          <div id="chatHeader-name">리모트원 고객지원</div>
+          <div id="chatHeader-status">온라인 · 평균 응답 1분</div>
+        </div>
+      </div>
+      <button id="chatClose" onclick="toggleChat()">×</button>
+    </div>
+    <div id="chatMsgs">
+      <div class="chat-msg from">
+        안녕하세요! 리모트원 고객지원입니다 👋<br/>무엇을 도와드릴까요?
+        <div class="chat-time">오후 11:42</div>
+      </div>
+    </div>
+    <div id="chatQuicks">
+      <div class="cq" onclick="quickMsg('요금제 문의')">요금제 문의</div>
+      <div class="cq" onclick="quickMsg('접속 오류')">접속 오류</div>
+      <div class="cq" onclick="quickMsg('환불 문의')">환불 문의</div>
+      <div class="cq" onclick="quickMsg('가맹점 문의')">가맹점 문의</div>
+    </div>
+    <div id="chatInputArea">
+      <input id="chatInput" type="text" placeholder="메시지를 입력하세요..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button id="chatSend" onclick="sendChat()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+  <button id="chatBtn" onclick="toggleChat()">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <div id="chatBadge">1</div>
+  </button>
+  <div id="chatLabel" style="font-size:10px;font-weight:600;color:#475569;text-align:center;line-height:1.4;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:4px 10px;box-shadow:0 2px 8px rgba(0,0,0,.08);white-space:nowrap">실시간 상담<br/><span id="chatLabelSub" style="color:#94a3b8;font-weight:400">로그인 후 이용 가능</span></div>
+</div>
+
+<script>
+let chatOpen = false;
+let chatReplying = false;
+
+const autoReplies = {
+  '요금제 문의': '요금제는 스타터(₩11,000/10시간), 스탠다드(₩30,000/30시간), 프리미엄(₩100,000/100시간) 3가지입니다. 자세한 내용은 요금제 메뉴에서 확인하실 수 있어요! 😊',
+  '접속 오류': '접속 오류가 발생하셨군요! 클라이언트 재시작 후에도 동일한 오류가 발생하면 아래 정보와 함께 문의해 주세요.\n① 오류 코드\n② 이용 중인 PC방/지역\n③ 발생 시간',
+  '환불 문의': '미사용 크레딧은 충전 후 7일 이내 전액 환불 가능합니다. 환불을 원하시면 가입 이메일과 결제 내역을 알려주시면 빠르게 처리해 드릴게요!',
+  '가맹점 문의': '가맹점 입점을 원하시나요? 아래 연락처로 문의 주시면 담당자가 안내해 드립니다.\n📞 1588-0000\n📧 partner@remote1.co.kr',
+};
+
+function toggleChat() {
+  // 로그인 체크
+  const currentUser = JSON.parse(sessionStorage.getItem('r1u')||'null');
+  if (!currentUser) {
+    // 비로그인 시 툴팁 메시지 변경 후 로그인 모달 오픈
+    const tooltip = document.getElementById('chatTooltip');
+    tooltip.textContent = '🔒 로그인 후 이용 가능합니다';
+    tooltip.style.display = 'block';
+    tooltip.style.opacity = '1';
+    setTimeout(() => {
+      tooltip.textContent = '💬 실시간 상담';
+      tooltip.style.opacity = '0';
+    }, 2000);
+    openModal('mdLogin');
+    return;
+  }
+  chatOpen = !chatOpen;
+  const box = document.getElementById('chatBox');
+  const tooltip = document.getElementById('chatTooltip');
+  const badge = document.getElementById('chatBadge');
+  box.style.display = chatOpen ? 'block' : 'none';
+  tooltip.style.display = chatOpen ? 'none' : 'block';
+  if (chatOpen) badge.style.display = 'none';
+}
+
+function getNow() {
+  const d = new Date();
+  return '오후 ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function addMsg(text, type) {
+  const msgs = document.getElementById('chatMsgs');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + type;
+  div.innerHTML = text.replace(/\n/g, '<br/>') + '<div class="chat-time">' + getNow() + '</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMsgs');
+  const div = document.createElement('div');
+  div.className = 'chat-typing';
+  div.id = 'typingIndicator';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+function autoReply(text) {
+  if (chatReplying) return;
+  chatReplying = true;
+  setTimeout(() => {
+    showTyping();
+    const reply = autoReplies[text] ||
+      '문의 주셔서 감사합니다! 담당자가 확인 후 빠르게 답변 드리겠습니다. 긴급한 경우 📞 1588-0000으로 연락 주세요.';
+    setTimeout(() => {
+      removeTyping();
+      addMsg(reply, 'from');
+      chatReplying = false;
+    }, 1200);
+  }, 600);
+}
+
+function quickMsg(text) {
+  addMsg(text, 'to');
+  autoReply(text);
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  addMsg(text, 'to');
+  input.value = '';
+  autoReply(text);
+}
+
+// 채팅버튼 로그인 상태 반영
+function updateChatBtn() {
+  const currentUser = JSON.parse(sessionStorage.getItem('r1u')||'null');
+  const btn = document.getElementById('chatBtn');
+  const badge = document.getElementById('chatBadge');
+  const tooltip = document.getElementById('chatTooltip');
+  const labelSub = document.getElementById('chatLabelSub');
+  if (!currentUser) {
+    btn.style.background = '#94a3b8';
+    btn.style.boxShadow = '0 4px 12px rgba(0,0,0,.15)';
+    badge.style.display = 'none';
+    tooltip.textContent = '💬 실시간 상담 (로그인 필요)';
+    if (labelSub) labelSub.textContent = '로그인 후 이용 가능';
+  } else {
+    btn.style.background = 'linear-gradient(135deg,var(--p1),var(--p2))';
+    btn.style.boxShadow = '0 6px 24px rgba(14,165,233,.4)';
+    badge.style.display = 'flex';
+    tooltip.textContent = '💬 실시간 상담';
+    if (labelSub) labelSub.textContent = '상담 가능';
+  }
+}
+updateChatBtn();
+
+// 로그인/로그아웃 시 채팅버튼 상태 갱신 (upNav 후크)
+const _origUpNav = upNav;
+upNav = function() { _origUpNav(); updateChatBtn(); };
+
+// 3초 후 툴팁 숨기기
+setTimeout(() => {
+  const t = document.getElementById('chatTooltip');
+  if (t && !chatOpen) t.style.opacity = '0';
+}, 4000);
 </script>
 </body>
 </html>
