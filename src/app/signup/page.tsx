@@ -1,3 +1,4 @@
+$content = @'
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -57,4 +58,24 @@ export default function SignupPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">비밀번호</label>
               <input className="input-field" type="password" placeholder="영문+숫자 8자 이상"
-                value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} re
+                value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required />
+              <p className="mt-1.5 text-xs text-gray-400">영문과 숫자를 포함해 8자 이상</p>
+            </div>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">{error}</div>
+            )}
+            <button type="submit" className="btn-primary mt-2" disabled={loading}>
+              {loading ? '처리 중...' : '회원가입'}
+            </button>
+          </form>
+          <p className="mt-6 text-center text-sm text-gray-500">
+            이미 계정이 있으신가요?{' '}
+            <Link href="/login" className="text-indigo-600 font-medium hover:underline">로그인</Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+'@
+$content | Out-File -FilePath "src\app\signup\page.tsx" -Encoding UTF8
