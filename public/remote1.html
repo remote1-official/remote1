@@ -444,8 +444,8 @@ footer{background:#0f172a;padding:60px 24px 32px}
     </div>
     <div class="nav-r">
       <div id="navGuest" style="display:flex;gap:8px">
-        <button class="btn-ghost" onclick="window.top.location.href='/login'">로그인</button>
-        <button class="btn-fill" onclick="window.top.location.href='/signup'">회원가입</button>
+        <button class="btn-ghost" onclick="openModal('mdLogin')">로그인</button>
+        <button class="btn-fill" onclick="openModal('mdSignup')">회원가입</button>
       </div>
       <div id="navUser" class="upill">
         <div class="uav" id="navAv"></div>
@@ -989,7 +989,6 @@ async function doSignup(){
     user={name:n,email:e,credits:30};
     sessionStorage.setItem('r1u',JSON.stringify(user));
     closeModal('mdSignup'); upNav();
-    msg('suMsg','회원가입이 완료되었습니다! 😊','ok');
   } catch { msg('suMsg','네트워크 오류가 발생했습니다','err'); }
 }
 function doLogout(){ user=null; sessionStorage.removeItem('r1u'); upNav(); }
