@@ -46,4 +46,15 @@ export default function SignupPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">이메일</label>
-              <input className="input-field" type="email" pla
+              <input className="input-field" type="email" placeholder="you@example.com"
+                value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">휴대폰 번호</label>
+              <input className="input-field" type="tel" placeholder="010-0000-0000"
+                value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">비밀번호</label>
+              <input className="input-field" type="password" placeholder="영문+숫자 8자 이상"
+                value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} re
