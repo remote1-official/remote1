@@ -960,18 +960,21 @@ document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{ if
 function msg(id,txt,t){ document.getElementById(id).innerHTML=`<div class="${t==='ok'?'msg-ok':'msg-err'}">${txt}</div>`; }
 
 // ── AUTH
-function doLogin(){
+async function doLogin(){
   const e=document.getElementById('lg_e').value.trim();
   const p=document.getElementById('lg_p').value;
   if(!e||!p){ msg('lgMsg','이메일과 비밀번호를 입력해주세요','err'); return; }
-  const users=JSON.parse(localStorage.getItem('r1users')||'[]');
-  const f=users.find(u=>u.email===e&&u.pw===p);
-  if(!f){ msg('lgMsg','이메일 또는 비밀번호가 올바르지 않습니다','err'); return; }
-  user={name:f.name,email:f.email,credits:f.credits||30};
-  sessionStorage.setItem('r1u',JSON.stringify(user));
-  closeModal('mdLogin'); upNav();
+  try {
+    const res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e,password:p})});
+    const data=await res.json();
+    if(!res.ok){ msg('lgMsg',data.error||'로그인 실패','err'); return; }
+    user={name:data.user.name,email:data.user.email,credits:data.user.credits||30};
+    sessionStorage.setItem('r1u',JSON.stringify(user));
+    sessionStorage.setItem('accessToken',data.accessToken);
+    closeModal('mdLogin'); upNav();
+  } catch { msg('lgMsg','네트워크 오류가 발생했습니다','err'); }
 }
-function doSignup(){
+async function doSignup(){
   const n=document.getElementById('su_n').value.trim();
   const e=document.getElementById('su_e').value.trim();
   const phone=document.getElementById('su_phone').value.trim();
@@ -979,13 +982,15 @@ function doSignup(){
   if(!n||!e||!phone||!p){ msg('suMsg','모든 항목을 입력해주세요','err'); return; }
   if(!/^010-\d{4}-\d{4}$/.test(phone)){ msg('suMsg','휴대폰 번호를 올바르게 입력해주세요 (010-0000-0000)','err'); return; }
   if(p.length<8||!/[a-zA-Z]/.test(p)||!/[0-9]/.test(p)){ msg('suMsg','비밀번호는 영문+숫자 8자 이상이어야 합니다','err'); return; }
-  const users=JSON.parse(localStorage.getItem('r1users')||'[]');
-  if(users.find(u=>u.email===e)){ msg('suMsg','이미 사용 중인 이메일입니다','err'); return; }
-  users.push({name:n,email:e,phone,pw:p,credits:30});
-  localStorage.setItem('r1users',JSON.stringify(users));
-  user={name:n,email:e,credits:30};
-  sessionStorage.setItem('r1u',JSON.stringify(user));
-  closeModal('mdSignup'); upNav();
+  try {
+    const res=await fetch('/api/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,email:e,phone,password:p})});
+    const data=await res.json();
+    if(!res.ok){ msg('suMsg',data.error||'회원가입 실패','err'); return; }
+    user={name:n,email:e,credits:30};
+    sessionStorage.setItem('r1u',JSON.stringify(user));
+    closeModal('mdSignup'); upNav();
+    msg('suMsg','회원가입이 완료되었습니다! 😊','ok');
+  } catch { msg('suMsg','네트워크 오류가 발생했습니다','err'); }
 }
 function doLogout(){ user=null; sessionStorage.removeItem('r1u'); upNav(); }
 function chkLogin(){ if(!user){ openModal('mdLogin'); return; } openModal('mdCharge'); }
