@@ -1,4 +1,3 @@
-$content = @'
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -77,5 +76,3 @@ export default function SignupPage() {
     </div>
   )
 }
-'@
-$content | Out-File -FilePath "src\app\signup\page.tsx" -Encoding UTF8
