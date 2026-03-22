@@ -68,7 +68,6 @@ export async function POST(req: NextRequest) {
     return response
   } catch (error) {
     console.error('[LOGIN ERROR]', error)
-    const msg = error instanceof Error ? error.message : String(error)
-    return NextResponse.json({ error: msg }, { status: 500 })
+    return NextResponse.json({ error: '서버 오류가 발생했습니다' }, { status: 500 })
   }
 }
