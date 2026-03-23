@@ -6,7 +6,7 @@
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win --x64"
+    "build": "electron-builder --win --x64 --publish never"
   },
   "build": {
     "appId": "app.remote1.launcher",
