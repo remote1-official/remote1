@@ -292,6 +292,7 @@ function createLoginWindow() {
     resizable: false,
     frame:     false,
     center:    true,
+    show:      false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -301,6 +302,8 @@ function createLoginWindow() {
   });
 
   loginWindow.loadFile(path.join(__dirname, '../renderer/login.html'));
+
+  loginWindow.once('ready-to-show', () => { loginWindow.show(); });
 
   loginWindow.webContents.on('console-message', (_, level, message) => {
     const tag = ['verbose', 'info', 'warn', 'error'][level] || 'log';
@@ -324,6 +327,7 @@ function createMainWindow() {
     minHeight: 600,
     frame:     false,
     center:    true,
+    show:      false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -340,6 +344,7 @@ function createMainWindow() {
   });
 
   mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
     registerGlobalShortcuts();
   });
 
