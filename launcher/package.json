@@ -12,17 +12,18 @@
     "productName": "REMOTE1",
     "directories": { "output": "dist" },
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
-      "icon": "assets/icon.ico"
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "include": "scripts/nsis-install-deps.nsh"
+      "allowToChangeInstallationDirectory": true
     },
+    "files": [
+      "electron/**/*",
+      "renderer/**/*"
+    ],
     "extraResources": [
-      { "from": "scripts", "to": "scripts" },
-      { "from": "resources", "to": "resources" }
+      { "from": "resources", "to": "resources", "filter": ["**/*"] }
     ]
   },
   "devDependencies": {
