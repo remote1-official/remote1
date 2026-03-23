@@ -1,7 +1,8 @@
 {
   "name": "remote1-launcher",
   "version": "1.0.0",
-  "description": "REMOTE1 게이밍 PC 런처",
+  "description": "REMOTE1 Gaming PC Launcher",
+  "repository": "https://github.com/remote1-official/remote1",
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
