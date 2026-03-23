@@ -1,0 +1,55 @@
+name: Build REMOTE1 Launcher
+
+on:
+  push:
+    tags:
+      - 'v*'  # v1.0.0, v1.0.1 등 태그 push 시 빌드
+  workflow_dispatch:  # 수동 실행도 가능
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: launcher
+        run: npm ci
+
+      - name: Download Moonlight installer
+        working-directory: launcher/resources
+        shell: pwsh
+        run: |
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/moonlight-stream/moonlight-qt/releases/latest"
+          $asset = $release.assets | Where-Object { $_.name -match "MoonlightSetup.*\.exe$" } | Select-Object -First 1
+          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "MoonlightSetup.exe"
+          Write-Host "Downloaded: $($asset.name) -> MoonlightSetup.exe"
+
+      - name: Build Electron app
+        working-directory: launcher
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: launcher/dist/*.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact (for manual runs)
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        uses: actions/upload-artifact@v4
+        with:
+          name: REMOTE1-Launcher
+          path: launcher/dist/*.exe

@@ -1,0 +1,32 @@
+{
+  "name": "remote1-launcher",
+  "version": "1.0.0",
+  "description": "REMOTE1 게이밍 PC 런처",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "app.remote1.launcher",
+    "productName": "REMOTE1",
+    "directories": { "output": "dist" },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "scripts/nsis-install-deps.nsh"
+    },
+    "extraResources": [
+      { "from": "scripts", "to": "scripts" },
+      { "from": "resources", "to": "resources" }
+    ]
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  }
+}

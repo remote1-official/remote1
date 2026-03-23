@@ -45,6 +45,62 @@ body{font-family:var(--sans);background:#fff;color:var(--tx);line-height:1.6;fon
 .ci-l .cin{font-size:14px;font-weight:700}.ci-l .cit{font-size:12px;color:var(--tx3);font-family:var(--mono)}
 .ci-r .cip{font-size:16px;font-weight:800;color:var(--p1)}.ci-r .cib{font-size:11px;font-weight:600;color:#15803d;background:#dcfce7;padding:2px 7px;border-radius:12px;display:inline-block;margin-top:2px}
 
+/* ── MYPAGE MODAL ── */
+.md-mp{max-width:720px;padding:0;overflow:hidden;display:flex;min-height:480px}
+.mp-side{width:190px;background:var(--bg2);border-right:1px solid var(--bd);padding:28px 0;flex-shrink:0}
+.mp-side-hd{padding:0 20px 18px;font-family:var(--head);font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--p1),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.mp-tab{display:block;width:100%;text-align:left;padding:10px 20px;border:none;background:none;font-size:13px;font-weight:500;color:var(--tx2);cursor:pointer;transition:all .15s;font-family:var(--sans);border-left:3px solid transparent}
+.mp-tab:hover{background:#e0f2fe;color:var(--p1)}
+.mp-tab.on{background:linear-gradient(90deg,#dbeafe,transparent);color:var(--p1);font-weight:700;border-left-color:var(--p1)}
+.mp-body{flex:1;padding:32px;overflow-y:auto;max-height:560px}
+.mp-body h2{font-size:20px;font-weight:700;margin-bottom:4px;font-family:var(--head)}
+.mp-body .mp-sub{font-size:13px;color:var(--tx3);margin-bottom:20px}
+.mp-credit{background:linear-gradient(135deg,var(--p1),var(--p2));border-radius:14px;padding:20px 24px;color:#fff;margin-bottom:20px;position:relative;overflow:hidden}
+.mp-credit::after{content:'';position:absolute;right:-20px;top:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.1)}
+.mp-credit .mp-cr-label{font-size:12px;color:rgba(255,255,255,.8);font-weight:500}
+.mp-credit .mp-cr-val{font-size:36px;font-weight:800;font-family:var(--head);margin-top:4px}
+.mp-credit .mp-cr-val span{font-size:16px;font-weight:400;margin-left:4px;color:rgba(255,255,255,.8)}
+.mp-info-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--bd);font-size:14px}
+.mp-info-row .mp-il{color:var(--tx3);font-weight:500;font-size:13px}
+.mp-info-row .mp-ir{color:var(--tx);font-weight:600}
+.mp-info-row input{border:1.5px solid var(--bd);border-radius:8px;padding:6px 12px;font-size:13px;width:200px;font-family:var(--sans);outline:none;transition:border .15s}
+.mp-info-row input:focus{border-color:var(--p1)}
+.mp-btn{padding:10px 22px;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;font-family:var(--sans)}
+.mp-btn-primary{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff}
+.mp-btn-primary:hover{opacity:.88}
+.mp-btn-ghost{background:var(--bg3);color:var(--tx2)}
+.mp-btn-ghost:hover{background:var(--bd)}
+.mp-btn-danger{background:#fff1f2;color:#be123c;border:1px solid #fecdd3}
+.mp-btn-danger:hover{background:#ffe4e6}
+.mp-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.mp-tbl th{text-align:left;padding:10px 12px;font-weight:600;color:var(--tx3);font-size:12px;border-bottom:2px solid var(--bd);white-space:nowrap}
+.mp-tbl td{padding:10px 12px;border-bottom:1px solid var(--bd);color:var(--tx2);white-space:nowrap}
+.mp-tbl tr:hover td{background:var(--bg2)}
+.mp-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+.mp-badge-ok{background:#dcfce7;color:#15803d}
+.mp-badge-err{background:#fee2e2;color:#dc2626}
+.mp-badge-wait{background:#fef3c7;color:#d97706}
+.mp-badge-gray{background:var(--bg3);color:var(--tx3)}
+.mp-pag{display:flex;align-items:center;justify-content:space-between;margin-top:16px;font-size:12px;color:var(--tx3)}
+.mp-pag button{padding:5px 14px;border:1px solid var(--bd);border-radius:7px;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:var(--tx2);font-family:var(--sans);transition:all .15s}
+.mp-pag button:hover:not(:disabled){border-color:var(--p1);color:var(--p1)}
+.mp-pag button:disabled{opacity:.4;cursor:default}
+.mp-quick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.mp-quick button{padding:8px 16px;border:1.5px solid var(--bd);border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--tx);font-family:var(--sans);transition:all .15s}
+.mp-quick button:hover{border-color:var(--p1);background:#f0f9ff;color:var(--p1)}
+.mp-ci{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1.5px solid var(--bd);border-radius:10px;cursor:pointer;transition:all .15s;margin-bottom:10px}
+.mp-ci:hover,.mp-ci.on{border-color:var(--p1);background:#f0f9ff}
+.mp-ci.hot{border-image:linear-gradient(135deg,var(--p1),var(--p2)) 1;border-style:solid;border-width:2px;background:linear-gradient(135deg,#f0f9ff,#eef2ff);position:relative}
+.mp-ci-badge{position:absolute;top:-10px;left:14px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px}
+@media(max-width:600px){
+  .md-mp{flex-direction:column;min-height:auto}
+  .mp-side{width:100%;border-right:none;border-bottom:1px solid var(--bd);padding:16px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:0}
+  .mp-side-hd{padding:0 16px 10px;width:100%}
+  .mp-tab{width:auto;padding:8px 14px;font-size:12px;border-left:none;border-bottom:2px solid transparent}
+  .mp-tab.on{border-left:none;border-bottom-color:var(--p1);background:transparent}
+  .mp-body{padding:20px;max-height:400px}
+}
+
 /* ── NAV ── */
 nav{position:sticky;top:0;z-index:500;background:rgba(255,255,255,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd)}
 .nav-w{max-width:1160px;margin:0 auto;padding:0 24px;height:66px;display:flex;align-items:center;justify-content:space-between;gap:20px}
@@ -170,7 +226,7 @@ section{padding:84px 24px}
 .how-desc{font-size:13px;color:var(--tx2);line-height:1.75}
 
 /* ── PRICING ── */
-.price-g{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.price-g{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
 .price-c{background:#fff;border:1.5px solid var(--bd);border-radius:20px;padding:34px 30px;transition:all .2s}
 .price-c.hot{border-color:var(--p1);background:linear-gradient(170deg,#f0f9ff,#f5f3ff);position:relative}
 .price-hot{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:11px;font-weight:700;padding:4px 18px;border-radius:20px;white-space:nowrap;font-family:var(--mono)}
@@ -266,7 +322,8 @@ footer{background:#0f172a;padding:60px 24px 32px}
   .hero-inner,.dl-wrap,.notice-g,.ft-top{grid-template-columns:1fr}
   .hero-visual{display:none}
   .hero h1{font-size:36px}
-  .feat-g,.how-g,.price-g,.rv-g{grid-template-columns:1fr}
+  .feat-g,.how-g,.rv-g{grid-template-columns:1fr}
+  .price-g{grid-template-columns:repeat(2,1fr)}
   .frow{grid-template-columns:1fr}
   .nav-links{display:none}
   .how-c::after{display:none}
@@ -283,8 +340,8 @@ footer{background:#0f172a;padding:60px 24px 32px}
     <button class="md-x" onclick="closeModal('mdLogin')">×</button>
     <h2>로그인</h2><p class="md-sub">리모트원에 오신 것을 환영합니다</p>
     <div id="lgMsg"></div>
-    <label class="md-label">이메일</label>
-    <input class="md-input" type="email" id="lg_e" placeholder="you@example.com"/>
+    <label class="md-label">아이디</label>
+    <input class="md-input" type="text" id="lg_u" placeholder="아이디 입력"/>
     <label class="md-label">비밀번호</label>
     <input class="md-input" type="password" id="lg_p" placeholder="비밀번호 입력"/>
     <button class="md-btn" onclick="doLogin()">로그인</button>
@@ -303,12 +360,26 @@ footer{background:#0f172a;padding:60px 24px 32px}
     <button class="md-x" onclick="closeModal('mdSignup')">×</button>
     <h2>회원가입</h2><p class="md-sub">가입하고 무료 30분 크레딧을 받으세요!</p>
     <div id="suMsg"></div>
-    <label class="md-label">이름</label>
-    <input class="md-input" type="text" id="su_n" placeholder="홍길동"/>
+    <label class="md-label">아이디</label>
+    <input class="md-input" type="text" id="su_u" placeholder="영문+숫자+_ 4자 이상"/>
     <label class="md-label">이메일</label>
     <input class="md-input" type="email" id="su_e" placeholder="you@example.com"/>
     <label class="md-label">휴대폰 번호</label>
-    <input class="md-input" type="tel" id="su_phone" placeholder="010-0000-0000" oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/^(\d{3})(\d{4})(\d{4})$/,'$1-$2-$3')"/>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input class="md-input" type="tel" id="su_phone" placeholder="01012345678" style="margin-bottom:0;flex:1" oninput="this.value=this.value.replace(/[^0-9]/g,'')"/>
+      <button id="su_smsBtn" onclick="sendSignupSms()" style="padding:0 14px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--sans)">인증번호 발송</button>
+    </div>
+    <div id="su_codeRow" style="display:none;margin-bottom:14px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="position:relative;flex:1">
+          <input class="md-input" type="text" id="su_code" placeholder="인증번호 6자리" maxlength="6" style="margin-bottom:0;padding-right:52px;letter-spacing:2px;font-family:var(--mono)" oninput="this.value=this.value.replace(/[^0-9]/g,'')"/>
+          <span id="su_timer" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;font-family:var(--mono);color:var(--p1)"></span>
+        </div>
+        <button onclick="verifySignupSms()" style="padding:0 14px;height:44px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--sans)">확인</button>
+      </div>
+      <div id="su_verified" style="display:none;color:#15803d;font-size:12px;font-weight:600;margin-top:6px">✓ 인증 완료</div>
+      <div id="su_testNote" style="display:none;color:#eab308;font-size:12px;font-weight:600;margin-top:6px">테스트 모드: 인증번호 123456</div>
+    </div>
     <label class="md-label">비밀번호</label>
     <input class="md-input" type="password" id="su_p" placeholder="영문+숫자 8자 이상"/>
     <div class="md-hint">영문과 숫자를 포함해 8자 이상</div>
@@ -400,19 +471,100 @@ footer{background:#0f172a;padding:60px 24px 32px}
   <div class="md">
     <button class="md-x" onclick="closeModal('mdCharge')">×</button>
     <h2>시간 충전</h2><p class="md-sub">충전할 패키지를 선택하세요</p>
-    <div class="ci" onclick="selCharge(this,'스타터','11,000원')">
+    <div id="mdChargeCredit" style="display:none;background:linear-gradient(135deg,var(--p1),var(--p2));border-radius:12px;padding:14px 18px;color:#fff;margin-bottom:16px">
+      <div style="font-size:12px;color:rgba(255,255,255,.8)">현재 잔여 시간</div>
+      <div id="mdChargeCreditVal" style="font-size:22px;font-weight:800;font-family:var(--head);margin-top:2px">-</div>
+    </div>
+    <div class="ci" onclick="selCharge(this,'hour10')">
       <div class="ci-l"><div class="cin">스타터</div><div class="cit">10시간 이용권</div></div>
-      <div class="ci-r"><div class="cip">11,000원</div></div>
+      <div class="ci-r"><div class="cip">11,000원</div><div style="font-size:11px;color:var(--tx3)">1,100원/시간</div></div>
     </div>
-    <div class="ci on" onclick="selCharge(this,'스탠다드','30,000원')">
-      <div class="ci-l"><div class="cin">스탠다드</div><div class="cit">30시간 + 보너스 1시간</div></div>
-      <div class="ci-r"><div class="cip">30,000원</div><div class="cib">+3% 보너스</div></div>
+    <div class="ci on" onclick="selCharge(this,'hour30')" style="border-color:var(--p1);background:#f0f9ff;position:relative">
+      <div style="position:absolute;top:-10px;left:14px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px">🔥 핫딜! BEST 추천</div>
+      <div class="ci-l"><div class="cin">스탠다드</div><div class="cit">30시간 이용권</div></div>
+      <div class="ci-r"><div class="cip">30,000원</div><div style="font-size:11px;color:var(--tx3)">1,000원/시간</div></div>
     </div>
-    <div class="ci" onclick="selCharge(this,'프리미엄','100,000원')">
-      <div class="ci-l"><div class="cin">프리미엄</div><div class="cit">100시간 + 보너스 10시간</div></div>
-      <div class="ci-r"><div class="cip">100,000원</div><div class="cib">+10% 보너스</div></div>
+    <div class="ci" onclick="selCharge(this,'hour50')">
+      <div class="ci-l"><div class="cin">프리미엄</div><div class="cit">50시간 이용권</div></div>
+      <div class="ci-r"><div class="cip">48,000원</div><div style="font-size:11px;color:var(--tx3)">960원/시간</div></div>
     </div>
-    <button class="md-btn" onclick="doCharge()">토스페이먼츠로 결제하기</button>
+    <div class="ci" onclick="selCharge(this,'hour100')">
+      <div class="ci-l"><div class="cin">프로</div><div class="cit">100시간 이용권</div></div>
+      <div class="ci-r"><div class="cip">95,000원</div><div style="font-size:11px;color:var(--tx3)">950원/시간</div></div>
+    </div>
+    <button class="md-btn" onclick="doCharge()">결제하기</button>
+    <p style="font-size:11px;color:var(--tx3);text-align:center;margin-top:10px">결제는 토스페이먼츠를 통해 안전하게 처리됩니다.</p>
+  </div>
+</div>
+
+<!-- ══════════════ MYPAGE MODAL ══════════════ -->
+<div class="ov" id="mdMypage">
+  <div class="md md-mp">
+    <button class="md-x" onclick="closeModal('mdMypage')" style="z-index:2">×</button>
+    <div class="mp-side">
+      <div class="mp-side-hd">REMOTE1</div>
+      <button class="mp-tab on" onclick="mpTab(this,'mp-info')">내 정보</button>
+      <button class="mp-tab" onclick="mpTab(this,'mp-history')">사용 기록</button>
+      <button class="mp-tab" onclick="mpTab(this,'mp-schedule')">예약 종료</button>
+      <button class="mp-tab" onclick="mpTab(this,'mp-charge')">시간 충전</button>
+      <button class="mp-tab" onclick="mpTab(this,'mp-payments')">결제 및 충전 목록</button>
+    </div>
+    <div class="mp-body">
+
+      <!-- ── 내 정보 ── -->
+      <div id="mp-info">
+        <h2>내 정보</h2><p class="mp-sub">계정 정보를 확인하고 수정하세요</p>
+        <div id="mpInfoMsg"></div>
+        <div class="mp-credit">
+          <div class="mp-cr-label">잔여 이용 시간</div>
+          <div class="mp-cr-val" id="mpCreditVal">-<span>분</span></div>
+        </div>
+        <div id="mpInfoRows"></div>
+        <div id="mpInfoEdit" style="display:none;margin-top:16px">
+          <div class="mp-info-row"><span class="mp-il">이메일</span><input id="mpEditEmail" type="email"/></div>
+          <div class="mp-info-row"><span class="mp-il">휴대폰</span><input id="mpEditPhone" type="tel"/></div>
+          <div style="margin-top:14px;display:flex;gap:8px">
+            <button class="mp-btn mp-btn-primary" onclick="mpSaveInfo()">저장</button>
+            <button class="mp-btn mp-btn-ghost" onclick="mpCancelEdit()">취소</button>
+          </div>
+        </div>
+        <div id="mpInfoViewBtn" style="margin-top:14px">
+          <button class="mp-btn mp-btn-primary" onclick="mpStartEdit()">정보 수정</button>
+        </div>
+      </div>
+
+      <!-- ── 사용 기록 ── -->
+      <div id="mp-history" style="display:none">
+        <h2>사용 기록</h2><p class="mp-sub">PC 이용 내역을 확인하세요</p>
+        <div id="mpHistoryContent"><div style="text-align:center;color:var(--tx3);padding:40px;font-size:13px">불러오는 중...</div></div>
+      </div>
+
+      <!-- ── 예약 종료 ── -->
+      <div id="mp-schedule" style="display:none">
+        <h2>예약 종료</h2><p class="mp-sub">세션 종료 시간을 예약하세요</p>
+        <div id="mpSchedMsg"></div>
+        <div id="mpSchedContent"><div style="text-align:center;color:var(--tx3);padding:40px;font-size:13px">불러오는 중...</div></div>
+      </div>
+
+      <!-- ── 시간 충전 ── -->
+      <div id="mp-charge" style="display:none">
+        <h2>시간 충전</h2><p class="mp-sub">충전할 패키지를 선택하세요</p>
+        <div class="mp-credit" style="padding:14px 20px;margin-bottom:16px">
+          <div class="mp-cr-label">현재 잔여 시간</div>
+          <div class="mp-cr-val" id="mpChargeCreditVal" style="font-size:24px">-<span>분</span></div>
+        </div>
+        <div id="mpChargeList"></div>
+        <button class="mp-btn mp-btn-primary" style="width:100%;padding:13px;font-size:15px;margin-top:6px" onclick="mpDoCharge()">결제하기</button>
+        <p style="font-size:11px;color:var(--tx3);text-align:center;margin-top:10px">결제는 토스페이먼츠를 통해 안전하게 처리됩니다.</p>
+      </div>
+
+      <!-- ── 결제 및 충전 목록 ── -->
+      <div id="mp-payments" style="display:none">
+        <h2>결제 및 충전 목록</h2><p class="mp-sub">결제 내역을 확인하세요</p>
+        <div id="mpPaymentsContent"><div style="text-align:center;color:var(--tx3);padding:40px;font-size:13px">불러오는 중...</div></div>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -451,7 +603,8 @@ footer{background:#0f172a;padding:60px 24px 32px}
         <div class="uav" id="navAv"></div>
         <span class="unm" id="navNm"></span>
         <span class="ucr" id="navCr">0분</span>
-        <button class="btn-ghost" style="font-size:12px;padding:6px 13px" onclick="openModal('mdCharge')">충전</button>
+        <button class="btn-ghost" style="font-size:12px;padding:6px 13px" onclick="openMypage()">마이페이지</button>
+        <button class="btn-ghost" style="font-size:12px;padding:6px 13px" onclick="openChargeModal()">충전</button>
         <button class="uout" onclick="doLogout()">로그아웃</button>
       </div>
     </div>
@@ -671,25 +824,33 @@ footer{background:#0f172a;padding:60px 24px 32px}
         <div class="pname">STARTER</div>
         <div class="pamount">₩11,000</div>
         <div class="ptime">10시간 이용권</div>
-        <div style="height:28px"></div>
+        <div style="font-size:13px;color:var(--tx3);margin-top:4px">시간당 1,100원</div>
         <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 30일</li></ul>
         <button class="pbtn" onclick="chkLogin()">구매하기</button>
       </div>
       <div class="price-c hot">
-        <div class="price-hot">🔥 가장 인기</div>
+        <div class="price-hot">🔥 핫딜! BEST 추천</div>
         <div class="pname">STANDARD</div>
         <div class="pamount">₩30,000</div>
         <div class="ptime">30시간 이용권</div>
-        <div class="pbonus">+보너스 1시간 (3%)</div>
-        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 30일</li><li>보너스 시간 지급</li></ul>
+        <div style="font-size:13px;color:var(--p1);font-weight:600;margin-top:4px">시간당 1,000원</div>
+        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 30일</li><li>가장 인기있는 패키지</li></ul>
         <button class="pbtn" onclick="chkLogin()">구매하기</button>
       </div>
       <div class="price-c">
         <div class="pname">PREMIUM</div>
-        <div class="pamount">₩100,000</div>
+        <div class="pamount">₩48,000</div>
+        <div class="ptime">50시간 이용권</div>
+        <div style="font-size:13px;color:var(--tx3);margin-top:4px">시간당 960원</div>
+        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 60일</li><li>합리적인 가성비</li></ul>
+        <button class="pbtn" onclick="chkLogin()">구매하기</button>
+      </div>
+      <div class="price-c">
+        <div class="pname">PRO</div>
+        <div class="pamount">₩95,000</div>
         <div class="ptime">100시간 이용권</div>
-        <div class="pbonus">+보너스 10시간 (10%)</div>
-        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 90일</li><li>보너스 10시간 지급</li><li>우선 좌석 배정</li></ul>
+        <div style="font-size:13px;color:var(--tx3);margin-top:4px">시간당 950원</div>
+        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 90일</li><li>최저 시간당 가격</li><li>우선 좌석 배정</li></ul>
         <button class="pbtn" onclick="chkLogin()">구매하기</button>
       </div>
     </div>
@@ -711,10 +872,10 @@ footer{background:#0f172a;padding:60px 24px 32px}
           <span class="dl-tag">약 48MB</span>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <button class="btn-dl">
+          <a href="https://github.com/remote1-official/remote1/releases/latest" target="_blank" class="btn-dl" style="text-decoration:none">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Windows 다운로드
-          </button>
+          </a>
           <button class="btn-dl-ghost">macOS (준비중)</button>
         </div>
       </div>
@@ -930,7 +1091,6 @@ footer{background:#0f172a;padding:60px 24px 32px}
 // ── STATE
 let user = JSON.parse(sessionStorage.getItem('r1u')||'null');
 let selStar = 5;
-let selChargePkg = {n:'스탠다드',p:'30,000원'};
 
 // ── NAV UPDATE
 function upNav(){
@@ -939,8 +1099,9 @@ function upNav(){
   if(user){
     g.style.display='none';
     u.style.display='flex';
-    document.getElementById('navAv').textContent=user.name[0].toUpperCase();
-    document.getElementById('navNm').textContent=user.name+'님';
+    const uname=user.username||user.name||'U';
+    document.getElementById('navAv').textContent=uname[0].toUpperCase();
+    document.getElementById('navNm').textContent=uname+'님';
     document.getElementById('navCr').textContent=(user.credits||30)+'분';
   } else {
     g.style.display='flex';
@@ -961,49 +1122,360 @@ function msg(id,txt,t){ document.getElementById(id).innerHTML=`<div class="${t==
 
 // ── AUTH
 async function doLogin(){
-  const e=document.getElementById('lg_e').value.trim();
+  const u=document.getElementById('lg_u').value.trim();
   const p=document.getElementById('lg_p').value;
-  if(!e||!p){ msg('lgMsg','이메일과 비밀번호를 입력해주세요','err'); return; }
+  if(!u||!p){ msg('lgMsg','아이디와 비밀번호를 입력해주세요','err'); return; }
   try {
-    const res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e,password:p})});
+    const res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
     const data=await res.json();
     if(!res.ok){ msg('lgMsg',data.error||'로그인 실패','err'); return; }
-    user={name:data.user.name,email:data.user.email,credits:data.user.credits||30};
+    user={username:data.user.username,email:data.user.email,credits:data.user.credits||0};
     sessionStorage.setItem('r1u',JSON.stringify(user));
     sessionStorage.setItem('accessToken',data.accessToken);
+    sessionStorage.setItem('user',JSON.stringify(data.user));
     closeModal('mdLogin'); upNav();
   } catch { msg('lgMsg','네트워크 오류가 발생했습니다','err'); }
 }
+// ── SIGNUP SMS
+let suSmsToken='', suPhoneVerified=false, suSmsInterval=null;
+async function sendSignupSms(){
+  const phone=document.getElementById('su_phone').value.replace(/[^0-9]/g,'');
+  if(!/^01[0-9]{8,9}$/.test(phone)){ msg('suMsg','올바른 휴대폰 번호를 입력해주세요','err'); return; }
+  const btn=document.getElementById('su_smsBtn');
+  btn.disabled=true; btn.textContent='발송 중...';
+  try {
+    const res=await fetch('/api/auth/sms?action=send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone})});
+    const data=await res.json();
+    if(!res.ok){ msg('suMsg',data.error||'SMS 발송 실패','err'); btn.disabled=false; btn.textContent='인증번호 발송'; return; }
+    suSmsToken=data.token; suPhoneVerified=false;
+    document.getElementById('su_codeRow').style.display='block';
+    document.getElementById('su_verified').style.display='none';
+    document.getElementById('su_code').value='';
+    if(data.testMode){ document.getElementById('su_testNote').style.display='block'; } else { document.getElementById('su_testNote').style.display='none'; }
+    btn.textContent='재발송'; btn.disabled=false;
+    let secs=180;
+    const timerEl=document.getElementById('su_timer');
+    timerEl.style.color='var(--p1)';
+    if(suSmsInterval) clearInterval(suSmsInterval);
+    suSmsInterval=setInterval(()=>{
+      secs--;
+      const m=Math.floor(secs/60), s=secs%60;
+      timerEl.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      if(secs<=0){ clearInterval(suSmsInterval); timerEl.textContent='만료'; timerEl.style.color='#dc2626'; }
+    },1000);
+  } catch { msg('suMsg','네트워크 오류가 발생했습니다','err'); btn.disabled=false; btn.textContent='인증번호 발송'; }
+}
+async function verifySignupSms(){
+  const code=document.getElementById('su_code').value.trim();
+  if(code.length!==6){ msg('suMsg','6자리 인증번호를 입력해주세요','err'); return; }
+  try {
+    const res=await fetch('/api/auth/sms?action=verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:suSmsToken,code})});
+    const data=await res.json();
+    if(!res.ok){ msg('suMsg',data.error||'인증 실패','err'); return; }
+    suPhoneVerified=true;
+    if(suSmsInterval) clearInterval(suSmsInterval);
+    document.getElementById('su_timer').textContent='';
+    document.getElementById('su_verified').style.display='block';
+    document.getElementById('su_phone').disabled=true;
+    document.getElementById('su_smsBtn').disabled=true;
+    document.getElementById('su_code').disabled=true;
+    msg('suMsg','','ok');
+  } catch { msg('suMsg','네트워크 오류가 발생했습니다','err'); }
+}
 async function doSignup(){
-  const n=document.getElementById('su_n').value.trim();
+  const username=document.getElementById('su_u').value.trim();
   const e=document.getElementById('su_e').value.trim();
-  const phone=document.getElementById('su_phone').value.trim();
+  const phone=document.getElementById('su_phone').value.replace(/[^0-9]/g,'');
   const p=document.getElementById('su_p').value;
-  if(!n||!e||!phone||!p){ msg('suMsg','모든 항목을 입력해주세요','err'); return; }
-  if(!/^010-\d{4}-\d{4}$/.test(phone)){ msg('suMsg','휴대폰 번호를 올바르게 입력해주세요 (010-0000-0000)','err'); return; }
+  if(!username||!e||!phone||!p){ msg('suMsg','모든 항목을 입력해주세요','err'); return; }
+  if(username.length<4||!/^[a-zA-Z0-9_]+$/.test(username)){ msg('suMsg','아이디는 영문+숫자+_ 4자 이상이어야 합니다','err'); return; }
+  // if(!suPhoneVerified){ msg('suMsg','휴대폰 인증이 필요합니다','err'); return; }
   if(p.length<8||!/[a-zA-Z]/.test(p)||!/[0-9]/.test(p)){ msg('suMsg','비밀번호는 영문+숫자 8자 이상이어야 합니다','err'); return; }
   try {
-    const res=await fetch('/api/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,email:e,phone,password:p})});
+    const res=await fetch('/api/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,name:username,email:e,phone,password:p,phoneVerified:true,agreeTerms:true,agreePrivacy:true})});
     const data=await res.json();
     if(!res.ok){ msg('suMsg',data.error||'회원가입 실패','err'); return; }
-    user={name:n,email:e,credits:30};
-    sessionStorage.setItem('r1u',JSON.stringify(user));
-    closeModal('mdSignup'); upNav();
+    msg('suMsg','회원가입이 완료되었습니다! 로그인해주세요','ok');
+    setTimeout(()=>{ closeModal('mdSignup'); openModal('mdLogin'); },1500);
   } catch { msg('suMsg','네트워크 오류가 발생했습니다','err'); }
 }
 function doLogout(){ user=null; sessionStorage.removeItem('r1u'); upNav(); }
-function chkLogin(){ if(!user){ openModal('mdLogin'); return; } openModal('mdCharge'); }
+function chkLogin(){ if(!user){ openModal('mdLogin'); return; } openChargeModal(); }
 
 // ── CHARGE
-function selCharge(el,n,p){
-  document.querySelectorAll('.ci').forEach(i=>i.classList.remove('on'));
+let selChargePkgId='hour30';
+function selCharge(el,pkgId){
+  document.querySelectorAll('#mdCharge .ci').forEach(i=>i.classList.remove('on'));
   el.classList.add('on');
-  selChargePkg={n,p};
+  selChargePkgId=pkgId;
 }
-function doCharge(){
+function openChargeModal(){
+  if(!user){openModal('mdLogin');return;}
+  // 잔여 크레딧 표시
+  const c=user.credits||0;
+  const h=Math.floor(c/60),m=c%60;
+  document.getElementById('mdChargeCredit').style.display='block';
+  document.getElementById('mdChargeCreditVal').textContent=h+'시간 '+m+'분';
+  openModal('mdCharge');
+}
+async function doCharge(){
   if(!user){ closeModal('mdCharge'); openModal('mdLogin'); return; }
-  alert(`[테스트 모드]\n${selChargePkg.n} (${selChargePkg.p}) 결제창\n실제 서비스에서는 토스페이먼츠 결제창이 열립니다.`);
-  closeModal('mdCharge');
+  try{
+    const tk=sessionStorage.getItem('accessToken');
+    const res=await fetch('/api/payment/create-order',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tk},body:JSON.stringify({packageId:selChargePkgId})});
+    const order=await res.json();
+    if(!res.ok){alert(order.error||'주문 생성 실패');return;}
+    const{loadTossPayments}=await import('https://js.tosspayments.com/v1/payment');
+    const tp=await loadTossPayments(order.clientKey);
+    await tp.requestPayment('카드',{amount:order.amount,orderId:order.orderId,orderName:order.orderName,customerEmail:user?.email,successUrl:location.origin+'/api/payment/callback',failUrl:location.origin+'/payment/fail'});
+  }catch(e){console.error(e);}
+}
+
+// ── MYPAGE
+let mpUserInfo=null, mpHistPage=1, mpHistTotal=0, mpPayPage=1, mpPayTotal=0, mpSchedSession=null, mpSelPkg='hour30';
+const MP_LIMIT=8;
+const MP_PKGS=[
+  {id:'hour10',name:'스타터',desc:'10시간 이용권',price:11000,hours:10,hot:false},
+  {id:'hour30',name:'스탠다드',desc:'30시간 이용권',price:30000,hours:30,hot:true,badge:'🔥 핫딜! BEST 추천'},
+  {id:'hour50',name:'프리미엄',desc:'50시간 이용권',price:48000,hours:50,hot:false},
+  {id:'hour100',name:'프로',desc:'100시간 이용권',price:95000,hours:100,hot:false},
+];
+function mpFetch(url,opt={}){
+  const tk=sessionStorage.getItem('accessToken');
+  return fetch(url,{...opt,headers:{'Content-Type':'application/json','Authorization':'Bearer '+tk,...(opt.headers||{})}});
+}
+function fmtDt(dt){return new Date(dt).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
+function fmtPrice(n){return n.toLocaleString('ko-KR')+'원'}
+function fmtCredits(c){const h=Math.floor(c/60),m=c%60;return h>0?h+'시간'+(m>0?' '+m+'분':''):m+'분'}
+
+function mpTab(btn,id){
+  document.querySelectorAll('.mp-tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  ['mp-info','mp-history','mp-schedule','mp-charge','mp-payments'].forEach(s=>{
+    document.getElementById(s).style.display=s===id?'block':'none';
+  });
+  if(id==='mp-info') mpLoadInfo();
+  if(id==='mp-history'){mpHistPage=1;mpLoadHistory();}
+  if(id==='mp-schedule') mpLoadSchedule();
+  if(id==='mp-charge') mpLoadCharge();
+  if(id==='mp-payments'){mpPayPage=1;mpLoadPayments();}
+}
+function openMypage(){
+  if(!user){openModal('mdLogin');return;}
+  openModal('mdMypage');
+  mpLoadInfo();
+}
+
+// ── Info
+async function mpLoadInfo(){
+  try{
+    const res=await mpFetch('/api/mypage/info');
+    const data=await res.json();
+    if(!res.ok) return;
+    mpUserInfo=data.user;
+    const c=data.user.credits||0;
+    const h=Math.floor(c/60),m=c%60;
+    document.getElementById('mpCreditVal').innerHTML=h+'<span>시간</span> '+m+'<span>분</span>';
+    document.getElementById('mpInfoRows').innerHTML=`
+      <div class="mp-info-row"><span class="mp-il">아이디</span><span class="mp-ir">${data.user.username||'-'}</span></div>
+      <div class="mp-info-row"><span class="mp-il">이메일</span><span class="mp-ir">${data.user.email}</span></div>
+      <div class="mp-info-row"><span class="mp-il">휴대폰</span><span class="mp-ir">${data.user.phone||'-'}</span></div>
+      <div class="mp-info-row"><span class="mp-il">가입일</span><span class="mp-ir">${new Date(data.user.createdAt).toLocaleDateString('ko-KR')}</span></div>
+    `;
+    document.getElementById('mpInfoEdit').style.display='none';
+    document.getElementById('mpInfoViewBtn').style.display='block';
+  }catch{}
+}
+function mpStartEdit(){
+  if(!mpUserInfo)return;
+  document.getElementById('mpEditEmail').value=mpUserInfo.email;
+  document.getElementById('mpEditPhone').value=mpUserInfo.phone||'';
+  document.getElementById('mpInfoEdit').style.display='block';
+  document.getElementById('mpInfoViewBtn').style.display='none';
+}
+function mpCancelEdit(){
+  document.getElementById('mpInfoEdit').style.display='none';
+  document.getElementById('mpInfoViewBtn').style.display='block';
+  document.getElementById('mpInfoMsg').innerHTML='';
+}
+async function mpSaveInfo(){
+  const email=document.getElementById('mpEditEmail').value.trim();
+  const phone=document.getElementById('mpEditPhone').value.trim();
+  try{
+    const res=await mpFetch('/api/mypage/info',{method:'PUT',body:JSON.stringify({email,phone})});
+    const data=await res.json();
+    if(!res.ok){document.getElementById('mpInfoMsg').innerHTML='<div class="msg-err">'+(data.error||'저장 실패')+'</div>';return;}
+    document.getElementById('mpInfoMsg').innerHTML='<div class="msg-ok">정보가 수정되었습니다.</div>';
+    mpLoadInfo();
+    setTimeout(()=>{document.getElementById('mpInfoMsg').innerHTML='';},2500);
+  }catch{document.getElementById('mpInfoMsg').innerHTML='<div class="msg-err">네트워크 오류</div>';}
+}
+
+// ── History
+async function mpLoadHistory(){
+  const el=document.getElementById('mpHistoryContent');
+  el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:30px;font-size:13px">불러오는 중...</div>';
+  try{
+    const res=await mpFetch('/api/mypage/sessions?page='+mpHistPage+'&limit='+MP_LIMIT);
+    const data=await res.json();
+    if(!res.ok)return;
+    const ss=data.sessions||[];mpHistTotal=data.total||0;
+    const tp=Math.max(1,Math.ceil(mpHistTotal/MP_LIMIT));
+    if(ss.length===0){el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:40px;font-size:13px">사용 기록이 없습니다</div>';return;}
+    const statusMap={ACTIVE:['이용 중','mp-badge-ok'],ENDED:['종료','mp-badge-gray'],INTERRUPTED:['비정상 종료','mp-badge-err']};
+    let html='<table class="mp-tbl"><thead><tr><th>시작</th><th>종료</th><th>이용시간</th><th>상태</th><th></th></tr></thead><tbody>';
+    ss.forEach(s=>{
+      const st=statusMap[s.status]||['–','mp-badge-gray'];
+      const dur=s.endedAt?fmtCredits(Math.round((new Date(s.endedAt)-new Date(s.startedAt))/60000)):'진행 중';
+      html+=`<tr><td>${fmtDt(s.startedAt)}</td><td>${s.endedAt?fmtDt(s.endedAt):'-'}</td><td>${dur}</td><td><span class="mp-badge ${st[1]}">${st[0]}</span></td>`;
+      html+=`<td>${s.status==='ACTIVE'?'<button class="mp-btn mp-btn-danger" style="padding:4px 10px;font-size:11px" onclick="mpDisconnect(\''+s.id+'\')">종료</button>':''}</td></tr>`;
+    });
+    html+='</tbody></table>';
+    html+=`<div class="mp-pag"><span>총 ${mpHistTotal}건</span><div style="display:flex;gap:6px"><button onclick="mpHistPage--;mpLoadHistory()" ${mpHistPage<=1?'disabled':''}>이전</button><span style="padding:5px 8px">${mpHistPage}/${tp}</span><button onclick="mpHistPage++;mpLoadHistory()" ${mpHistPage>=tp?'disabled':''}>다음</button></div></div>`;
+    el.innerHTML=html;
+  }catch{el.innerHTML='<div class="msg-err">불러오기 실패</div>';}
+}
+async function mpDisconnect(sid){
+  if(!confirm('세션을 종료하시겠습니까?'))return;
+  await mpFetch('/api/session/disconnect',{method:'POST',body:JSON.stringify({sessionId:sid})});
+  mpLoadHistory();
+}
+
+// ── Schedule
+async function mpLoadSchedule(){
+  const el=document.getElementById('mpSchedContent');
+  el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:30px;font-size:13px">불러오는 중...</div>';
+  try{
+    const res=await mpFetch('/api/mypage/schedule');
+    const data=await res.json();
+    if(!res.ok)return;
+    const s=data.session;mpSchedSession=s;
+    const hist=data.history||[];
+    if(!s){el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:40px;font-size:13px">현재 활성 세션이 없습니다.</div>';return;}
+    let html=`<div style="background:var(--bg2);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:13px">`;
+    html+=`<span style="color:var(--tx3)">PC</span> <strong>${s.machine.name}</strong> &nbsp; `;
+    html+=`<span style="color:var(--tx3)">시작</span> <strong>${fmtDt(s.startedAt)}</strong>`;
+    if(s.scheduledEndAt) html+=` &nbsp; <span style="color:var(--tx3)">예약종료</span> <strong style="color:var(--p1)">${fmtDt(s.scheduledEndAt)}</strong>`;
+    html+=`</div>`;
+    html+=`<label style="font-size:13px;font-weight:500;color:var(--tx2);display:block;margin-bottom:8px">빠른 선택</label>`;
+    html+=`<div class="mp-quick">`;
+    [60,120,180,240,300].forEach(m=>{
+      html+=`<button onclick="mpSetQuickMin(${m})">${m>=60?m/60+'시간':m+'분'} 후</button>`;
+    });
+    html+=`</div>`;
+    html+=`<label style="font-size:13px;font-weight:500;color:var(--tx2);display:block;margin-bottom:8px">직접 입력 (분)</label>`;
+    html+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">`;
+    html+=`<input id="mpSchedMin" type="number" min="1" placeholder="분 단위 입력" style="width:120px;padding:8px 12px;border:1.5px solid var(--bd);border-radius:8px;font-size:13px;font-family:var(--sans);outline:none" oninput="mpPreviewEnd()"/>`;
+    html+=`<span style="font-size:13px;color:var(--tx3)">분 후 종료</span></div>`;
+    html+=`<div id="mpSchedPreview" style="font-size:12px;color:var(--p1);margin-bottom:16px"></div>`;
+    html+=`<div style="display:flex;gap:8px">`;
+    html+=`<button class="mp-btn mp-btn-primary" onclick="mpSaveSched()">예약 설정</button>`;
+    if(s.scheduledEndAt) html+=`<button class="mp-btn mp-btn-danger" onclick="mpCancelSched()">예약 취소</button>`;
+    html+=`</div>`;
+    if(hist.length>0){
+      html+=`<h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:var(--tx)">예약 기록</h3>`;
+      html+=`<table class="mp-tbl"><thead><tr><th>세션 시작</th><th>예약 종료</th><th>실제 종료</th><th>상태</th></tr></thead><tbody>`;
+      hist.forEach(r=>{
+        html+=`<tr><td>${fmtDt(r.startedAt)}</td><td>${r.scheduledEndAt?fmtDt(r.scheduledEndAt):'-'}</td><td>${r.endedAt?fmtDt(r.endedAt):'-'}</td><td>${r.status==='ACTIVE'?'<span class="mp-badge mp-badge-ok">진행 중</span>':'<span class="mp-badge mp-badge-gray">종료</span>'}</td></tr>`;
+      });
+      html+=`</tbody></table>`;
+    }
+    el.innerHTML=html;
+  }catch{el.innerHTML='<div class="msg-err">불러오기 실패</div>';}
+}
+function mpSetQuickMin(m){
+  const inp=document.getElementById('mpSchedMin');
+  if(inp){inp.value=m;mpPreviewEnd();}
+}
+function mpPreviewEnd(){
+  const inp=document.getElementById('mpSchedMin');
+  const pv=document.getElementById('mpSchedPreview');
+  const m=parseInt(inp?.value);
+  if(m>0){
+    const d=new Date(Date.now()+m*60000);
+    pv.textContent='예약 종료 시간: '+fmtDt(d.toISOString());
+  }else{pv.textContent='';}
+}
+async function mpSaveSched(){
+  if(!mpSchedSession)return;
+  const m=parseInt(document.getElementById('mpSchedMin')?.value);
+  if(!m||m<=0){document.getElementById('mpSchedMsg').innerHTML='<div class="msg-err">시간을 입력해주세요</div>';return;}
+  const endAt=new Date(Date.now()+m*60000).toISOString();
+  try{
+    const res=await mpFetch('/api/mypage/schedule',{method:'POST',body:JSON.stringify({sessionId:mpSchedSession.id,scheduledEndAt:endAt})});
+    const data=await res.json();
+    if(!res.ok){document.getElementById('mpSchedMsg').innerHTML='<div class="msg-err">'+(data.error||'설정 실패')+'</div>';return;}
+    document.getElementById('mpSchedMsg').innerHTML='<div class="msg-ok">예약 종료가 설정되었습니다.</div>';
+    mpLoadSchedule();
+    setTimeout(()=>{document.getElementById('mpSchedMsg').innerHTML='';},2500);
+  }catch{document.getElementById('mpSchedMsg').innerHTML='<div class="msg-err">네트워크 오류</div>';}
+}
+async function mpCancelSched(){
+  if(!mpSchedSession)return;
+  try{
+    const res=await mpFetch('/api/mypage/schedule?sessionId='+mpSchedSession.id,{method:'DELETE'});
+    const data=await res.json();
+    if(!res.ok){document.getElementById('mpSchedMsg').innerHTML='<div class="msg-err">'+(data.error||'취소 실패')+'</div>';return;}
+    document.getElementById('mpSchedMsg').innerHTML='<div class="msg-ok">예약이 취소되었습니다.</div>';
+    mpLoadSchedule();
+    setTimeout(()=>{document.getElementById('mpSchedMsg').innerHTML='';},2500);
+  }catch{document.getElementById('mpSchedMsg').innerHTML='<div class="msg-err">네트워크 오류</div>';}
+}
+
+// ── Charge
+function mpLoadCharge(){
+  const c=(mpUserInfo?.credits||user?.credits||0);
+  const h=Math.floor(c/60),m=c%60;
+  document.getElementById('mpChargeCreditVal').innerHTML=h+'<span>시간</span> '+m+'<span>분</span>';
+  let html='';
+  MP_PKGS.forEach(p=>{
+    const cls=p.hot?'mp-ci hot':'mp-ci';
+    const sel=mpSelPkg===p.id?' on':'';
+    html+=`<div class="${cls}${sel}" onclick="mpSelChargePkg(this,'${p.id}')">`;
+    if(p.badge) html+=`<div class="mp-ci-badge">${p.badge}</div>`;
+    html+=`<div><div style="font-size:14px;font-weight:700">${p.name}</div><div style="font-size:12px;color:var(--tx3);font-family:var(--mono)">${p.desc}</div></div>`;
+    html+=`<div style="text-align:right"><div style="font-size:16px;font-weight:800;color:var(--p1)">${fmtPrice(p.price)}</div><div style="font-size:11px;color:var(--tx3)">${fmtPrice(Math.round(p.price/p.hours))}/시간</div></div>`;
+    html+=`</div>`;
+  });
+  document.getElementById('mpChargeList').innerHTML=html;
+}
+function mpSelChargePkg(el,id){
+  document.querySelectorAll('.mp-ci').forEach(i=>i.classList.remove('on'));
+  el.classList.add('on');
+  mpSelPkg=id;
+}
+async function mpDoCharge(){
+  try{
+    const res=await mpFetch('/api/payment/create-order',{method:'POST',body:JSON.stringify({packageId:mpSelPkg})});
+    const order=await res.json();
+    if(!res.ok){alert(order.error||'주문 생성 실패');return;}
+    const{loadTossPayments}=await import('https://js.tosspayments.com/v1/payment');
+    const tp=await loadTossPayments(order.clientKey);
+    await tp.requestPayment('카드',{amount:order.amount,orderId:order.orderId,orderName:order.orderName,customerEmail:user?.email,successUrl:location.origin+'/api/payment/callback',failUrl:location.origin+'/payment/fail'});
+  }catch(e){console.error(e);}
+}
+
+// ── Payments
+async function mpLoadPayments(){
+  const el=document.getElementById('mpPaymentsContent');
+  el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:30px;font-size:13px">불러오는 중...</div>';
+  try{
+    const res=await mpFetch('/api/mypage/payments?page='+mpPayPage+'&limit='+MP_LIMIT);
+    const data=await res.json();
+    if(!res.ok)return;
+    const ps=data.payments||[];mpPayTotal=data.total||0;
+    const tp=Math.max(1,Math.ceil(mpPayTotal/MP_LIMIT));
+    if(ps.length===0){el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:40px;font-size:13px">결제 내역이 없습니다</div>';return;}
+    const stMap={PENDING:['대기','mp-badge-wait'],DONE:['완료','mp-badge-ok'],FAILED:['실패','mp-badge-err'],CANCELED:['취소','mp-badge-gray']};
+    let html='<table class="mp-tbl"><thead><tr><th>날짜</th><th>금액</th><th>충전 시간</th><th>결제수단</th><th>상태</th></tr></thead><tbody>';
+    ps.forEach(p=>{
+      const st=stMap[p.status]||['–','mp-badge-gray'];
+      html+=`<tr><td>${fmtDt(p.createdAt)}</td><td style="font-weight:600">${fmtPrice(p.amount)}</td><td style="color:var(--p1);font-weight:600">${fmtCredits(p.creditsAdded)}</td><td>${p.method||'-'}</td><td><span class="mp-badge ${st[1]}">${st[0]}</span></td></tr>`;
+    });
+    html+='</tbody></table>';
+    html+=`<div class="mp-pag"><span>총 ${mpPayTotal}건</span><div style="display:flex;gap:6px"><button onclick="mpPayPage--;mpLoadPayments()" ${mpPayPage<=1?'disabled':''}>이전</button><span style="padding:5px 8px">${mpPayPage}/${tp}</span><button onclick="mpPayPage++;mpLoadPayments()" ${mpPayPage>=tp?'disabled':''}>다음</button></div></div>`;
+    el.innerHTML=html;
+  }catch{el.innerHTML='<div class="msg-err">불러오기 실패</div>';}
 }
 
 // ── 아이디 찾기

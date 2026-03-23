@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" />
+  <title>REMOTE1</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0f172a;
+      color: #f1f5f9;
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      user-select: none;
+    }
+    .logo { font-size: 22px; font-weight: 800; letter-spacing: 2px; color: #38bdf8; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(56,189,248,0.2);
+      border-top-color: #38bdf8;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .msg { font-size: 15px; color: #94a3b8; }
+    .sub { font-size: 12px; color: #475569; }
+  </style>
+</head>
+<body>
+  <div class="logo">REMOTE1</div>
+  <div class="spinner"></div>
+  <div class="msg" id="msg">Checking dependencies...</div>
+  <div class="sub">Please wait. This only runs once.</div>
+  <script>
+    window.addEventListener('message', (e) => {
+      if (e.data?.msg) document.getElementById('msg').textContent = e.data.msg;
+    });
+  </script>
+</body>
+</html>

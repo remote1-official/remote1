@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" />
+  <title>REMOTE1 — 설정</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="settings-page">
+
+  <!-- Title Bar -->
+  <div class="titlebar" id="titlebar">
+    <span class="titlebar-logo" style="display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 32 32"><rect x="2" y="6" width="28" height="19" rx="4" fill="none" stroke="#0ea5e9" stroke-width="2.5"/><path d="M7 19 Q16 10 25 19" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="25.5" r="2" fill="#0ea5e9"/><line x1="11" y1="28" x2="21" y2="28" stroke="#0ea5e9" stroke-width="2.2" stroke-linecap="round"/><line x1="16" y1="25.5" x2="16" y2="28" stroke="#0ea5e9" stroke-width="2.2"/></svg>REMOTE1</span>
+    <div class="titlebar-center">설정</div>
+    <div class="titlebar-controls">
+      <button class="win-btn close" id="btn-close-settings" title="닫기">&#x2715;</button>
+    </div>
+  </div>
+
+  <!-- Settings Body -->
+  <div class="settings-body">
+
+    <!-- 1. 화질 / 해상도 -->
+    <div class="settings-section">
+      <div class="settings-section-title">
+        <span>&#127916;</span> 화질 / 해상도
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">해상도</span>
+        <div class="settings-control">
+          <div class="radio-group" id="resolution-group">
+            <label class="radio-option">
+              <input type="radio" name="resolution" value="720p" />
+              <span class="radio-label">720p</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="resolution" value="1080p" />
+              <span class="radio-label">1080p</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="resolution" value="1440p" />
+              <span class="radio-label">1440p</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="resolution" value="4K" />
+              <span class="radio-label">4K</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">프레임레이트</span>
+        <div class="settings-control">
+          <div class="radio-group" id="fps-group">
+            <label class="radio-option">
+              <input type="radio" name="fps" value="30" />
+              <span class="radio-label">30</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="fps" value="60" />
+              <span class="radio-label">60</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="fps" value="120" />
+              <span class="radio-label">120</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="fps" value="144" />
+              <span class="radio-label">144</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+          <span class="settings-label">비트레이트</span>
+          <span class="slider-display" id="bitrate-display">20.0 Mbps</span>
+        </div>
+        <input
+          type="range"
+          class="settings-slider"
+          id="bitrate-slider"
+          min="5000"
+          max="150000"
+          step="1000"
+          value="20000"
+        />
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">디스플레이 모드</span>
+        <div class="settings-control">
+          <div class="radio-group" id="display-mode-group">
+            <label class="radio-option">
+              <input type="radio" name="display-mode" value="window" />
+              <span class="radio-label">창모드</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="display-mode" value="fullscreen" />
+              <span class="radio-label">전체화면</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="display-mode" value="borderless" />
+              <span class="radio-label">테두리없음</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">수직 동기화</span>
+        <div class="settings-control" style="justify-content:flex-end;">
+          <label class="toggle-switch">
+            <input type="checkbox" id="vsync" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 오디오 -->
+    <div class="settings-section">
+      <div class="settings-section-title">
+        <span>&#128266;</span> 오디오
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">오디오 모드</span>
+        <div class="settings-control">
+          <div class="radio-group" id="audio-mode-group">
+            <label class="radio-option">
+              <input type="radio" name="audio-mode" value="stereo" />
+              <span class="radio-label">스테레오</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="audio-mode" value="surround" />
+              <span class="radio-label">서라운드</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">호스트 스피커 음소거</span>
+        <div class="settings-control" style="justify-content:flex-end;">
+          <label class="toggle-switch">
+            <input type="checkbox" id="mute-host" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 입력 -->
+    <div class="settings-section">
+      <div class="settings-section-title">
+        <span>&#128433;</span> 입력
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">마우스 최적화</span>
+        <div class="settings-control" style="justify-content:flex-end;">
+          <label class="toggle-switch">
+            <input type="checkbox" id="mouse-opt" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">게임패드 지원</span>
+        <div class="settings-control" style="justify-content:flex-end;">
+          <label class="toggle-switch">
+            <input type="checkbox" id="gamepad" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 고급 -->
+    <div class="settings-section">
+      <div class="settings-section-title">
+        <span>&#9881;</span> 고급
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">비디오 디코더</span>
+        <div class="settings-control" style="justify-content:flex-end;">
+          <select class="settings-select" id="video-decoder">
+            <option value="auto">자동</option>
+            <option value="software">Software</option>
+            <option value="dxva2">DXVA2</option>
+            <option value="d3d11va">D3D11VA</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">비디오 코덱</span>
+        <div class="settings-control" style="justify-content:flex-end;">
+          <select class="settings-select" id="video-codec">
+            <option value="auto">자동</option>
+            <option value="h264">H.264</option>
+            <option value="h265">H.265/HEVC</option>
+            <option value="av1">AV1</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">언어</span>
+        <div class="settings-control" style="justify-content:flex-end;">
+          <select class="settings-select" id="language">
+            <option value="auto">자동</option>
+            <option value="ko">한국어</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 단축키 안내 -->
+    <div class="settings-section">
+      <div class="settings-section-title">
+        <span>&#9875;</span> 단축키 안내
+      </div>
+      <table class="shortcut-table">
+        <tbody>
+          <tr>
+            <td><span class="shortcut-key">Ctrl+Alt+X</span></td>
+            <td>전체화면 전환</td>
+          </tr>
+          <tr>
+            <td><span class="shortcut-key">Ctrl+Alt+Q</span></td>
+            <td>종료</td>
+          </tr>
+          <tr>
+            <td><span class="shortcut-key">Ctrl+Alt+M</span></td>
+            <td>음소거 토글</td>
+          </tr>
+          <tr>
+            <td><span class="shortcut-key">Ctrl+Alt+H</span></td>
+            <td>마우스 고정 토글</td>
+          </tr>
+          <tr>
+            <td><span class="shortcut-key">Ctrl+Alt+V</span></td>
+            <td>클립보드 붙여넣기</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Settings Footer -->
+  <div class="settings-footer">
+    <button class="btn btn-ghost btn-sm" id="btn-cancel">취소</button>
+    <button class="btn btn-primary btn-sm" id="btn-save">저장</button>
+  </div>
+
+</div>
+
+<script src="js/settings.js"></script>
+</body>
+</html>
