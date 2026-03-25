@@ -4,7 +4,7 @@
 // JWT 검증은 각 라우트 핸들러의 getAuthUser()에서 수행합니다.
 import { NextRequest, NextResponse } from 'next/server'
 
-const PUBLIC_PATHS = ['/login', '/signup', '/api/auth/login', '/api/auth/signup', '/api/auth/refresh', '/api/auth/sms', '/api/auth/logout', '/api/notices', '/api/admin/charge']
+const PUBLIC_PATHS = ['/login', '/signup', '/api/auth/login', '/api/auth/signup', '/api/auth/refresh', '/api/auth/sms', '/api/auth/logout', '/api/notices', '/api/admin/']
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
