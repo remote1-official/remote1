@@ -6,7 +6,8 @@ import { prisma } from '@/lib/prisma'
 import { signAccessToken, signRefreshToken } from '@/lib/jwt'
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email:    z.string().email().optional(),
+  username: z.string().min(1).optional(),
   password: z.string().min(1),
 })
 
@@ -19,50 +20,68 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '입력값이 올바르지 않습니다' }, { status: 400 })
     }
 
-    const { email, password } = parsed.data
+    const { email, username, password } = parsed.data
 
-    // 유저 조회
-    const user = await prisma.user.findUnique({ where: { email } })
+    // 유저 조회 — username 우선, 없으면 email
+    let user = null
+
+    if (username) {
+      user = await prisma.user.findUnique({ where: { username } })
+    } else if (email) {
+      user = await prisma.user.findUnique({ where: { email } })
+    } else {
+      return NextResponse.json(
+        { error: '아이디 또는 이메일을 입력해주세요' },
+        { status: 400 }
+      )
+    }
+
     if (!user) {
-      return NextResponse.json({ error: '이메일 또는 비밀번호가 올바르지 않습니다' }, { status: 401 })
+      return NextResponse.json(
+        { error: '아이디 또는 비밀번호가 올바르지 않습니다' },
+        { status: 401 }
+      )
     }
 
     // 비밀번호 검증
     const isValid = await bcrypt.compare(password, user.password)
     if (!isValid) {
-      return NextResponse.json({ error: '이메일 또는 비밀번호가 올바르지 않습니다' }, { status: 401 })
+      return NextResponse.json(
+        { error: '아이디 또는 비밀번호가 올바르지 않습니다' },
+        { status: 401 }
+      )
     }
 
     const payload = { userId: user.id, email: user.email }
 
     // 토큰 발급
-    const accessToken = signAccessToken(payload)
+    const accessToken  = signAccessToken(payload)
     const refreshToken = signRefreshToken(payload)
 
     // refreshToken DB 저장
     await prisma.user.update({
       where: { id: user.id },
-      data: { refreshToken },
+      data:  { refreshToken },
     })
 
     const response = NextResponse.json({
       message: '로그인 성공',
       accessToken,
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        credits: user.credits,
+        id:       user.id,
+        email:    user.email,
+        credits:  user.credits,
+        username: user.username,
       },
     })
 
     // refreshToken을 HttpOnly 쿠키로 설정 (7일)
     response.cookies.set('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure:   process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7일
-      path: '/',
+      maxAge:   60 * 60 * 24 * 7,
+      path:     '/',
     })
 
     return response
