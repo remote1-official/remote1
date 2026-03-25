@@ -7,13 +7,14 @@ import { nanoid } from 'nanoid' // 또는 crypto.randomUUID()
 
 // 크레딧 패키지 정의
 const CREDIT_PACKAGES: Record<string, { amount: number; credits: number; label: string }> = {
-  basic:    { amount: 9900,  credits: 60,   label: '기본 1시간' },
-  standard: { amount: 29900, credits: 180,  label: '스탠다드 3시간' },
-  premium:  { amount: 59900, credits: 600,  label: '프리미엄 10시간' },
+  hour10:  { amount: 11000, credits: 600,  label: '10시간 이용권' },
+  hour30:  { amount: 30000, credits: 1800, label: '30시간 이용권' },
+  hour50:  { amount: 48000, credits: 3000, label: '50시간 이용권' },
+  hour100: { amount: 95000, credits: 6000, label: '100시간 이용권' },
 }
 
 const orderSchema = z.object({
-  packageId: z.enum(['basic', 'standard', 'premium']),
+  packageId: z.enum(['hour10', 'hour30', 'hour50', 'hour100']),
 })
 
 export async function POST(req: NextRequest) {

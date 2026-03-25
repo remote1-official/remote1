@@ -5,21 +5,24 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
+  username     String?  @unique
+  phone        String?
   password     String
-  name         String
   credits      Int      @default(0)   // 충전된 시간(분) 또는 크레딧
   refreshToken String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   payments Payment[]
+  sessions Session[]
 
   @@map("users")
 }
@@ -45,4 +48,43 @@ enum PaymentStatus {
   DONE
   FAILED
   CANCELED
+}
+
+// ─── Remote PC ───────────────────────────────────────────────────────────────
+
+model Machine {
+  id            String   @id @default(cuid())
+  name          String                         // 표시 이름 (예: Gaming PC #1)
+  sunshineHost  String   @unique               // Sunshine 서버 IP/호스트 (Moonlight 접속 주소)
+  spec          String?                        // 스펙 정보 (예: i9-13900K / RTX 4090)
+  isAvailable   Boolean  @default(true)        // 현재 사용 가능 여부
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions Session[]
+
+  @@map("machines")
+}
+
+model Session {
+  id               String        @id @default(cuid())
+  userId           String
+  user             User          @relation(fields: [userId], references: [id])
+  machineId        String
+  machine          Machine       @relation(fields: [machineId], references: [id])
+  startedAt        DateTime      @default(now())
+  endedAt          DateTime?
+  creditsUsed      Int?                            // 세션에서 소모된 크레딧(분)
+  scheduledEndAt   DateTime?                       // 예약 종료 시각
+  status           SessionStatus @default(ACTIVE)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@map("sessions")
+}
+
+enum SessionStatus {
+  ACTIVE
+  ENDED
+  INTERRUPTED  // 비정상 종료
 }

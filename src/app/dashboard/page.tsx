@@ -11,7 +11,7 @@ const PACKAGES = [
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [user, setUser] = useState<{ name: string; email: string; credits: number } | null>(null)
+  const [user, setUser] = useState<{ username: string; email: string; credits: number } | null>(null)
   const [loading, setLoading] = useState('')
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function DashboardPage() {
         amount: order.amount,
         orderId: order.orderId,
         orderName: order.orderName,
-        customerName: user?.name,
+        customerName: user?.username,
         customerEmail: user?.email,
         successUrl: `${window.location.origin}/api/payment/callback`,
         failUrl: `${window.location.origin}/payment/fail`,
@@ -72,7 +72,7 @@ export default function DashboardPage() {
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <span className="text-xl font-bold text-indigo-600">MyApp</span>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user.name}님</span>
+            <span className="text-sm text-gray-600">{user.username}님</span>
             <button onClick={handleLogout} className="text-sm text-gray-400 hover:text-gray-700 transition-colors">
               로그아웃
             </button>
