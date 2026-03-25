@@ -14,6 +14,11 @@ export function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
+  // 관리자 API는 인증 없이 통과
+  if (pathname.startsWith('/api/admin')) {
+    return NextResponse.next()
+  }
+
   // API 경로 보호 (Authorization 헤더 존재 여부만 확인)
   // 실제 토큰 검증은 각 라우트 핸들러에서 getAuthUser()로 수행
   if (pathname.startsWith('/api/')) {
