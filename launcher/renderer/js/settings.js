@@ -44,8 +44,13 @@ function getRadio(name) {
 }
 
 function updateBitrateDisplay(val) {
-  const mbps = (parseInt(val, 10) / 1000).toFixed(1);
-  bitrateDisplay.textContent = `${mbps} Mbps`;
+  const v = parseInt(val, 10);
+  const mbps = (v / 1000).toFixed(1);
+  let label;
+  if (v <= 10000) label = '낮음';
+  else if (v <= 25000) label = '보통';
+  else label = '높음';
+  bitrateDisplay.textContent = `${mbps} Mbps (${label})`;
 }
 
 // ─── Populate form with settings ──────────────────────────────────────────────

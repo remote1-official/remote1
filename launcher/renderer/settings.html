@@ -45,10 +45,6 @@
               <input type="radio" name="resolution" value="1440p" />
               <span class="radio-label">1440p</span>
             </label>
-            <label class="radio-option">
-              <input type="radio" name="resolution" value="4K" />
-              <span class="radio-label">4K</span>
-            </label>
           </div>
         </div>
       </div>
@@ -79,7 +75,7 @@
 
       <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-          <span class="settings-label">비트레이트</span>
+          <span class="settings-label">화질 (비트레이트)</span>
           <span class="slider-display" id="bitrate-display">20.0 Mbps</span>
         </div>
         <input
@@ -87,31 +83,12 @@
           class="settings-slider"
           id="bitrate-slider"
           min="5000"
-          max="150000"
+          max="50000"
           step="1000"
           value="20000"
         />
       </div>
 
-      <div class="settings-row">
-        <span class="settings-label">디스플레이 모드</span>
-        <div class="settings-control">
-          <div class="radio-group" id="display-mode-group">
-            <label class="radio-option">
-              <input type="radio" name="display-mode" value="window" />
-              <span class="radio-label">창모드</span>
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="display-mode" value="fullscreen" />
-              <span class="radio-label">전체화면</span>
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="display-mode" value="borderless" />
-              <span class="radio-label">테두리없음</span>
-            </label>
-          </div>
-        </div>
-      </div>
 
       <div class="settings-row">
         <span class="settings-label">수직 동기화</span>

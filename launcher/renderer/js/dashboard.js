@@ -94,6 +94,14 @@ const els = {
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+function getPcName(session) {
+  if (session && session.host) {
+    const parts = session.host.split('.');
+    if (parts.length === 4) return 'PC-' + parts[3];
+  }
+  return session?.machineName || 'Gaming PC';
+}
+
 function formatTime(totalSecs) {
   const h = Math.floor(totalSecs / 3600);
   const m = Math.floor((totalSecs % 3600) / 60);
@@ -230,7 +238,7 @@ function updateStatusDisplay() {
   } else if (status === 'connected') {
     dot.classList.add('online');
     text.textContent = '연결됨';
-    sub.textContent  = state.session?.machineName || 'Gaming PC';
+    sub.textContent  = getPcName(state.session);
   }
 }
 
@@ -491,7 +499,7 @@ window.R1.on('moonlight:streamConnected', () => {
   if (viewConnecting) viewConnecting.classList.add('hidden');
   const sessionInfo = $('session-info');
   if (sessionInfo) sessionInfo.classList.remove('hidden');
-  $('pc-name').textContent = state.session.machineName || 'Gaming PC';
+  $('pc-name').textContent = getPcName(state.session);
   els.endSession.classList.remove('hidden');
 
   state.status = 'connected';
@@ -628,7 +636,7 @@ async function connect() {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function enterConnected(session) {
-  els.pcName.textContent = session.machineName || 'Gaming PC';
+  els.pcName.textContent = getPcName(session);
   els.pcSpec.textContent = session.machineSpec || '';
 
   state.elapsed           = 0;

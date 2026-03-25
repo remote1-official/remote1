@@ -299,9 +299,65 @@ function launchMoonlight(host, settings) {
 // ─── Moonlight 창 타이틀 감지 (스트리밍 연결 완료 감지) ──────────────────────
 const SIDEBAR_WIDTH = 220;
 
+let moonlightTitlePhase = 'waiting'; // 'waiting' | 'loading' | 'done'
+
+function setMoonlightTitle(hwnd, title) {
+  execFile('powershell.exe', [
+    '-NonInteractive', '-WindowStyle', 'Hidden', '-Command',
+    `Add-Type 'using System;using System.Runtime.InteropServices;public class WT{[DllImport("user32.dll",CharSet=CharSet.Unicode)]public static extern bool SetWindowText(IntPtr h,string t);}';` +
+    `[WT]::SetWindowText([IntPtr]${hwnd},"${title}")`
+  ], { windowsHide: true, timeout: 2000 }, () => {});
+}
+
+function hideMoonlightWindow(hwnd) {
+  execFile('powershell.exe', [
+    '-NonInteractive', '-WindowStyle', 'Hidden', '-Command',
+    `Add-Type 'using System;using System.Runtime.InteropServices;public class SW{[DllImport("user32.dll")]public static extern bool ShowWindow(IntPtr h,int c);}';` +
+    `[SW]::ShowWindow([IntPtr]${hwnd},0)`
+  ], { windowsHide: true, timeout: 2000 }, () => {});
+}
+
+function showMoonlightWindow(hwnd) {
+  execFile('powershell.exe', [
+    '-NonInteractive', '-WindowStyle', 'Hidden', '-Command',
+    `Add-Type 'using System;using System.Runtime.InteropServices;public class SW{[DllImport("user32.dll")]public static extern bool ShowWindow(IntPtr h,int c);[DllImport("user32.dll")]public static extern bool SetForegroundWindow(IntPtr h);}';` +
+    `[SW]::ShowWindow([IntPtr]${hwnd},5);[SW]::SetForegroundWindow([IntPtr]${hwnd})`
+  ], { windowsHide: true, timeout: 2000 }, () => {});
+}
+
+function setMoonlightIcon(hwnd) {
+  const icoPath = path.join(__dirname, '..', 'assets', 'icon.ico').replace(/\\/g, '\\\\');
+  const script = [
+    'Add-Type @"',
+    'using System;',
+    'using System.Runtime.InteropServices;',
+    'public class ICO {',
+    '  [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr h, uint m, IntPtr w, IntPtr l);',
+    '  [DllImport("user32.dll")] public static extern IntPtr LoadImage(IntPtr inst, string name, uint type, int cx, int cy, uint flags);',
+    '  public static void SetIcon(IntPtr hwnd, string path) {',
+    '    IntPtr big = LoadImage(IntPtr.Zero, path, 1, 32, 32, 0x10);',
+    '    IntPtr small = LoadImage(IntPtr.Zero, path, 1, 16, 16, 0x10);',
+    '    if (big != IntPtr.Zero) SendMessage(hwnd, 0x0080, (IntPtr)1, big);',
+    '    if (small != IntPtr.Zero) SendMessage(hwnd, 0x0080, IntPtr.Zero, small);',
+    '  }',
+    '}',
+    '"@',
+    `[ICO]::SetIcon([IntPtr]${hwnd}, "${icoPath}")`,
+  ].join('\n');
+
+  const scriptPath = path.join(app.getPath('temp'), 'r1_icon.ps1');
+  fs.writeFileSync(scriptPath, script, 'utf8');
+  execFile('powershell.exe',
+    ['-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', scriptPath],
+    { windowsHide: true, timeout: 5000 },
+    () => { try { fs.unlinkSync(scriptPath); } catch (_) {} }
+  );
+}
+
 function startMoonlightTitlePoll() {
   stopMoonlightTitlePoll();
-  console.log('[TitlePoll] Started polling for Moonlight streaming title...');
+  moonlightTitlePhase = 'waiting';
+  console.log('[TitlePoll] Started polling...');
 
   moonlightTitlePollTimer = setInterval(() => {
     if (!moonlightProcess) {
@@ -309,7 +365,6 @@ function startMoonlightTitlePoll() {
       return;
     }
 
-    // 타이틀 + HWND를 동시에 가져오기
     const cmd = [
       '$p = Get-Process Moonlight -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -ne "" } | Select-Object -First 1;',
       'if ($p) { Write-Output "$($p.MainWindowHandle)|$($p.MainWindowTitle)" }'
@@ -325,16 +380,29 @@ function startMoonlightTitlePoll() {
       const hwnd = line.substring(0, sepIdx);
       const title = line.substring(sepIdx + 1);
 
+      if (!hwnd || hwnd === '0') return;
+
       if (title && title.includes(' - Moonlight')) {
-        console.log('[TitlePoll] Streaming connected! Title:', title, 'HWND:', hwnd);
+        // 스트리밍 연결 완료 → 제목을 "REMOTE1"로 변경
+        console.log('[TitlePoll] Streaming connected! Title:', title);
         moonlightHwnd = hwnd;
+        setMoonlightTitle(hwnd, 'REMOTE1');
+        setMoonlightIcon(hwnd);
+        moonlightTitlePhase = 'done';
         stopMoonlightTitlePoll();
         if (mainWindow) {
           mainWindow.webContents.send('moonlight:streamConnected');
         }
+      } else if (title !== 'REMOTE1 - 접속중') {
+        // 로딩 중 — 제목만 덮어쓰기
+        moonlightHwnd = hwnd;
+        moonlightTitlePhase = 'loading';
+        setMoonlightTitle(hwnd, 'REMOTE1 - 접속중');
+        setMoonlightIcon(hwnd);
+        console.log('[TitlePoll] Set title "REMOTE1 - 접속중" (was:', title, ')');
       }
     });
-  }, 1000);
+  }, 300);
 }
 
 function stopMoonlightTitlePoll() {
