@@ -38,6 +38,10 @@ contextBridge.exposeInMainWorld('R1', {
   loadSettings: ()  => ipcRenderer.invoke('settings:load'),
   saveSettings: (s) => ipcRenderer.invoke('settings:save', s),
 
+  // ── Credentials (로그인 저장) ───────────────────────────────────────────
+  loadCredentials: ()  => ipcRenderer.invoke('credentials:load'),
+  saveCredentials: (d) => ipcRenderer.invoke('credentials:save', d),
+
   // ── USB (silent) ─────────────────────────────────────────────────────────
   usbConnect:    () => ipcRenderer.invoke('usb:connect'),
   usbDisconnect: () => ipcRenderer.invoke('usb:disconnect'),

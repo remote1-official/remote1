@@ -463,8 +463,8 @@ els.btnSchedCancel.addEventListener('click', () => {
 
 // ─── Moonlight Events ─────────────────────────────────────────────────────────
 window.R1.on('moonlight:exited', ({ code } = {}) => {
-  // 전체화면 모드 해제
-  isStreamFullscreen = false;
+  // 모드 초기화
+  streamMode = 'normal';
   document.body.classList.remove('stream-fullscreen');
 
   if (state.status === 'connected') {
@@ -473,16 +473,24 @@ window.R1.on('moonlight:exited', ({ code } = {}) => {
 });
 
 // ─── Shortcut Events ──────────────────────────────────────────────────────────
-let isStreamFullscreen = false;
+// 'normal' | 'fullscreen' | 'maximized'
+let streamMode = 'normal';
 
 window.R1.on('shortcut:fired', (action) => {
+  console.log('[shortcut]', action, 'status:', state.status, 'streamMode:', streamMode);
   if (action === 'fullscreen') {
     if (state.status === 'connected') {
-      // 전체화면 토글: 런처 숨기고 Moonlight만 전체화면
-      isStreamFullscreen = !isStreamFullscreen;
-      window.R1.resizeEmbed(isStreamFullscreen);
-    } else {
-      window.R1.maximize();
+      // 전체모드 토글: 테두리 없이 화면 꽉 참
+      streamMode = (streamMode === 'fullscreen') ? 'normal' : 'fullscreen';
+      console.log('[streamMode] ->', streamMode);
+      window.R1.resizeEmbed(streamMode);
+    }
+  } else if (action === 'maximizeWindow') {
+    if (state.status === 'connected') {
+      // 전체창모드 토글: 테두리 유지 + 화면 꽉 참
+      streamMode = (streamMode === 'maximized') ? 'normal' : 'maximized';
+      console.log('[streamMode] ->', streamMode);
+      window.R1.resizeEmbed(streamMode);
     }
   } else if (action === 'quit') {
     if (state.status === 'connected') {

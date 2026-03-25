@@ -64,18 +64,18 @@ document.getElementById('btn-close').addEventListener('click', () => window.R1?.
 })();
 
 // ─── Saved credentials ────────────────────────────────────────────────────────
-(function loadSaved() {
-  const savedId = localStorage.getItem('r1_saved_id');
-  const savedPw = localStorage.getItem('r1_saved_pw');
-
-  if (savedId) {
-    document.getElementById('username').value = savedId;
-    document.getElementById('save-id').checked = true;
-  }
-  if (savedPw) {
-    document.getElementById('password').value = savedPw;
-    document.getElementById('save-pw').checked = true;
-  }
+(async function loadSaved() {
+  try {
+    const creds = await window.R1.loadCredentials();
+    if (creds.username) {
+      document.getElementById('username').value = creds.username;
+      document.getElementById('save-id').checked = true;
+    }
+    if (creds.password) {
+      document.getElementById('password').value = creds.password;
+      document.getElementById('save-pw').checked = true;
+    }
+  } catch (_) {}
 })();
 
 // ─── Form Submit ──────────────────────────────────────────────────────────────
@@ -91,21 +91,13 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     return;
   }
 
-  // Save / remove credentials
+  // Save / remove credentials (파일 기반)
   const saveId = document.getElementById('save-id').checked;
   const savePw = document.getElementById('save-pw').checked;
-
-  if (saveId) {
-    localStorage.setItem('r1_saved_id', username);
-  } else {
-    localStorage.removeItem('r1_saved_id');
-  }
-
-  if (savePw) {
-    localStorage.setItem('r1_saved_pw', password);
-  } else {
-    localStorage.removeItem('r1_saved_pw');
-  }
+  const credsToSave = {};
+  if (saveId) credsToSave.username = username;
+  if (savePw) credsToSave.password = password;
+  window.R1.saveCredentials(credsToSave).catch(() => {});
 
   if (!window.R1) {
     showAlert('런처 초기화 오류가 발생했습니다. 앱을 재시작해주세요.');
