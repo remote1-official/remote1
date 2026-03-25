@@ -22,12 +22,10 @@ export async function POST(req: NextRequest) {
 
     const now        = new Date()
     const elapsedMs  = now.getTime() - session.startedAt.getTime()
-    // 1분 단위 올림: 30초 사용 → 1분, 61초 사용 → 2분
     const creditsToDeduct = Math.ceil(elapsedMs / 60_000)
 
     // 세션 종료 + 크레딧 차감 + PC 복구 (트랜잭션)
     const [updatedUser] = await prisma.$transaction(async (tx) => {
-      // 실제 보유 크레딧을 확인해 음수 방지
       const user = await tx.user.findUnique({ where: { id: authUser.userId } })
       const actualDeduction = Math.min(creditsToDeduct, Math.max(0, user?.credits ?? 0))
 
@@ -45,9 +43,10 @@ export async function POST(req: NextRequest) {
         },
       })
 
+      // PC를 READY 상태로 복구
       await tx.machine.update({
         where: { id: session.machineId },
-        data:  { isAvailable: true },
+        data:  { isAvailable: true, status: 'READY', currentApp: null, currentAppIcon: null },
       })
 
       return [updated, actualDeduction]

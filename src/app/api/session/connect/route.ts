@@ -30,7 +30,6 @@ export async function POST(req: NextRequest) {
     })
 
     if (existing) {
-      // 기존 세션 정보를 그대로 반환 (재연결 허용)
       return NextResponse.json({
         sessionId:   existing.id,
         host:        existing.machine.sunshineHost,
@@ -39,21 +38,24 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // 빈 PC 배정 (트랜잭션으로 race condition 방지)
+    // 빈 PC 배정 (READY 상태이고 사용 가능한 PC)
     const result = await prisma.$transaction(async (tx) => {
       const machine = await tx.machine.findFirst({
-        where: { isAvailable: true },
-        orderBy: { updatedAt: 'asc' }, // 가장 오래 쉰 PC 우선
+        where: {
+          isAvailable: true,
+          status: 'READY',
+        },
+        orderBy: { updatedAt: 'asc' },
       })
 
       if (!machine) {
-        throw new Error('현재 이용 가능한 PC가 없습니다. 잠시 후 다시 시도해주세요.')
+        return null // 빈 PC 없음 → 대기열로
       }
 
-      // PC를 사용 불가 상태로 변경
+      // PC를 IN_USE 상태로 변경
       await tx.machine.update({
         where: { id: machine.id },
-        data: { isAvailable: false },
+        data: { status: 'IN_USE', isAvailable: false, lastUserId: authUser.userId },
       })
 
       // 세션 생성
@@ -68,16 +70,62 @@ export async function POST(req: NextRequest) {
       return { machine, session }
     })
 
-    return NextResponse.json({
-      sessionId:   result.session.id,
-      host:        result.machine.sunshineHost,
-      machineName: result.machine.name,
-      machineSpec: result.machine.spec ?? '',
+    if (result) {
+      // PC 배정 성공
+      return NextResponse.json({
+        sessionId:   result.session.id,
+        host:        result.machine.sunshineHost,
+        machineName: result.machine.name,
+        machineSpec: result.machine.spec ?? '',
+      })
+    }
+
+    // ─── 빈 PC 없음 → 대기열에 추가 ──────────────────────────────────────
+    // 이미 대기 중인지 확인
+    const existingQueue = await prisma.queue.findFirst({
+      where: { userId: authUser.userId, status: 'WAITING' },
     })
+
+    if (existingQueue) {
+      // 이미 대기 중 → 현재 위치 반환
+      const ahead = await prisma.queue.count({
+        where: { status: 'WAITING', position: { lt: existingQueue.position } },
+      })
+      return NextResponse.json({
+        queued: true,
+        position: ahead + 1,
+        queueId: existingQueue.id,
+      }, { status: 202 })
+    }
+
+    // 새 대기 등록
+    const lastInQueue = await prisma.queue.findFirst({
+      where: { status: 'WAITING' },
+      orderBy: { position: 'desc' },
+    })
+    const newPosition = (lastInQueue?.position ?? 0) + 1
+
+    const queueEntry = await prisma.queue.create({
+      data: {
+        userId: authUser.userId,
+        position: newPosition,
+        status: 'WAITING',
+      },
+    })
+
+    const ahead = await prisma.queue.count({
+      where: { status: 'WAITING', position: { lt: newPosition } },
+    })
+
+    return NextResponse.json({
+      queued: true,
+      position: ahead + 1,
+      queueId: queueEntry.id,
+    }, { status: 202 })
+
   } catch (error: unknown) {
     console.error('[SESSION CONNECT ERROR]', error)
     const message = error instanceof Error ? error.message : '서버 오류가 발생했습니다'
-    const status  = message.includes('이용 가능한 PC가 없습니다') ? 503 : 500
-    return NextResponse.json({ error: message }, { status })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

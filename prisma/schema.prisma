@@ -23,6 +23,7 @@ model User {
 
   payments Payment[]
   sessions Session[]
+  queues   Queue[]
 
   @@map("users")
 }
@@ -53,17 +54,51 @@ enum PaymentStatus {
 // ─── Remote PC ───────────────────────────────────────────────────────────────
 
 model Machine {
-  id            String   @id @default(cuid())
-  name          String                         // 표시 이름 (예: Gaming PC #1)
-  sunshineHost  String   @unique               // Sunshine 서버 IP/호스트 (Moonlight 접속 주소)
-  spec          String?                        // 스펙 정보 (예: i9-13900K / RTX 4090)
-  isAvailable   Boolean  @default(true)        // 현재 사용 가능 여부
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id            String        @id @default(cuid())
+  name          String                              // 표시 이름 (예: PC-1)
+  sunshineHost  String        @unique               // Sunshine 서버 IP/호스트 (Moonlight 접속 주소)
+  localIp       String?                             // 내부 IP (핑/셧다운용)
+  macAddress    String?                             // MAC 주소 (WOL용)
+  spec          String?                             // 스펙 정보 (예: i9-13900K / RTX 4090)
+  status        MachineStatus @default(OFF)         // 현재 상태
+  isAvailable   Boolean       @default(true)        // 관리자가 사용 가능하게 설정했는지
+  lastPing      DateTime?                           // 마지막 핑 응답 시간
+  lastUserId    String?                             // 마지막 사용자
+  currentApp    String?                             // 현재 실행 중인 프로그램
+  currentAppIcon String?                            // 현재 프로그램 아이콘 URL
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   sessions Session[]
 
   @@map("machines")
+}
+
+enum MachineStatus {
+  OFF         // 꺼짐
+  BOOTING     // 부팅 중 (WOL 전송됨)
+  READY       // 켜짐, 사용 가능
+  IN_USE      // 사용 중
+  MAINTENANCE // 점검 중
+}
+
+model Queue {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  position  Int                              // 대기 순번
+  status    QueueStatus @default(WAITING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("queue")
+}
+
+enum QueueStatus {
+  WAITING     // 대기 중
+  ASSIGNED    // PC 배정됨
+  CANCELLED   // 취소
+  EXPIRED     // 만료
 }
 
 model Session {
