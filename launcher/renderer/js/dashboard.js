@@ -507,22 +507,9 @@ async function connect() {
     const result = await window.R1.connect();
 
     if (!result.ok) {
-      // Demo mode: show the full flow even without real server
-      els.connectingMsg.textContent = '서버 연결 시도 중...';
-      await sleep(1500);
-      els.connectingMsg.textContent = 'PC 배정 중...';
-      await sleep(1500);
-      els.connectingMsg.textContent = 'REMOTE1 스트리밍 준비 중...';
-      await sleep(1500);
-
-      // Enter demo connected state
-      const demoSession = {
-        machineName: 'Gaming PC #1 (DEMO)',
-        machineSpec: 'i9-13900K / RTX 4090 / 64GB',
-        host: null,
-      };
-      enterConnected(demoSession);
-      showAlert('connected-alert', '데모 모드: 실제 원격 PC가 연결되지 않았습니다. UI 테스트 중입니다.', 'info');
+      showView('idle');
+      showAlert('idle-alert', result.error || 'PC 배정에 실패했습니다.', 'warn');
+      updateStatusDisplay();
       return;
     }
 
@@ -550,17 +537,10 @@ async function connect() {
     enterConnected(session);
 
   } catch (err) {
-    // Fallback to demo mode on any error
-    els.connectingMsg.textContent = 'REMOTE1 스트리밍 준비 중...';
-    await sleep(1500);
-
-    const demoSession = {
-      machineName: 'Gaming PC #1 (DEMO)',
-      machineSpec: 'i9-13900K / RTX 4090 / 64GB',
-      host: null,
-    };
-    enterConnected(demoSession);
-    showAlert('connected-alert', '데모 모드: 실제 원격 PC가 연결되지 않았습니다. UI 테스트 중입니다.', 'info');
+    showView('idle');
+    showAlert('idle-alert', err.message || '연결 중 오류가 발생했습니다.', 'warn');
+    await window.R1.disconnect().catch(() => {});
+    updateStatusDisplay();
   }
 }
 

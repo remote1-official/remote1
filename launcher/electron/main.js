@@ -77,6 +77,13 @@ function saveSettingsFile(settings) {
 }
 
 // ─── HTTP Helper ──────────────────────────────────────────────────────────────
+class ApiError extends Error {
+  constructor(message, statusCode) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
 function apiRequest(method, endpoint, body = null, token = null, cookieHeader = null) {
   return new Promise((resolve, reject) => {
     const url = new URL(endpoint, BASE_URL);
@@ -119,10 +126,10 @@ function apiRequest(method, endpoint, body = null, token = null, cookieHeader = 
               } else {
                 errText = `HTTP ${res.statusCode}`;
               }
-              reject(new Error(errText));
+              reject(new ApiError(errText, res.statusCode));
             }
           } catch {
-            reject(new Error(`HTTP ${res.statusCode}: ${data.slice(0, 200)}`));
+            reject(new ApiError(`HTTP ${res.statusCode}: ${data.slice(0, 200)}`, res.statusCode));
           }
         });
       }
@@ -154,8 +161,13 @@ async function authedRequest(method, endpoint, body = null) {
   try {
     return await apiRequest(method, endpoint, body, auth.accessToken);
   } catch (err) {
-    if (err.message.includes('401') || err.message.toLowerCase().includes('unauthorized')) {
-      await refreshAccessToken();
+    if (err.statusCode === 401) {
+      try {
+        await refreshAccessToken();
+      } catch (refreshErr) {
+        console.error('[authedRequest] token refresh failed:', refreshErr.message);
+        throw err; // 원래 401 에러를 그대로 전달
+      }
       return apiRequest(method, endpoint, body, auth.accessToken);
     }
     throw err;
@@ -523,6 +535,10 @@ ipcMain.handle('api:connect', async () => {
     const { data } = await authedRequest('POST', '/api/session/connect');
     return { ok: true, data };
   } catch (err) {
+    console.error('[api:connect] error:', err.statusCode, err.message);
+    if (err.statusCode === 401) {
+      return { ok: false, error: '로그인이 만료되었습니다. 다시 로그인해주세요.' };
+    }
     return { ok: false, error: err.message };
   }
 });
