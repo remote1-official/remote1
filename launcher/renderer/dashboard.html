@@ -9,260 +9,171 @@
 </head>
 <body>
 
-<div class="dashboard">
+<div class="sidebar-app">
 
-  <!-- ── Title Bar ─────────────────────────────────────────────── -->
-  <div class="titlebar" id="titlebar">
-    <span class="titlebar-logo" style="display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 32 32"><rect x="2" y="6" width="28" height="19" rx="4" fill="none" stroke="#0ea5e9" stroke-width="2.5"/><path d="M7 19 Q16 10 25 19" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="25.5" r="2" fill="#0ea5e9"/><line x1="11" y1="28" x2="21" y2="28" stroke="#0ea5e9" stroke-width="2.2" stroke-linecap="round"/><line x1="16" y1="25.5" x2="16" y2="28" stroke="#0ea5e9" stroke-width="2.2"/></svg>REMOTE1</span>
-    <div class="titlebar-hint" id="sidebar-hint">
-      <span class="titlebar-hint-key">A</span><span>사이드바</span>
-      <span style="color:var(--border)">|</span>
-      <span class="titlebar-hint-key">X</span><span>전체화면</span>
-      <span style="color:var(--border)">|</span>
-      <span class="titlebar-hint-key">Q</span><span>종료</span>
-      <span style="color:var(--border)">|</span>
-      <span class="titlebar-hint-key">M</span><span>음소거</span>
-      <span style="color:var(--border)">|</span>
-      <span class="titlebar-hint-key">H</span><span>마우스</span>
-      <span style="margin-left:4px;font-size:9px;color:var(--text-muted)">(Ctrl+Alt+키)</span>
-    </div>
-    <div class="titlebar-controls">
-      <button class="win-btn" id="btn-toggle-sidebar" title="사이드바 토글 (Ctrl+Alt+A)">&#9776;</button>
-      <button class="win-btn" id="btn-settings" title="설정">&#9881;</button>
-      <button class="win-btn" id="btn-minimize" title="최소화">&#x2212;</button>
-      <button class="win-btn" id="btn-maximize" title="최대화">&#x25A1;</button>
-      <button class="win-btn close" id="btn-close" title="닫기">&#x2715;</button>
+  <!-- 드래그 영역 -->
+  <div class="sidebar-header" id="titlebar">
+    <span class="sidebar-logo">
+      <svg width="14" height="14" viewBox="0 0 32 32"><rect x="2" y="6" width="28" height="19" rx="4" fill="none" stroke="#0ea5e9" stroke-width="2.5"/><circle cx="16" cy="25.5" r="2" fill="#0ea5e9"/><line x1="11" y1="28" x2="21" y2="28" stroke="#0ea5e9" stroke-width="2.2" stroke-linecap="round"/></svg>
+      REMOTE1
+    </span>
+    <div class="sidebar-win-btns">
+      <button class="win-btn-sm" id="btn-minimize" title="최소화">&#x2212;</button>
+      <button class="win-btn-sm" id="btn-maximize" title="최대화">&#x25A1;</button>
+      <button class="win-btn-sm close" id="btn-close" title="닫기">&#x2715;</button>
     </div>
   </div>
 
-  <!-- ── Body ──────────────────────────────────────────────────── -->
-  <div class="dashboard-body">
+  <!-- 스크롤 영역 -->
+  <div class="sidebar-scroll">
 
-    <!-- ── Sidebar ───────────────────────────────────────────── -->
-    <aside class="sidebar">
-      <div class="sidebar-top">
-
-        <!-- User Card -->
-        <div class="user-card">
-          <div class="user-avatar" id="user-avatar">?</div>
-          <div class="user-info">
-            <div class="user-name" id="user-name">—</div>
-            <div class="user-email" id="user-email">—</div>
-          </div>
-        </div>
-
-        <!-- Credits Widget -->
-        <div class="credits-widget">
-          <div class="credits-label">잔여 이용시간</div>
-          <div class="credits-top">
-            <span class="credits-value" id="credits-value">—</span>
-            <span class="credits-unit">분</span>
-          </div>
-          <div class="credits-sub" id="credits-sub">로딩 중...</div>
-        </div>
-
-        <!-- Connection Status -->
-        <div class="conn-status">
-          <span class="status-dot offline" id="status-dot"></span>
-          <div class="conn-status-info">
-            <div class="conn-status-text" id="status-text">연결 안됨</div>
-            <div class="conn-status-sub" id="status-sub">PC를 배정받으려면 접속하기를 눌러주세요</div>
-          </div>
-        </div>
-
-        <!-- Quick Schedule Widget -->
-        <div class="sidebar-schedule" id="sidebar-schedule">
-          <div class="sidebar-schedule-label">&#9200; 예약 종료</div>
-          <!-- Countdown Display -->
-          <div id="sidebar-sched-countdown" class="sidebar-sched-countdown hidden">
-            <div class="sidebar-sched-countdown-time" id="sidebar-sched-countdown-time">00:00:00</div>
-            <div class="sidebar-sched-countdown-sub" id="sidebar-sched-countdown-sub">남은 시간</div>
-          </div>
-          <div id="sidebar-sched-status" class="sidebar-sched-status">설정 안됨</div>
-          <div class="sidebar-sched-row">
-            <button class="sidebar-sched-btn" id="ss-q60">1h</button>
-            <button class="sidebar-sched-btn" id="ss-q120">2h</button>
-            <button class="sidebar-sched-btn" id="ss-q180">3h</button>
-          </div>
-          <!-- Minute stepper -->
-          <div class="sidebar-sched-row" style="margin-top:4px">
-            <button class="sidebar-sched-step" id="ss-m10">-10</button>
-            <button class="sidebar-sched-step" id="ss-m1">-1</button>
-            <input type="number" class="sidebar-sched-input" id="sidebar-sched-min" min="1" placeholder="분" value="60" />
-            <button class="sidebar-sched-step" id="ss-p1">+1</button>
-            <button class="sidebar-sched-step" id="ss-p10">+10</button>
-          </div>
-          <div style="margin-top:6px;display:flex;gap:4px">
-            <button class="sidebar-sched-set" id="sidebar-sched-set-btn" style="flex:1">설정</button>
-            <button class="sidebar-sched-cancel" id="sidebar-sched-cancel" style="display:none">취소</button>
-          </div>
-          <div id="sidebar-sched-msg" class="sidebar-sched-msg hidden"></div>
-        </div>
-
+    <!-- User Card -->
+    <div class="user-card">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name">—</div>
+        <div class="user-email" id="user-email">—</div>
       </div>
+    </div>
 
-      <!-- Sidebar Bottom -->
-      <div class="sidebar-bottom">
-        <button class="btn btn-ghost btn-full btn-sm" id="btn-sidebar-settings">
-          &#9881;&nbsp; 환경설정
-        </button>
-        <button class="btn btn-danger btn-full btn-sm hidden" id="btn-end-session">
-          &#x25FC;&nbsp; 세션 종료
-        </button>
-        <button class="btn btn-ghost btn-full btn-sm" id="btn-logout">
-          &#x2192;&nbsp; 로그아웃
-        </button>
+    <!-- Credits -->
+    <div class="credits-widget">
+      <div class="credits-label">잔여 이용시간</div>
+      <div class="credits-top">
+        <span class="credits-value" id="credits-value">—</span>
+        <span class="credits-unit">분</span>
       </div>
-    </aside>
+      <div class="credits-sub" id="credits-sub">로딩 중...</div>
+    </div>
 
-    <!-- ── Main Panel ─────────────────────────────────────────── -->
-    <main class="main-panel" id="main-panel">
-
-      <!-- ── IDLE VIEW ───────────────────────────────────────── -->
-      <div id="view-idle" class="idle-view">
-
-        <!-- Notice Board -->
-        <div class="notice-board" style="width:100%;max-width:640px;">
-          <div class="notice-label">
-            <span>&#128276;</span> 공지사항
-          </div>
-          <div class="notice-board-inner">
-            <button class="notice-nav-btn" id="notice-prev" title="이전">&#8592;</button>
-            <div class="notice-content" id="notice-content">
-              <div class="notice-title">로딩 중...</div>
-              <div class="notice-body"></div>
-            </div>
-            <button class="notice-nav-btn" id="notice-next" title="다음">&#8594;</button>
-          </div>
-          <div class="notice-dots" id="notice-dots"></div>
-        </div>
-
-        <!-- Moonlight missing warning (auto-installed with launcher) -->
-        <div id="moonlight-warning" class="hidden"></div>
-
-        <!-- Connect Button -->
-        <button class="btn btn-primary btn-lg" id="btn-connect" style="padding:16px 52px;font-size:16px;margin-top:8px;">
-          <span style="font-size:20px;">&#9889;</span>
-          원격 PC 접속하기
-        </button>
-
-        <!-- Shortcut hints -->
-        <div class="shortcut-hint" style="max-width:640px;">
-          <div class="shortcut-item">
-            <span class="shortcut-key">Ctrl+Alt+A</span>
-            <span>사이드바</span>
-          </div>
-          <div class="shortcut-item">
-            <span class="shortcut-key">Ctrl+Alt+X</span>
-            <span>전체화면</span>
-          </div>
-          <div class="shortcut-item">
-            <span class="shortcut-key">Ctrl+Alt+Q</span>
-            <span>종료</span>
-          </div>
-          <div class="shortcut-item">
-            <span class="shortcut-key">Ctrl+Alt+M</span>
-            <span>음소거</span>
-          </div>
-          <div class="shortcut-item">
-            <span class="shortcut-key">Ctrl+Alt+H</span>
-            <span>마우스 고정</span>
-          </div>
-        </div>
-
-        <!-- Idle Alert -->
-        <div id="idle-alert" class="alert alert-error hidden" style="width:100%;max-width:640px;"></div>
-
+    <!-- Status -->
+    <div class="conn-status">
+      <span class="status-dot offline" id="status-dot"></span>
+      <div class="conn-status-info">
+        <div class="conn-status-text" id="status-text">연결 안됨</div>
+        <div class="conn-status-sub" id="status-sub">접속하기를 눌러주세요</div>
       </div>
+    </div>
 
-      <!-- ── CONNECTING VIEW ─────────────────────────────────── -->
-      <div id="view-connecting" class="connecting-view hidden">
-        <div class="connecting-spinner"></div>
-        <div>
-          <div class="connecting-msg" id="connecting-msg">빈 PC 배정 중...</div>
-          <div class="connecting-sub">잠시만 기다려주세요</div>
-        </div>
+    <!-- Connect Button (idle) -->
+    <button class="btn btn-primary btn-full" id="btn-connect" style="padding:10px;font-size:13px;">
+      &#9889; 원격 PC 접속하기
+    </button>
+
+    <!-- Connecting Spinner (hidden) -->
+    <div id="view-connecting" class="sidebar-connecting hidden">
+      <div class="connecting-spinner-sm"></div>
+      <span id="connecting-msg">빈 PC 배정 중...</span>
+    </div>
+
+    <!-- Alert -->
+    <div id="idle-alert" class="alert alert-error hidden" style="font-size:11px;"></div>
+
+    <!-- Session Info (connected) -->
+    <div id="session-info" class="session-info hidden">
+      <div class="session-pc">
+        <span class="status-dot online"></span>
+        <span id="pc-name">Gaming PC</span>
       </div>
-
-      <!-- ── CONNECTED VIEW ──────────────────────────────────── -->
-      <div id="view-connected" class="connected-view hidden">
-
-        <!-- PC Info Card -->
-        <div class="pc-info-card">
-          <div class="pc-icon">&#128187;</div>
-          <div>
-            <div class="pc-name" id="pc-name">Gaming PC</div>
-            <div class="pc-spec" id="pc-spec">—</div>
-          </div>
-          <div class="pc-badge">
-            <span class="status-dot online"></span>
-            접속 중
-          </div>
-        </div>
-
-        <!-- Timer Grid -->
-        <div class="timer-grid">
-          <div class="timer-card">
-            <div class="timer-label">이용 시간</div>
-            <div class="timer-value gradient" id="elapsed-time">00:00:00</div>
-            <div class="timer-sub" id="elapsed-sub">이번 세션</div>
-          </div>
-          <div class="timer-card">
-            <div class="timer-label" id="timer2-label">남은 크레딧</div>
-            <div class="timer-value gradient" id="remaining-display">—</div>
-            <div class="timer-sub" id="remaining-sub">분</div>
-          </div>
-        </div>
-
-        <!-- Schedule Card -->
-        <div class="schedule-card">
-          <div class="schedule-title">
-            <span>&#9200;</span>
-            자동 종료 예약
-            <span id="schedule-active-badge" class="hidden"
-              style="margin-left:auto;font-size:11px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);color:var(--amber);padding:2px 10px;border-radius:20px;font-weight:600;">
-              예약됨
-            </span>
-          </div>
-          <div class="schedule-row">
-            <div class="schedule-input-wrap">
-              <button class="schedule-step-btn" id="sched-minus">&#x2212;</button>
-              <input class="schedule-num" type="number" id="sched-minutes" value="60" min="1" max="999" />
-              <button class="schedule-step-btn" id="sched-plus">&#x2B;</button>
-            </div>
-            <span class="schedule-unit">분 후 자동 종료</span>
-            <button class="btn btn-sm" id="btn-sched-set"
-              style="margin-left:auto;background:rgba(14,165,233,0.12);color:var(--sky);border:1px solid rgba(14,165,233,0.25);">
-              예약
-            </button>
-            <button class="btn btn-sm btn-ghost hidden" id="btn-sched-cancel">취소</button>
-          </div>
-          <div class="schedule-info hidden" id="sched-info"></div>
-        </div>
-
-        <!-- Stream Status Bar -->
-        <div class="moonlight-status-bar" id="moonlight-status">
-          <span style="font-size:16px;">&#127918;</span>
-          <span id="moonlight-status-text">REMOTE1 스트리밍 연결 중</span>
-        </div>
-
-        <!-- Connected Alert -->
-        <div id="connected-alert" class="alert alert-error hidden"></div>
-
-        <!-- Disconnect -->
-        <div class="disconnect-section">
-          <button class="btn btn-danger" id="btn-disconnect">
-            &#x2715;&nbsp; 접속 종료
-          </button>
-        </div>
-
+      <div class="session-timer-row">
+        <span class="session-timer-label">이용 시간</span>
+        <span class="session-timer-value" id="elapsed-time">00:00:00</span>
       </div>
+      <div class="session-timer-row">
+        <span class="session-timer-label" id="timer2-label">남은 크레딧</span>
+        <span class="session-timer-value" id="remaining-display">—</span>
+      </div>
+      <div id="elapsed-sub" class="hidden"></div>
+      <div id="remaining-sub" class="hidden"></div>
+    </div>
 
-    </main>
+    <!-- Schedule -->
+    <div class="sidebar-schedule" id="sidebar-schedule">
+      <div class="sidebar-schedule-label">&#9200; 예약 종료</div>
+      <div id="sidebar-sched-countdown" class="sidebar-sched-countdown hidden">
+        <div class="sidebar-sched-countdown-time" id="sidebar-sched-countdown-time">00:00:00</div>
+        <div class="sidebar-sched-countdown-sub" id="sidebar-sched-countdown-sub">남은 시간</div>
+      </div>
+      <div id="sidebar-sched-status" class="sidebar-sched-status">설정 안됨</div>
+      <div class="sidebar-sched-row">
+        <button class="sidebar-sched-btn" id="ss-q60">1h</button>
+        <button class="sidebar-sched-btn" id="ss-q120">2h</button>
+        <button class="sidebar-sched-btn" id="ss-q180">3h</button>
+      </div>
+      <div class="sidebar-sched-row" style="margin-top:4px">
+        <button class="sidebar-sched-step" id="ss-m10">-10</button>
+        <button class="sidebar-sched-step" id="ss-m1">-1</button>
+        <input type="number" class="sidebar-sched-input" id="sidebar-sched-min" min="1" placeholder="분" value="60" />
+        <button class="sidebar-sched-step" id="ss-p1">+1</button>
+        <button class="sidebar-sched-step" id="ss-p10">+10</button>
+      </div>
+      <div style="margin-top:6px;display:flex;gap:4px">
+        <button class="sidebar-sched-set" id="sidebar-sched-set-btn" style="flex:1">설정</button>
+        <button class="sidebar-sched-cancel" id="sidebar-sched-cancel" style="display:none">취소</button>
+      </div>
+      <div id="sidebar-sched-msg" class="sidebar-sched-msg hidden"></div>
+    </div>
+
+    <!-- Shortcuts -->
+    <div class="sidebar-shortcuts">
+      <div class="sidebar-shortcut-title">단축키 안내</div>
+      <div class="sidebar-shortcut-row"><kbd>Ctrl+Alt+A</kbd> 사이드바</div>
+      <div class="sidebar-shortcut-row"><kbd>Ctrl+Alt+X</kbd> 전체화면</div>
+      <div class="sidebar-shortcut-row"><kbd>Ctrl+Alt+Q</kbd> 종료</div>
+      <div class="sidebar-shortcut-row"><kbd>Ctrl+Alt+M</kbd> 음소거</div>
+      <div class="sidebar-shortcut-row"><kbd>Ctrl+Alt+H</kbd> 마우스 고정</div>
+      <div class="sidebar-shortcut-row"><kbd>Ctrl+Alt+V</kbd> 붙여넣기</div>
+    </div>
+
   </div>
+
+  <!-- Bottom -->
+  <div class="sidebar-bottom">
+    <button class="btn btn-danger btn-full btn-sm hidden" id="btn-end-session">
+      &#x25FC;&nbsp; 접속 종료
+    </button>
+    <button class="btn btn-ghost btn-full btn-sm" id="btn-sidebar-settings">
+      &#9881;&nbsp; 환경설정
+    </button>
+    <button class="btn btn-ghost btn-full btn-sm" id="btn-logout">
+      &#x2192;&nbsp; 로그아웃
+    </button>
+  </div>
+
 </div>
 
-<!-- ── Modal Overlay ─────────────────────────────────────────── -->
+<!-- Hidden elements for JS compatibility -->
+<div class="hidden" id="view-idle"></div>
+<div class="hidden" id="view-connected"></div>
+<div class="hidden" id="view-streaming"></div>
+<div class="hidden" id="main-panel"></div>
+<div class="hidden" id="connected-alert"></div>
+<div class="hidden" id="moonlight-status"></div>
+<div class="hidden" id="moonlight-status-text"></div>
+<div class="hidden" id="pc-spec"></div>
+<div class="hidden" id="sched-minutes"><input type="number" value="60"/></div>
+<div class="hidden" id="sched-minus"></div>
+<div class="hidden" id="sched-plus"></div>
+<div class="hidden" id="btn-sched-set"></div>
+<div class="hidden" id="btn-sched-cancel"></div>
+<div class="hidden" id="sched-info"></div>
+<div class="hidden" id="schedule-active-badge"></div>
+<div class="hidden" id="btn-disconnect"></div>
+<div class="hidden" id="notice-content"></div>
+<div class="hidden" id="notice-dots"></div>
+<div class="hidden" id="notice-prev"></div>
+<div class="hidden" id="notice-next"></div>
+<div class="hidden" id="moonlight-warning"></div>
+<div class="hidden" id="btn-install-moonlight"></div>
+<div class="hidden" id="overlay-session"></div>
+<div class="hidden" id="overlay-pc-name"></div>
+<div class="hidden" id="overlay-elapsed"></div>
+<div class="hidden" id="overlay-credits"></div>
+<div class="hidden" id="btn-overlay-disconnect"></div>
+<div class="hidden" id="btn-overlay-collapse"></div>
+<div class="hidden" id="overlay-tab-btn"></div>
+
+<!-- Modal -->
 <div id="modal-overlay" class="modal-overlay hidden">
   <div class="modal-box" id="modal-box">
     <div class="modal-title" id="modal-title">알림</div>

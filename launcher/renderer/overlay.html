@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>REMOTE1 Overlay</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: transparent;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    }
+
+    /* ── Sidebar ─────────────────────────────────── */
+    .overlay-sidebar {
+      position: fixed;
+      left: 0; top: 0;
+      width: 220px;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.90);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(51, 65, 85, 0.6);
+      display: flex;
+      flex-direction: column;
+      padding: 16px 14px;
+      gap: 12px;
+      z-index: 10;
+      transition: transform 0.25s ease;
+    }
+
+    .overlay-sidebar.collapsed {
+      transform: translateX(-100%);
+    }
+
+    /* ── Tab Button (접힌 상태) ──────────────────── */
+    .overlay-tab {
+      position: fixed;
+      left: 0; top: 50%;
+      transform: translateY(-50%);
+      width: 28px; height: 60px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border-radius: 0 8px 8px 0;
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-left: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 14px;
+      cursor: pointer;
+      z-index: 11;
+      transition: opacity 0.2s;
+    }
+
+    .overlay-tab:hover { color: #0ea5e9; background: rgba(15, 23, 42, 0.95); }
+    .overlay-tab.hidden { display: none; }
+
+    /* ── Content Styles ──────────────────────────── */
+    .ov-title {
+      font-size: 13px; font-weight: 700;
+      color: #f1f5f9;
+      display: flex; align-items: center; gap: 6px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+    }
+
+    .ov-title svg { flex-shrink: 0; }
+
+    .ov-section {
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .ov-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .ov-value {
+      font-size: 20px; font-weight: 700;
+      font-family: 'Consolas', 'Monaco', monospace;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .ov-value.small { font-size: 15px; }
+
+    .ov-row { display: flex; justify-content: space-between; align-items: center; }
+
+    .ov-pc {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: #10b981; font-weight: 600;
+    }
+
+    .ov-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+    }
+
+    /* ── Buttons ─────────────────────────────────── */
+    .ov-btn {
+      width: 100%; padding: 8px 0;
+      border: none; border-radius: 6px;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .ov-btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+    .ov-btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+
+    .ov-btn-ghost {
+      background: transparent;
+      color: #94a3b8;
+      border: 1px solid rgba(51, 65, 85, 0.4);
+    }
+    .ov-btn-ghost:hover { background: rgba(51, 65, 85, 0.3); }
+
+    .ov-spacer { flex: 1; }
+
+    .ov-hint {
+      font-size: 10px; color: #475569; text-align: center;
+    }
+    .ov-hint kbd {
+      background: rgba(51, 65, 85, 0.5);
+      padding: 1px 5px; border-radius: 3px;
+      font-family: inherit; font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Tab button (사이드바 접힌 상태에서 열기) -->
+  <div class="overlay-tab" id="tab-btn">&#9776;</div>
+
+  <!-- Sidebar -->
+  <div class="overlay-sidebar" id="sidebar">
+
+    <div class="ov-title">
+      <svg width="14" height="14" viewBox="0 0 32 32"><rect x="2" y="6" width="28" height="19" rx="4" fill="none" stroke="#0ea5e9" stroke-width="2.5"/><circle cx="16" cy="25.5" r="2" fill="#0ea5e9"/><line x1="11" y1="28" x2="21" y2="28" stroke="#0ea5e9" stroke-width="2.2" stroke-linecap="round"/></svg>
+      REMOTE1
+    </div>
+
+    <div class="ov-pc">
+      <span class="ov-dot"></span>
+      <span id="pc-name">Gaming PC</span>
+    </div>
+
+    <!-- 이용 시간 -->
+    <div class="ov-section">
+      <div class="ov-label">이용 시간</div>
+      <div class="ov-value" id="elapsed">00:00:00</div>
+    </div>
+
+    <!-- 남은 크레딧 -->
+    <div class="ov-section">
+      <div class="ov-row">
+        <div>
+          <div class="ov-label">남은 크레딧</div>
+          <div class="ov-value small" id="credits">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ov-spacer"></div>
+
+    <button class="ov-btn ov-btn-danger" id="btn-disconnect">&#x25FC; 접속 종료</button>
+    <button class="ov-btn ov-btn-ghost" id="btn-hide">&#x25C0; 숨기기</button>
+
+    <div class="ov-hint"><kbd>Ctrl+Alt+A</kbd> 사이드바 토글</div>
+  </div>
+
+<script>
+'use strict';
+
+const sidebar = document.getElementById('sidebar');
+const tabBtn  = document.getElementById('tab-btn');
+let sidebarVisible = true;
+
+// ── 마우스 이벤트: 사이드바 위 → 클릭 캡처, 밖 → 통과 ──
+sidebar.addEventListener('mouseenter', () => {
+  window.R1.setIgnoreMouseEvents(false);
+});
+sidebar.addEventListener('mouseleave', () => {
+  window.R1.setIgnoreMouseEvents(true, { forward: true });
+});
+
+tabBtn.addEventListener('mouseenter', () => {
+  window.R1.setIgnoreMouseEvents(false);
+});
+tabBtn.addEventListener('mouseleave', () => {
+  if (!sidebarVisible) {
+    window.R1.setIgnoreMouseEvents(true, { forward: true });
+  }
+});
+
+// ── 사이드바 토글 ──
+function toggleSidebar() {
+  sidebarVisible = !sidebarVisible;
+  sidebar.classList.toggle('collapsed', !sidebarVisible);
+  tabBtn.classList.toggle('hidden', sidebarVisible);
+  if (!sidebarVisible) {
+    window.R1.setIgnoreMouseEvents(true, { forward: true });
+  }
+}
+
+tabBtn.addEventListener('click', toggleSidebar);
+document.getElementById('btn-hide').addEventListener('click', toggleSidebar);
+
+// ── 접속 종료 ──
+document.getElementById('btn-disconnect').addEventListener('click', async () => {
+  await window.R1.invoke('overlay:disconnect');
+});
+
+// ── 타이머 (대시보드에서 세션 정보를 받아옴) ──
+let elapsed = 0;
+let credits = 0;
+
+setInterval(() => {
+  elapsed++;
+  const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+  const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+  const s = String(elapsed % 60).padStart(2, '0');
+  document.getElementById('elapsed').textContent = `${h}:${m}:${s}`;
+}, 1000);
+
+// 1분마다 크레딧 차감
+setInterval(() => {
+  if (credits > 0) {
+    credits--;
+    document.getElementById('credits').textContent = credits + '분';
+  }
+}, 60000);
+
+// ── 단축키 이벤트 ──
+window.R1.on('shortcut:fired', (action) => {
+  if (action === 'toggleSidebar') toggleSidebar();
+});
+
+// ── 초기 데이터 수신 ──
+window.R1.on('overlay:init', (data) => {
+  if (data.pcName) document.getElementById('pc-name').textContent = data.pcName;
+  if (data.credits != null) {
+    credits = data.credits;
+    document.getElementById('credits').textContent = credits + '분';
+  }
+  if (data.elapsed != null) elapsed = data.elapsed;
+});
+</script>
+
+</body>
+</html>

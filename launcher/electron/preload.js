@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('R1', {
   maximize:   () => ipcRenderer.invoke('win:maximize'),
   close:      () => ipcRenderer.invoke('win:close'),
   moveWindow: (dx, dy) => ipcRenderer.invoke('win:move', { dx, dy }),
+  setIgnoreMouseEvents: (ignore, opts) => ipcRenderer.invoke('win:setIgnoreMouseEvents', ignore, opts),
 
   // ── Navigation ───────────────────────────────────────────────────────────
   goToMain:      (userData) => ipcRenderer.invoke('nav:toMain', userData),
@@ -23,11 +24,12 @@ contextBridge.exposeInMainWorld('R1', {
 
   // ── Session API ──────────────────────────────────────────────────────────
   connect:    () => ipcRenderer.invoke('api:connect'),
-  disconnect: () => ipcRenderer.invoke('api:disconnect'),
+  disconnect: (usedMinutes) => ipcRenderer.invoke('api:disconnect', usedMinutes),
   keepAlive:  () => ipcRenderer.invoke('api:keepAlive'),
 
   // ── Moonlight ────────────────────────────────────────────────────────────
   moonlightLaunch:          (host) => ipcRenderer.invoke('moonlight:launch', host),
+  resizeEmbed:              (fullscreen) => ipcRenderer.invoke('moonlight:resizeEmbed', fullscreen),
   moonlightKill:            ()     => ipcRenderer.invoke('moonlight:kill'),
   moonlightIsInstalled:     ()     => ipcRenderer.invoke('moonlight:isInstalled'),
   moonlightOpenInstallPage: ()     => ipcRenderer.invoke('moonlight:openInstallPage'),
@@ -43,9 +45,12 @@ contextBridge.exposeInMainWorld('R1', {
   // ── Notices ──────────────────────────────────────────────────────────────
   fetchNotices: () => ipcRenderer.invoke('notices:fetch'),
 
+  // ── Generic invoke (for overlay) ────────────────────────────────────────
+  invoke: (channel, ...args) => ipcRenderer.invoke(channel, ...args),
+
   // ── Events (renderer listeners) ─────────────────────────────────────────
   on: (channel, fn) => {
-    const allowed = ['moonlight:exited', 'shortcut:fired'];
+    const allowed = ['moonlight:exited', 'shortcut:fired', 'overlay:enter', 'overlay:exit', 'overlay:init'];
     if (allowed.includes(channel)) {
       ipcRenderer.on(channel, (_, ...args) => fn(...args));
     }
