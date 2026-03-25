@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('R1', {
   maximize:   () => ipcRenderer.invoke('win:maximize'),
   close:      () => ipcRenderer.invoke('win:close'),
   moveWindow: (dx, dy) => ipcRenderer.invoke('win:move', { dx, dy }),
+  toggleSidebar: () => ipcRenderer.invoke('win:toggleSidebar'),
   setIgnoreMouseEvents: (ignore, opts) => ipcRenderer.invoke('win:setIgnoreMouseEvents', ignore, opts),
 
   // ── Navigation ───────────────────────────────────────────────────────────
@@ -33,14 +34,15 @@ contextBridge.exposeInMainWorld('R1', {
   moonlightKill:            ()     => ipcRenderer.invoke('moonlight:kill'),
   moonlightIsInstalled:     ()     => ipcRenderer.invoke('moonlight:isInstalled'),
   moonlightOpenInstallPage: ()     => ipcRenderer.invoke('moonlight:openInstallPage'),
+  moonlightFullscreen:      (mode) => ipcRenderer.invoke('moonlight:fullscreen', mode),
 
   // ── Settings ─────────────────────────────────────────────────────────────
   loadSettings: ()  => ipcRenderer.invoke('settings:load'),
   saveSettings: (s) => ipcRenderer.invoke('settings:save', s),
 
-  // ── Credentials (로그인 저장) ───────────────────────────────────────────
-  loadCredentials: ()  => ipcRenderer.invoke('credentials:load'),
-  saveCredentials: (d) => ipcRenderer.invoke('credentials:save', d),
+  // ── Credentials (파일 기반 저장) ────────────────────────────────────────
+  loadCredentials: () => ipcRenderer.invoke('credentials:load'),
+  saveCredentials: (data) => ipcRenderer.invoke('credentials:save', data),
 
   // ── USB (silent) ─────────────────────────────────────────────────────────
   usbConnect:    () => ipcRenderer.invoke('usb:connect'),
@@ -54,7 +56,7 @@ contextBridge.exposeInMainWorld('R1', {
 
   // ── Events (renderer listeners) ─────────────────────────────────────────
   on: (channel, fn) => {
-    const allowed = ['moonlight:exited', 'shortcut:fired', 'overlay:enter', 'overlay:exit', 'overlay:init'];
+    const allowed = ['moonlight:exited', 'moonlight:streamConnected', 'shortcut:fired', 'overlay:enter', 'overlay:exit', 'overlay:init'];
     if (allowed.includes(channel)) {
       ipcRenderer.on(channel, (_, ...args) => fn(...args));
     }

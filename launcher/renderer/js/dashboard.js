@@ -320,10 +320,9 @@ function startTimers() {
     // Elapsed display
     els.elapsedTime.textContent = formatTime(state.elapsed);
 
-    // Schedule countdown
-    if (state.scheduleMinutes !== null) {
-      const totalSecs = state.scheduleMinutes * 60;
-      state.scheduleRemaining = totalSecs - state.elapsed;
+    // Schedule countdown (지금부터 X분 기준 — 매 초 1씩 감소)
+    if (state.scheduleRemaining !== null && state.scheduleRemaining > 0) {
+      state.scheduleRemaining--;
 
       if (state.scheduleRemaining <= 0) {
         clearInterval(timerInterval);
@@ -403,7 +402,7 @@ els.schedMinutes.addEventListener('input', () => {
 
 function applySchedule(mins) {
   state.scheduleMinutes   = mins;
-  state.scheduleRemaining = mins * 60 - state.elapsed;
+  state.scheduleRemaining = mins * 60;
 
   if (state.scheduleRemaining <= 0) {
     showAlert('connected-alert', '이미 지난 시간입니다. 더 큰 값을 입력해주세요.', 'warn');
@@ -463,34 +462,76 @@ els.btnSchedCancel.addEventListener('click', () => {
 
 // ─── Moonlight Events ─────────────────────────────────────────────────────────
 window.R1.on('moonlight:exited', ({ code } = {}) => {
-  // 모드 초기화
-  streamMode = 'normal';
+  // 전체화면 모드 해제
+  isStreamFullscreen = false;
+  isStreamWindowedFull = false;
   document.body.classList.remove('stream-fullscreen');
 
   if (state.status === 'connected') {
     disconnect('원격 스트리밍이 종료되었습니다.');
+  } else if (state.status === 'connecting') {
+    // Moonlight가 연결 완료 전에 종료됨
+    const btnConnect = $('btn-connect');
+    const viewConnecting = $('view-connecting');
+    if (btnConnect) btnConnect.classList.remove('hidden');
+    if (viewConnecting) viewConnecting.classList.add('hidden');
+    state.status = 'idle';
+    showAlert('idle-alert', '스트리밍 연결이 실패했습니다.', 'warn');
+    window.R1.disconnect().catch(() => {});
+    updateStatusDisplay();
   }
 });
 
+// ─── Moonlight 스트리밍 연결 완료 감지 ─────────────────────────────────────────
+window.R1.on('moonlight:streamConnected', () => {
+  console.log('[Dashboard] Moonlight stream connected!');
+  if (state.status !== 'connecting' || !state.session) return;
+
+  const viewConnecting = $('view-connecting');
+  if (viewConnecting) viewConnecting.classList.add('hidden');
+  const sessionInfo = $('session-info');
+  if (sessionInfo) sessionInfo.classList.remove('hidden');
+  $('pc-name').textContent = state.session.machineName || 'Gaming PC';
+  els.endSession.classList.remove('hidden');
+
+  state.status = 'connected';
+  state.elapsed = 0;
+  startTimers();
+  updateStatusDisplay();
+});
+
 // ─── Shortcut Events ──────────────────────────────────────────────────────────
-// 'normal' | 'fullscreen' | 'maximized'
-let streamMode = 'normal';
+let isStreamFullscreen = false;   // 'fullscreen' 모드 활성 여부
+let isStreamWindowedFull = false; // 'windowedFull' 모드 활성 여부
 
 window.R1.on('shortcut:fired', (action) => {
-  console.log('[shortcut]', action, 'status:', state.status, 'streamMode:', streamMode);
   if (action === 'fullscreen') {
+    // Ctrl+Alt+F — 전체화면 (테두리 없음, 작업표시줄 덮음)
     if (state.status === 'connected') {
-      // 전체모드 토글: 테두리 없이 화면 꽉 참
-      streamMode = (streamMode === 'fullscreen') ? 'normal' : 'fullscreen';
-      console.log('[streamMode] ->', streamMode);
-      window.R1.resizeEmbed(streamMode);
+      if (isStreamFullscreen) {
+        // 복원
+        window.R1.moonlightFullscreen('restore');
+        isStreamFullscreen = false;
+      } else {
+        // 전체창모드가 켜져있으면 먼저 해제
+        isStreamWindowedFull = false;
+        window.R1.moonlightFullscreen('fullscreen');
+        isStreamFullscreen = true;
+      }
     }
-  } else if (action === 'maximizeWindow') {
+  } else if (action === 'windowedFull') {
+    // Ctrl+Alt+W — 전체창모드 (테두리 있음, 작업표시줄 제외)
     if (state.status === 'connected') {
-      // 전체창모드 토글: 테두리 유지 + 화면 꽉 참
-      streamMode = (streamMode === 'maximized') ? 'normal' : 'maximized';
-      console.log('[streamMode] ->', streamMode);
-      window.R1.resizeEmbed(streamMode);
+      if (isStreamWindowedFull) {
+        // 복원
+        window.R1.moonlightFullscreen('restore');
+        isStreamWindowedFull = false;
+      } else {
+        // 전체화면이 켜져있으면 먼저 해제
+        isStreamFullscreen = false;
+        window.R1.moonlightFullscreen('windowed');
+        isStreamWindowedFull = true;
+      }
     }
   } else if (action === 'quit') {
     if (state.status === 'connected') {
@@ -511,10 +552,6 @@ window.R1.on('shortcut:fired', (action) => {
     }
   } else if (action === 'mouseGrab') {
     state.mouseGrabbed = !state.mouseGrabbed;
-  } else if (action === 'usbToggle') {
-    // silent, no UI feedback
-  } else if (action === 'paste') {
-    // clipboard paste - no UI feedback needed
   } else if (action === 'toggleSidebar') {
     toggleSidebar();
   }
@@ -574,17 +611,9 @@ async function connect() {
 
     window.R1.usbConnect().catch(() => {});
 
-    // 접속 성공 — UI 전환
-    if (viewConnecting) viewConnecting.classList.add('hidden');
-    const sessionInfo = $('session-info');
-    if (sessionInfo) sessionInfo.classList.remove('hidden');
-    $('pc-name').textContent = session.machineName || 'Gaming PC';
-    els.endSession.classList.remove('hidden');
-
-    state.status = 'connected';
-    state.elapsed = 0;
-    startTimers();
-    updateStatusDisplay();
+    // Moonlight 실행 성공 — 스트리밍 연결 대기 중 (버튼 상태 유지)
+    // moonlight:streamConnected 이벤트가 오면 그때 "이용 차감 중"으로 전환
+    els.connectingMsg.textContent = '원격 PC 연결 대기 중...';
 
   } catch (err) {
     if (btnConnect) btnConnect.classList.remove('hidden');
@@ -648,6 +677,7 @@ async function disconnect(reason) {
 
   const usedMinutes = Math.ceil(state.elapsed / 60);
   state.scheduleMinutes = null;
+  state.scheduleRemaining = null;
 
   window.R1.usbDisconnect().catch(() => {});
   await window.R1.disconnect(usedMinutes).catch(() => {});
@@ -655,6 +685,10 @@ async function disconnect(reason) {
   state.session = null;
   state.status = 'idle';
   state.elapsed = 0;
+
+  // 예약 종료 UI 리셋
+  if (typeof unlockSidebarSched === 'function') unlockSidebarSched();
+  updateSidebarSchedule();
 
   // UI 복원: 접속 버튼 보이기, 세션 정보 숨기기
   const btnConnect = $('btn-connect');
@@ -753,8 +787,10 @@ async function init() {
   showView('idle');
 }
 
-// ─── Sidebar Toggle (사이드바 전용 앱 — 토글 불필요) ─────────────────────────
-let toggleSidebar = function() {};
+// ─── Sidebar Toggle ──────────────────────────────────────────────────────────
+let toggleSidebar = function() {
+  window.R1.toggleSidebar();
+};
 
 // ─── Sidebar Settings Button ─────────────────────────────────────────────────
 document.getElementById('btn-sidebar-settings').addEventListener('click', () => {

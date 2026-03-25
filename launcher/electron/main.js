@@ -8,6 +8,10 @@ const { URL } = require('url');
 const { spawn, execFile, execSync } = require('child_process');
 const fs = require('fs');
 
+// ─── 깜빡임 방지 ─────────────────────────────────────────────────────────────
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 const BASE_URL = 'https://project-six-sable-26.vercel.app';
 
@@ -43,37 +47,17 @@ const DEFAULT_SETTINGS = {
 // ─── State ────────────────────────────────────────────────────────────────────
 let loginWindow    = null;
 let mainWindow     = null;
-let streamWindow   = null;  // 미사용 (하위 호환)
 let overlayWindow  = null;
 let settingsWindow = null;
 let moonlightProcess = null;
+let moonlightTitlePollTimer = null;
 
 const auth = { accessToken: null, user: null, refreshToken: null };
 
 let isMuted      = false;
 let mouseGrabbed = false;
-
-// ─── Credentials File ─────────────────────────────────────────────────────────
-function getCredentialsPath() {
-  return path.join(app.getPath('userData'), 'credentials.json');
-}
-
-function loadCredentials() {
-  try {
-    return JSON.parse(fs.readFileSync(getCredentialsPath(), 'utf8'));
-  } catch (_) {
-    return {};
-  }
-}
-
-function saveCredentials(data) {
-  try {
-    fs.writeFileSync(getCredentialsPath(), JSON.stringify(data, null, 2), 'utf8');
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, error: err.message };
-  }
-}
+let moonlightHwnd = null;          // Moonlight 창 핸들 (캐시)
+let moonlightSavedBounds = null;   // 전체화면 전 원래 위치/크기
 
 // ─── Settings File ────────────────────────────────────────────────────────────
 function getSettingsPath() {
@@ -256,8 +240,6 @@ function findMoonlightExe() {
 }
 
 function killMoonlight() {
-  if (loadingHideInterval) { clearInterval(loadingHideInterval); loadingHideInterval = null; }
-  if (earlyPosInterval) { clearInterval(earlyPosInterval); earlyPosInterval = null; }
   if (moonlightProcess) {
     try { moonlightProcess.kill(); } catch (_) {}
     moonlightProcess = null;
@@ -289,7 +271,7 @@ function launchMoonlight(host, settings) {
   args.push('--fps', String(s.fps || 60));
   args.push('--bitrate', String(s.bitrate || 20000));
 
-  // windowed 모드로 실행 → 이후 Win32 API로 런처 안에 임베드
+  // windowed 모드로 독립 실행 (로딩 창 포함 그대로 표시)
   args.push('--display-mode', 'windowed');
 
   console.log('[Moonlight] CMD:', exePath, args.join(' '));
@@ -305,169 +287,144 @@ function launchMoonlight(host, settings) {
   moonlightProcess.on('error', (err) => console.error('[Moonlight] spawn error:', err));
   moonlightProcess.on('exit', (code) => {
     moonlightProcess = null;
-    if (loadingHideInterval) { clearInterval(loadingHideInterval); loadingHideInterval = null; }
-    if (earlyPosInterval) { clearInterval(earlyPosInterval); earlyPosInterval = null; }
-    stopSnapSync();
+    moonlightHwnd = null;
+    moonlightSavedBounds = null;
+    stopMoonlightTitlePoll();
     if (mainWindow) {
       mainWindow.webContents.send('moonlight:exited', { code });
     }
   });
-
-  // spawn 직후: 로딩 창 숨기기 + 위치 강제
-  hideLoadingWindow();
-  forceEarlyPosition();
 }
 
-// ─── Moonlight 로딩 창 숨기기 + 초기 위치 강제 ────────────────────────────────
-let loadingHideInterval = null;
-let earlyPosInterval = null;
+// ─── Moonlight 창 타이틀 감지 (스트리밍 연결 완료 감지) ──────────────────────
+const SIDEBAR_WIDTH = 220;
 
-function hideLoadingWindow() {
-  if (loadingHideInterval) clearInterval(loadingHideInterval);
-  if (!moonlightProcess) return;
-  const pid = moonlightProcess.pid;
-  let attempts = 0;
+function startMoonlightTitlePoll() {
+  stopMoonlightTitlePoll();
+  console.log('[TitlePoll] Started polling for Moonlight streaming title...');
 
-  loadingHideInterval = setInterval(() => {
-    attempts++;
-    // moonlightHwnd가 설정되면 스트리밍 창이 잡힌 것이므로 중단
-    if (!moonlightProcess || moonlightHwnd || attempts > 40) {
-      clearInterval(loadingHideInterval);
-      loadingHideInterval = null;
+  moonlightTitlePollTimer = setInterval(() => {
+    if (!moonlightProcess) {
+      stopMoonlightTitlePoll();
       return;
     }
-    // 로딩 창 숨기기: 빈 타이틀 또는 "Moonlight" 타이틀만 대상 (REMOTE1 Streaming 제외)
+
+    // 타이틀 + HWND를 동시에 가져오기
+    const cmd = [
+      '$p = Get-Process Moonlight -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -ne "" } | Select-Object -First 1;',
+      'if ($p) { Write-Output "$($p.MainWindowHandle)|$($p.MainWindowTitle)" }'
+    ].join(' ');
+
     execFile('powershell.exe', [
-      '-NonInteractive', '-WindowStyle', 'Hidden', '-Command',
-      `Add-Type @"\nusing System;using System.Runtime.InteropServices;using System.Diagnostics;using System.Text;\n` +
-      `public class HL{\n` +
-      `  [DllImport("user32.dll")]public static extern bool ShowWindow(IntPtr h,int c);\n` +
-      `  [DllImport("user32.dll")]public static extern bool IsWindowVisible(IntPtr h);\n` +
-      `  [DllImport("user32.dll",CharSet=CharSet.Unicode)]public static extern int GetWindowText(IntPtr h,StringBuilder s,int n);\n` +
-      `}\n"@\n` +
-      `$p=Get-Process -Id ${pid} -ErrorAction SilentlyContinue;if(!$p){exit}\n` +
-      `foreach($w in (Get-Process -Id ${pid}).MainWindowHandle){\n` +
-      `  if($w -eq [IntPtr]::Zero){continue}\n` +
-      `  $sb=New-Object Text.StringBuilder 256;[void][HL]::GetWindowText($w,$sb,256);$t=$sb.ToString()\n` +
-      `  if($t -eq "" -or $t -eq "Moonlight"){if([HL]::IsWindowVisible($w)){[void][HL]::ShowWindow($w,0);Write-Output "HIDDEN"}}\n` +
-      `}`
+      '-NonInteractive', '-WindowStyle', 'Hidden', '-Command', cmd
     ], { windowsHide: true, timeout: 3000 }, (err, stdout) => {
-      const out = (stdout || '').trim();
-      if (out.includes('HIDDEN')) {
-        console.log('[HideLoading] loading window hidden');
+      const line = (stdout || '').trim();
+      if (!line) return;
+      const sepIdx = line.indexOf('|');
+      if (sepIdx < 0) return;
+      const hwnd = line.substring(0, sepIdx);
+      const title = line.substring(sepIdx + 1);
+
+      if (title && title.includes(' - Moonlight')) {
+        console.log('[TitlePoll] Streaming connected! Title:', title, 'HWND:', hwnd);
+        moonlightHwnd = hwnd;
+        stopMoonlightTitlePoll();
+        if (mainWindow) {
+          mainWindow.webContents.send('moonlight:streamConnected');
+        }
       }
     });
-  }, 500);
+  }, 1000);
 }
 
-function forceEarlyPosition() {
-  if (earlyPosInterval) clearInterval(earlyPosInterval);
-  if (!moonlightProcess || !mainWindow) return;
-  const pid = moonlightProcess.pid;
-  let attempts = 0;
+function stopMoonlightTitlePoll() {
+  if (moonlightTitlePollTimer) {
+    clearInterval(moonlightTitlePollTimer);
+    moonlightTitlePollTimer = null;
+    console.log('[TitlePoll] Stopped.');
+  }
+}
+
+// ─── Moonlight 전체화면 / 전체창모드 ─────────────────────────────────────────
+// mode: 'fullscreen' = 테두리 없이 모니터 전체 (작업표시줄 덮음)
+// mode: 'windowed'   = 테두리 있는 상태로 작업영역 꽉 채움
+function setMoonlightDisplayMode(mode) {
+  if (!moonlightHwnd) {
+    console.log('[Display] No Moonlight HWND cached');
+    return;
+  }
 
   const { screen } = require('electron');
-  const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
-  const { x: sx, y: sy } = screen.getPrimaryDisplay().workArea;
-  const b = mainWindow.getBounds();
-  const areaX = b.x + b.width;
-  const areaW = (sx + sw) - areaX;
-  const bounds = calcMoonlightBounds(areaX, sy, areaW, sh);
+  const display = screen.getPrimaryDisplay();
 
-  earlyPosInterval = setInterval(() => {
-    attempts++;
-    if (!moonlightProcess || attempts > 10) {
-      clearInterval(earlyPosInterval);
-      earlyPosInterval = null;
-      return;
+  let x, y, w, h, styleCmd;
+
+  if (mode === 'fullscreen') {
+    // 모니터 전체 (작업표시줄 포함) — 테두리/캡션 제거
+    const { width, height } = display.size;
+    x = 0; y = 0; w = width; h = height;
+    styleCmd = [
+      '$s = [R1]::GetWindowLong($ml, -16)',
+      '$s = $s -band (-bnot 0x00C00000) -band (-bnot 0x00040000) -band (-bnot 0x00800000)',
+      '[void][R1]::SetWindowLong($ml, -16, $s)',
+    ].join('\n');
+  } else if (mode === 'windowed') {
+    // 작업영역 (작업표시줄 제외) — 테두리/캡션 복원
+    const wa = display.workArea;
+    x = wa.x; y = wa.y; w = wa.width; h = wa.height;
+    styleCmd = [
+      '$s = [R1]::GetWindowLong($ml, -16)',
+      '$s = $s -bor 0x00C00000 -bor 0x00040000 -bor 0x00800000',
+      '[void][R1]::SetWindowLong($ml, -16, $s)',
+    ].join('\n');
+  } else if (mode === 'restore') {
+    // 원래 크기로 복원 — 테두리/캡션 복원
+    styleCmd = [
+      '$s = [R1]::GetWindowLong($ml, -16)',
+      '$s = $s -bor 0x00C00000 -bor 0x00040000 -bor 0x00800000',
+      '[void][R1]::SetWindowLong($ml, -16, $s)',
+    ].join('\n');
+    if (moonlightSavedBounds) {
+      x = moonlightSavedBounds.x;
+      y = moonlightSavedBounds.y;
+      w = moonlightSavedBounds.w;
+      h = moonlightSavedBounds.h;
+    } else {
+      // 저장된 위치가 없으면 화면 중앙 적당한 크기로
+      const wa = display.workArea;
+      w = Math.round(wa.width * 0.7);
+      h = Math.round(wa.height * 0.7);
+      x = wa.x + Math.round((wa.width - w) / 2);
+      y = wa.y + Math.round((wa.height - h) / 2);
     }
-    // PID로 창을 찾아서 사이드바 오른쪽으로 강제 이동 (16:9 비율)
-    execFile('powershell.exe', [
-      '-NonInteractive', '-WindowStyle', 'Hidden', '-Command',
-      `Add-Type 'using System;using System.Runtime.InteropServices;using System.Diagnostics;` +
-      `public class EP{` +
-      `[DllImport("user32.dll")]public static extern bool MoveWindow(IntPtr h,int x,int y,int w,int ht,bool r);` +
-      `public static void Move(int pid,int x,int y,int w,int h){` +
-      `foreach(var p in Process.GetProcesses()){try{if(p.Id==pid&&p.MainWindowHandle!=IntPtr.Zero)MoveWindow(p.MainWindowHandle,x,y,w,h,true);}catch{}}` +
-      `}}';` +
-      `[EP]::Move(${pid},${bounds.x},${bounds.y},${bounds.width},${bounds.height})`
-    ], { windowsHide: true, timeout: 2000 }, () => {});
-  }, 100);
-}
+  }
 
-// ─── 16:9 비율 계산 ──────────────────────────────────────────────────────────
-const TITLE_BAR_HEIGHT = 32; // Windows 제목표시줄 높이 (대략)
-
-function calcMoonlightBounds(areaX, areaY, areaW, areaH) {
-  // 제목표시줄 높이를 제외한 영역에서 16:9 비율 계산
-  const contentH = areaH - TITLE_BAR_HEIGHT;
-  const idealW = Math.round(contentH * 16 / 9);
-  const w = Math.min(idealW, areaW);
-  const h = Math.round(w * 9 / 16) + TITLE_BAR_HEIGHT;
-  const x = areaX; // 왼쪽 정렬
-  const y = areaY + Math.round((areaH - h) / 2); // 세로 중앙
-  return { x, y, width: w, height: h };
-}
-
-// ─── Stream Window 동기화 ─────────────────────────────────────────────────────
-function syncStreamPosition() {
-  // Moonlight를 사이드바 오른쪽에 16:9 비율로 snap 배치
-  if (!moonlightHwnd || !mainWindow) return;
-  const { screen } = require('electron');
-  const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
-  const { x: sx, y: sy } = screen.getPrimaryDisplay().workArea;
-  const b = mainWindow.getBounds();
-  const areaX = b.x + b.width;
-  const areaW = (sx + sw) - areaX;
-  if (areaW <= 0) return;
-  const bounds = calcMoonlightBounds(areaX, sy, areaW, sh);
-  moveMoonlightFast(bounds.x, bounds.y, bounds.width, bounds.height);
-}
-
-// ─── Win32: Moonlight 창 관리 ─────────────────────────────────────────────────
-const SIDEBAR_WIDTH = 220;
-let moonlightHwnd = null;  // Moonlight 창 핸들 (캐시)
-let moveListenerActive = false;
-
-// 초기 설정: 테두리 제거 + 위치 + 핸들 캐시
-function setupMoonlightWindow(bounds, retries = 15) {
-  if (!moonlightProcess) return;
-  const pid = moonlightProcess.pid;
-  const { x, y, width, height } = bounds;
-
-  const scriptPath = path.join(app.getPath('temp'), 'r1_setup.ps1');
+  const scriptPath = path.join(app.getPath('temp'), 'r1_display.ps1');
   const script = [
     'Add-Type @"',
     'using System;',
     'using System.Runtime.InteropServices;',
-    'using System.Diagnostics;',
     'public class R1 {',
     '  [DllImport("user32.dll")] public static extern int SetWindowLong(IntPtr h, int i, int v);',
     '  [DllImport("user32.dll")] public static extern int GetWindowLong(IntPtr h, int i);',
     '  [DllImport("user32.dll")] public static extern bool MoveWindow(IntPtr h, int x, int y, int w, int ht, bool r);',
-    '  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);',
-    '  [DllImport("user32.dll", CharSet=CharSet.Unicode)] public static extern bool SetWindowText(IntPtr h, string t);',
-    '  public static IntPtr FindByPid(int pid) {',
-    '    foreach (var p in Process.GetProcesses()) {',
-    '      try { if (p.Id == pid && p.MainWindowHandle != IntPtr.Zero) return p.MainWindowHandle; } catch {}',
-    '    }',
-    '    return IntPtr.Zero;',
-    '  }',
+    '  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);',
+    '  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);',
+    '  [StructLayout(LayoutKind.Sequential)] public struct RECT { public int L,T,R,B; }',
     '}',
     '"@',
     '',
-    `$ml = [R1]::FindByPid(${pid})`,
-    'if ($ml -eq [IntPtr]::Zero) { Write-Output "WAIT"; exit }',
+    `$ml = [IntPtr]${moonlightHwnd}`,
     '',
-    '# 크기조절만 비활성화 (제목표시줄/테두리 유지)',
-    '$s = [R1]::GetWindowLong($ml, -16)',
-    '$s = $s -band (-bnot 0x00040000)',
-    '[void][R1]::SetWindowLong($ml, -16, $s)',
+    '# 현재 위치 저장용 출력',
+    '$rc = New-Object R1+RECT',
+    '[void][R1]::GetWindowRect($ml, [ref]$rc)',
+    'Write-Output "$($rc.L)|$($rc.T)|$($rc.R - $rc.L)|$($rc.B - $rc.T)"',
     '',
-    `[void][R1]::MoveWindow($ml, ${x}, ${y}, ${width}, ${height}, $true)`,
-    '[void][R1]::ShowWindow($ml, 5)',
-    '[void][R1]::SetWindowText($ml, "REMOTE1 Streaming")',
-    'Write-Output $ml.ToInt64()',
+    styleCmd,
+    '',
+    `[void][R1]::MoveWindow($ml, ${x}, ${y}, ${w}, ${h}, $true)`,
+    '[void][R1]::SetForegroundWindow($ml)',
   ].join('\n');
 
   fs.writeFileSync(scriptPath, script, 'utf8');
@@ -476,53 +433,28 @@ function setupMoonlightWindow(bounds, retries = 15) {
     ['-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', scriptPath],
     { windowsHide: true, timeout: 5000 },
     (err, stdout) => {
-      const r = (stdout || '').trim().split('\n').pop();
-      console.log('[Setup] result:', r);
+      const line = (stdout || '').trim().split('\n')[0];
       try { fs.unlinkSync(scriptPath); } catch (_) {}
 
-      if (r === 'WAIT' && retries > 0) {
-        setTimeout(() => setupMoonlightWindow(bounds, retries - 1), 500);
-      } else if (r && r !== 'WAIT') {
-        moonlightHwnd = r; // 핸들 캐시
-        console.log('[Setup] Moonlight HWND:', moonlightHwnd);
-        startSnapSync();
+      // 원래 위치 저장 (fullscreen/windowed로 바꾸기 전 위치)
+      if (mode !== 'restore' && line) {
+        const parts = line.split('|');
+        if (parts.length === 4 && !moonlightSavedBounds) {
+          moonlightSavedBounds = {
+            x: parseInt(parts[0], 10),
+            y: parseInt(parts[1], 10),
+            w: parseInt(parts[2], 10),
+            h: parseInt(parts[3], 10),
+          };
+          console.log('[Display] Saved original bounds:', moonlightSavedBounds);
+        }
+      } else if (mode === 'restore') {
+        moonlightSavedBounds = null;
       }
+
+      console.log('[Display] Mode set to:', mode);
     }
   );
-}
-
-// 빠른 이동: 캐시된 핸들로 SetWindowPos 호출 (MoveWindow보다 강력)
-function moveMoonlightFast(x, y, width, height, topmost = false) {
-  if (!moonlightHwnd) return;
-  const insertAfter = topmost ? '-1' : '-2'; // HWND_TOPMOST(-1) or HWND_NOTOPMOST(-2)
-  const flags = '0x0040'; // SWP_SHOWWINDOW
-  execFile('powershell.exe', [
-    '-NonInteractive', '-WindowStyle', 'Hidden', '-Command',
-    `Add-Type 'using System;using System.Runtime.InteropServices;public class M{` +
-    `[DllImport("user32.dll")]public static extern bool SetWindowPos(IntPtr h,IntPtr a,int x,int y,int w,int ht,uint f);` +
-    `[DllImport("user32.dll")]public static extern bool SetForegroundWindow(IntPtr h);}';` +
-    `[void][M]::SetWindowPos([IntPtr]${moonlightHwnd},[IntPtr](${insertAfter}),${x},${y},${width},${height},${flags});` +
-    (topmost ? `[void][M]::SetForegroundWindow([IntPtr]${moonlightHwnd})` : '')
-  ], { windowsHide: true, timeout: 2000 }, (err) => {
-    if (err) console.error('[moveMoonlight] error:', err.message);
-  });
-}
-
-// 사이드바 이동 시 Moonlight snap 동기화
-function startSnapSync() {
-  if (moveListenerActive || !mainWindow) return;
-  moveListenerActive = true;
-  mainWindow.on('move', syncStreamPosition);
-  mainWindow.on('resize', syncStreamPosition);
-}
-
-function stopSnapSync(clearHwnd = true) {
-  moveListenerActive = false;
-  if (clearHwnd) moonlightHwnd = null;
-  if (mainWindow) {
-    mainWindow.removeListener('move', syncStreamPosition);
-    mainWindow.removeListener('resize', syncStreamPosition);
-  }
 }
 
 // ─── USB (silent) ─────────────────────────────────────────────────────────────
@@ -565,7 +497,6 @@ function createLoginWindow() {
     frame:     false,
     center:    true,
     show:      false,
-    paintWhenInitiallyHidden: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -576,8 +507,8 @@ function createLoginWindow() {
 
   loginWindow.loadFile(path.join(__dirname, '../renderer/login.html'));
 
-  loginWindow.webContents.once('did-finish-load', () => {
-    setTimeout(() => { if (loginWindow) loginWindow.show(); }, 50);
+  loginWindow.once('ready-to-show', () => {
+    setTimeout(() => { if (loginWindow) loginWindow.show(); }, 200);
   });
 
   loginWindow.webContents.on('console-message', (_, level, message) => {
@@ -588,26 +519,21 @@ function createLoginWindow() {
   loginWindow.on('closed', () => { loginWindow = null; });
 }
 
-const SIDEBAR_H = 850;  // 사이드바 내용이 스크롤 없이 전부 보이는 높이
-const STREAM_W  = 900;  // 스트림 창 기본 너비
+const SIDEBAR_H = 700;  // 사이드바 내용이 전부 보이는 높이
 
 function createMainWindow() {
   if (mainWindow) { mainWindow.focus(); return; }
 
-  const { screen } = require('electron');
-  const { width: screenW, height: screenH } = screen.getPrimaryDisplay().workAreaSize;
-
-  // 사이드바만 화면 중앙
+  // 사이드바만 화면 중앙에 표시
   mainWindow = new BrowserWindow({
     width:     SIDEBAR_WIDTH,
     height:    SIDEBAR_H,
-    minWidth:  160,
-    maxWidth:  SIDEBAR_WIDTH,
-    minHeight: 300,
-    maxHeight: SIDEBAR_H,
-    frame:     false,
-    resizable: true,
     center:    true,
+    minWidth:  SIDEBAR_WIDTH,
+    maxWidth:  SIDEBAR_WIDTH,
+    minHeight: SIDEBAR_H,
+    frame:     false,
+    resizable: false,
     show:      false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -625,9 +551,12 @@ function createMainWindow() {
   });
 
   mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
-    mainWindow.setAlwaysOnTop(true, 'screen-saver');
-    registerGlobalShortcuts();
+    setTimeout(() => {
+      if (mainWindow) {
+        mainWindow.show();
+        registerGlobalShortcuts();
+      }
+    }, 200);
   });
 
   mainWindow.on('closed', () => {
@@ -662,39 +591,35 @@ function createSettingsWindow() {
 }
 
 // ─── Global Shortcuts ─────────────────────────────────────────────────────────
-// Moonlight 단축키(Ctrl+Alt+*)와 충돌 방지: Ctrl+Shift+F* 사용
 function registerGlobalShortcuts() {
-  // Ctrl+Shift+F1: 사이드바 숨기기/보이기
-  globalShortcut.register('CommandOrControl+Shift+F1', () => {
-    if (mainWindow) {
-      if (mainWindow.isVisible()) { mainWindow.hide(); }
-      else { mainWindow.show(); mainWindow.focus(); }
-    }
+  // Ctrl+Alt+F1 — 사이드바 열기/닫기
+  globalShortcut.register('CommandOrControl+Alt+F1', () => {
+    mainWindow?.webContents.send('shortcut:fired', 'toggleSidebar');
   });
 
-  // Ctrl+Shift+F2: 전체모드 (Moonlight 전체화면 켜기/끄기)
-  globalShortcut.register('CommandOrControl+Shift+F2', () => {
+  // Ctrl+Alt+F2 — 전체화면 (테두리 없음, 작업표시줄 덮음)
+  globalShortcut.register('CommandOrControl+Alt+F2', () => {
     mainWindow?.webContents.send('shortcut:fired', 'fullscreen');
   });
 
-  // Ctrl+Shift+F3: 전체창모드 (런처 창 최대화 토글)
-  globalShortcut.register('CommandOrControl+Shift+F3', () => {
-    mainWindow?.webContents.send('shortcut:fired', 'maximizeWindow');
+  // Ctrl+Alt+F3 — 전체창모드 (테두리 있음, 작업표시줄 제외)
+  globalShortcut.register('CommandOrControl+Alt+F3', () => {
+    mainWindow?.webContents.send('shortcut:fired', 'windowedFull');
   });
 
-  // Ctrl+Shift+F4: 종료
-  globalShortcut.register('CommandOrControl+Shift+F4', () => {
+  // Ctrl+Alt+F4 — 종료
+  globalShortcut.register('CommandOrControl+Alt+F4', () => {
     mainWindow?.webContents.send('shortcut:fired', 'quit');
   });
 
-  // Ctrl+Shift+F5: 음소거
-  globalShortcut.register('CommandOrControl+Shift+F5', () => {
+  // Ctrl+Alt+F5 — 음소거
+  globalShortcut.register('CommandOrControl+Alt+F5', () => {
     isMuted = !isMuted;
     mainWindow?.webContents.send('shortcut:fired', 'mute');
   });
 
-  // Ctrl+Shift+F6: 마우스 고정
-  globalShortcut.register('CommandOrControl+Shift+F6', () => {
+  // Ctrl+Alt+F6 — 마우스 고정
+  globalShortcut.register('CommandOrControl+Alt+F6', () => {
     mouseGrabbed = !mouseGrabbed;
     mainWindow?.webContents.send('shortcut:fired', 'mouseGrab');
   });
@@ -760,6 +685,16 @@ ipcMain.handle('win:move', (_, { dx, dy }) => {
   w.setPosition(x + dx, y + dy);
 });
 
+ipcMain.handle('win:toggleSidebar', () => {
+  if (!mainWindow) return;
+  if (mainWindow.isVisible()) {
+    mainWindow.hide();
+  } else {
+    mainWindow.show();
+    mainWindow.focus();
+  }
+});
+
 // ─── IPC: Navigation ─────────────────────────────────────────────────────────
 ipcMain.handle('nav:toMain', (_, userData) => {
   if (userData) {
@@ -774,7 +709,7 @@ ipcMain.handle('nav:toMain', (_, userData) => {
 
 ipcMain.handle('nav:toLogin', () => {
   unregisterGlobalShortcuts();
-  stopSnapSync();
+  stopMoonlightTitlePoll();
   mainWindow?.close();
   killMoonlight();
   auth.accessToken  = null;
@@ -852,11 +787,8 @@ ipcMain.handle('api:disconnect', async (_, usedMinutes) => {
       await authedRequest('POST', '/api/session/disconnect', { usedMinutes: usedMinutes || 0 }).catch(() => {});
     }
   } catch (_) {}
-  stopSnapSync();
+  stopMoonlightTitlePoll();
   killMoonlight();
-  if (mainWindow) {
-    mainWindow.setAlwaysOnTop(false);
-  }
   if (auth.user && usedMinutes) {
     auth.user.credits = Math.max(0, (auth.user.credits || 0) - usedMinutes);
   }
@@ -864,9 +796,8 @@ ipcMain.handle('api:disconnect', async (_, usedMinutes) => {
 });
 
 ipcMain.handle('api:keepAlive', async () => {
-  stopSnapSync();
+  stopMoonlightTitlePoll();
   killMoonlight();
-  if (mainWindow) mainWindow.setAlwaysOnTop(false);
   return { ok: true };
 });
 
@@ -874,22 +805,12 @@ ipcMain.handle('api:keepAlive', async () => {
 ipcMain.handle('moonlight:launch', async (_, host) => {
   try {
     const settings = loadSettings();
+
+    // Moonlight를 독립 창모드로 실행 (사이드바와 별개)
     launchMoonlight(host, settings);
 
-    // Moonlight 창 핸들 캐시 + 사이드바 오른쪽에 16:9 snap 배치
-    const { screen } = require('electron');
-    const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
-    const { x: sx, y: sy } = screen.getPrimaryDisplay().workArea;
-    if (mainWindow) {
-      const b = mainWindow.getBounds();
-      const areaX = b.x + b.width;
-      const areaW = (sx + sw) - areaX;
-      const bounds = calcMoonlightBounds(areaX, sy, areaW, sh);
-      setupMoonlightWindow(bounds);
-    } else {
-      const bounds = calcMoonlightBounds(sx, sy, sw, sh);
-      setupMoonlightWindow(bounds);
-    }
+    // 스트리밍 연결 완료 감지 시작 (Moonlight 창 타이틀 폴링)
+    startMoonlightTitlePoll();
 
     return { ok: true };
   } catch (err) {
@@ -897,55 +818,23 @@ ipcMain.handle('moonlight:launch', async (_, host) => {
   }
 });
 
-// 전체모드: 테두리 제거 + 화면 꽉참 / 해제: 테두리 복원 + snap 배치
-ipcMain.handle('moonlight:resizeEmbed', (_, mode) => {
-  // mode: 'fullscreen' | 'maximized' | 'normal'
-  console.log('[resizeEmbed] mode:', mode, 'hwnd:', moonlightHwnd);
-  if (!moonlightHwnd) return;
-  const { screen } = require('electron');
-  const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
-  const { x: sx, y: sy } = screen.getPrimaryDisplay().workArea;
-  // 실제 모니터 전체 크기 (작업표시줄 포함)
-  const { width: fullW, height: fullH } = screen.getPrimaryDisplay().size;
-
-  if (mode === 'fullscreen') {
-    // 전체모드: 테두리/제목표시줄 제거 + 모니터 전체 꽉 참
-    stopSnapSync(false);
-    setMoonlightStyle(moonlightHwnd, false); // 테두리 제거
-    moveMoonlightFast(0, 0, fullW, fullH, true);
-  } else if (mode === 'maximized') {
-    // 전체창모드: 테두리 유지 + 작업영역 꽉 참
-    stopSnapSync(false);
-    setMoonlightStyle(moonlightHwnd, true); // 테두리 복원
-    moveMoonlightFast(sx, sy, sw, sh);
+ipcMain.handle('moonlight:resizeEmbed', (_, fullscreen) => {
+  // Moonlight는 독립 창이므로 별도 제어 불필요
+  if (fullscreen) {
+    if (mainWindow) mainWindow.hide();
   } else {
-    // 일반모드: 테두리 복원 + 사이드바 오른쪽 snap 배치
-    setMoonlightStyle(moonlightHwnd, true); // 테두리 복원
-    syncStreamPosition();
-    startSnapSync();
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
   }
 });
 
-// Moonlight 창 스타일 변경 (테두리/제목표시줄)
-function setMoonlightStyle(hwnd, showBorder) {
-  if (!hwnd) return;
-  // showBorder=true: WS_CAPTION+WS_BORDER 복원, false: 제거
-  const op = showBorder
-    ? '$s = $s -bor 0x00C00000 -bor 0x00800000'
-    : '$s = $s -band (-bnot 0x00C00000) -band (-bnot 0x00800000)';
-  execFile('powershell.exe', [
-    '-NonInteractive', '-WindowStyle', 'Hidden', '-Command',
-    `Add-Type 'using System;using System.Runtime.InteropServices;public class WS{` +
-    `[DllImport("user32.dll")]public static extern int GetWindowLong(IntPtr h,int i);` +
-    `[DllImport("user32.dll")]public static extern int SetWindowLong(IntPtr h,int i,int v);` +
-    `[DllImport("user32.dll")]public static extern bool SetWindowPos(IntPtr h,IntPtr a,int x,int y,int w,int ht,uint f);}';` +
-    `$s=[WS]::GetWindowLong([IntPtr]${hwnd},-16);` +
-    `${op};` +
-    `[void][WS]::SetWindowLong([IntPtr]${hwnd},-16,$s);` +
-    // SWP_FRAMECHANGED(0x20) | SWP_NOMOVE(2) | SWP_NOSIZE(1) | SWP_NOZORDER(4)
-    `[void][WS]::SetWindowPos([IntPtr]${hwnd},[IntPtr]0,0,0,0,0,0x27)`
-  ], { windowsHide: true, timeout: 3000 }, () => {});
-}
+// Moonlight 전체화면 (테두리 없음, 작업표시줄 덮음)
+ipcMain.handle('moonlight:fullscreen', (_, mode) => {
+  setMoonlightDisplayMode(mode);
+  return { ok: true };
+});
 
 ipcMain.handle('moonlight:kill', () => {
   killMoonlight();
@@ -971,15 +860,6 @@ ipcMain.handle('settings:save', (_, settings) => {
   return saveSettingsFile(settings);
 });
 
-// ─── IPC: Credentials ─────────────────────────────────────────────────────────
-ipcMain.handle('credentials:load', () => {
-  return loadCredentials();
-});
-
-ipcMain.handle('credentials:save', (_, data) => {
-  return saveCredentials(data);
-});
-
 // ─── IPC: USB ─────────────────────────────────────────────────────────────────
 ipcMain.handle('usb:connect', () => {
   silentUsbConnect();
@@ -989,6 +869,29 @@ ipcMain.handle('usb:connect', () => {
 ipcMain.handle('usb:disconnect', () => {
   silentUsbDisconnect();
   return { ok: true };
+});
+
+// ─── IPC: Credentials (파일 기반) ──────────────────────────────────────────────
+function getCredentialsPath() {
+  return path.join(app.getPath('userData'), 'credentials.json');
+}
+
+ipcMain.handle('credentials:load', () => {
+  try {
+    const raw = fs.readFileSync(getCredentialsPath(), 'utf8');
+    return JSON.parse(raw);
+  } catch (_) {
+    return {};
+  }
+});
+
+ipcMain.handle('credentials:save', (_, data) => {
+  try {
+    fs.writeFileSync(getCredentialsPath(), JSON.stringify(data, null, 2), 'utf8');
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
 });
 
 // ─── IPC: Notices ─────────────────────────────────────────────────────────────

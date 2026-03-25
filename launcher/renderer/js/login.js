@@ -63,18 +63,22 @@ document.getElementById('btn-close').addEventListener('click', () => window.R1?.
   document.addEventListener('mouseup', () => { dragging = false; });
 })();
 
-// ─── Saved credentials ────────────────────────────────────────────────────────
+// ─── Saved credentials (파일 기반) ─────────────────────────────────────────────
 (async function loadSaved() {
   try {
-    const creds = await window.R1.loadCredentials();
-    if (creds.username) {
-      document.getElementById('username').value = creds.username;
+    const cred = await window.R1.loadCredentials();
+    if (cred.username) {
+      document.getElementById('username').value = cred.username;
       document.getElementById('save-id').checked = true;
     }
-    if (creds.password) {
-      document.getElementById('password').value = creds.password;
+    if (cred.password) {
+      document.getElementById('password').value = cred.password;
       document.getElementById('save-pw').checked = true;
     }
+    // 포커스 설정
+    const usernameEl = document.getElementById('username');
+    if (usernameEl && !usernameEl.value) usernameEl.focus();
+    else document.getElementById('password').focus();
   } catch (_) {}
 })();
 
@@ -94,10 +98,11 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   // Save / remove credentials (파일 기반)
   const saveId = document.getElementById('save-id').checked;
   const savePw = document.getElementById('save-pw').checked;
-  const credsToSave = {};
-  if (saveId) credsToSave.username = username;
-  if (savePw) credsToSave.password = password;
-  window.R1.saveCredentials(credsToSave).catch(() => {});
+
+  const credData = {};
+  if (saveId) credData.username = username;
+  if (savePw) credData.password = password;
+  window.R1.saveCredentials(credData).catch(() => {});
 
   if (!window.R1) {
     showAlert('런처 초기화 오류가 발생했습니다. 앱을 재시작해주세요.');
