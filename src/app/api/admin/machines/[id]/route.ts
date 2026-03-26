@@ -20,6 +20,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     if (body.lastPing !== undefined)       updateData.lastPing = new Date(body.lastPing)
     if (body.currentApp !== undefined)     updateData.currentApp = body.currentApp
     if (body.currentAppIcon !== undefined) updateData.currentAppIcon = body.currentAppIcon
+    if (body.storeId !== undefined)       updateData.storeId = body.storeId || null
 
     const machine = await prisma.machine.update({
       where: { id },
