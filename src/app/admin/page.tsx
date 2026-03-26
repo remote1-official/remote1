@@ -3,386 +3,310 @@
 import { useState, useEffect, useCallback } from 'react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-interface MachineUser {
-  id: string
-  username: string | null
-  email: string
-}
-
-interface StoreInfo {
-  id: string
-  name: string
-  pcCount: number
-  readyCount: number
-  inUseCount: number
-}
-
+interface MachineUser { id: string; username: string | null; email: string }
+interface StoreInfo { id: string; name: string; pcCount: number; readyCount: number; inUseCount: number }
 interface Machine {
-  id: string
-  storeId: string | null
-  storeName: string | null
-  name: string
-  sunshineHost: string
-  localIp: string | null
-  macAddress: string | null
-  spec: string | null
+  id: string; storeId: string | null; storeName: string | null; name: string
+  sunshineHost: string; localIp: string | null; macAddress: string | null; spec: string | null
   status: 'OFF' | 'BOOTING' | 'READY' | 'IN_USE' | 'MAINTENANCE'
-  isAvailable: boolean
-  lastPing: string | null
-  currentApp: string | null
-  currentAppIcon: string | null
-  currentUser: MachineUser | null
-  sessionId: string | null
+  isAvailable: boolean; lastPing: string | null; currentApp: string | null
+  currentAppIcon: string | null; currentUser: MachineUser | null; sessionId: string | null
 }
-
-interface QueueEntry {
-  id: string
-  position: number
-  user: MachineUser
-  createdAt: string
-}
-
+interface QueueEntry { id: string; position: number; user: MachineUser; createdAt: string }
 interface Stats {
   machines: { total: number; off: number; booting: number; ready: number; inUse: number; maintenance: number }
-  activeSessions: number
-  queueCount: number
+  activeSessions: number; queueCount: number
   apps: Record<string, { count: number; icon: string | null }>
 }
 
-// ─── Status helpers ──────────────────────────────────────────────────────────
-const STATUS_LABEL: Record<string, string> = {
-  OFF: '꺼짐', BOOTING: '부팅중', READY: '대기', IN_USE: '사용중', MAINTENANCE: '점검',
-}
-const STATUS_COLOR: Record<string, string> = {
-  OFF: '#64748b', BOOTING: '#f59e0b', READY: '#10b981', IN_USE: '#0ea5e9', MAINTENANCE: '#ef4444',
-}
+// ─── Constants ───────────────────────────────────────────────────────────────
+const STATUS_LABEL: Record<string, string> = { OFF: '꺼짐', BOOTING: '부팅중', READY: '대기', IN_USE: '사용중', MAINTENANCE: '점검' }
+const STATUS_DOT: Record<string, string> = { OFF: '#aaa', BOOTING: '#3b82f6', READY: '#22c55e', IN_USE: '#ef4444', MAINTENANCE: '#f59e0b' }
+const ROW_BG: Record<string, string> = { OFF: '#fff', BOOTING: '#eff6ff', READY: '#fff', IN_USE: '#fef2f2', MAINTENANCE: '#fefce8' }
 
-const BASE = ''  // same origin
+type StatusFilter = 'all' | 'IN_USE' | 'READY' | 'MAINTENANCE' | 'BOOTING' | 'OFF'
 
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const [machines, setMachines] = useState<Machine[]>([])
   const [stores, setStores] = useState<StoreInfo[]>([])
-  const [selectedStore, setSelectedStore] = useState<string>('all')
+  const [selectedStore, setSelectedStore] = useState('all')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [queue, setQueue] = useState<QueueEntry[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [now, setNow] = useState(new Date())
 
   const fetchAll = useCallback(async () => {
     try {
       const [mRes, qRes, sRes, stRes] = await Promise.all([
-        fetch(`${BASE}/api/admin/machines`),
-        fetch(`${BASE}/api/admin/queue`),
-        fetch(`${BASE}/api/admin/stats`),
-        fetch(`${BASE}/api/admin/stores`),
+        fetch('/api/admin/machines'), fetch('/api/admin/queue'),
+        fetch('/api/admin/stats'), fetch('/api/admin/stores'),
       ])
-      const mData = await mRes.json()
-      const qData = await qRes.json()
-      const sData = await sRes.json()
-      const stData = await stRes.json()
+      const [mData, qData, sData, stData] = await Promise.all([mRes.json(), qRes.json(), sRes.json(), stRes.json()])
       setMachines(mData.machines || [])
       setQueue(qData.queue || [])
       setStats(sData)
       setStores(stData.stores || [])
-    } catch (e) {
-      console.error('Fetch error', e)
-    } finally {
-      setLoading(false)
-    }
+    } catch (e) { console.error('Fetch error', e) }
+    finally { setLoading(false) }
   }, [])
 
   useEffect(() => {
     fetchAll()
-    const interval = setInterval(fetchAll, 5000) // 5초마다 폴링
-    return () => clearInterval(interval)
+    const i1 = setInterval(fetchAll, 5000)
+    const i2 = setInterval(() => setNow(new Date()), 1000)
+    return () => { clearInterval(i1); clearInterval(i2) }
   }, [fetchAll])
 
-  const filteredMachines = selectedStore === 'all'
-    ? machines
-    : selectedStore === 'none'
-      ? machines.filter((m) => !m.storeId)
-      : machines.filter((m) => m.storeId === selectedStore)
+  const filtered = machines
+    .filter(m => selectedStore === 'all' ? true : selectedStore === 'none' ? !m.storeId : m.storeId === selectedStore)
+    .filter(m => statusFilter === 'all' ? true : m.status === statusFilter)
 
   const updateMachine = async (id: string, data: Record<string, unknown>) => {
-    await fetch(`${BASE}/api/admin/machines/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
+    await fetch(`/api/admin/machines/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
     fetchAll()
   }
 
-  if (loading) {
-    return (
-      <div style={styles.page}>
-        <div style={styles.loading}>로딩 중...</div>
-      </div>
-    )
-  }
+  if (loading) return <div style={S.loadingPage}><div style={S.loadingText}>로딩 중...</div></div>
 
   return (
-    <div style={styles.page}>
+    <div style={S.page}>
       {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.headerLeft}>
-          <h1 style={styles.logo}>REMOTE1 <span style={styles.logoSub}>Admin</span></h1>
+      <header style={S.header}>
+        <div style={S.logoWrap}>
+          <span style={S.logo}>REMOTE1</span>
+          <span style={S.logoAdmin}>Admin</span>
         </div>
-        <div style={styles.headerRight}>
-          <span style={styles.headerTime}>{new Date().toLocaleString('ko-KR')}</span>
-        </div>
+        <span style={S.clock}>{now.toLocaleString('ko-KR')}</span>
       </header>
 
       {/* Stats Bar */}
       {stats && (
-        <div style={styles.statsBar}>
-          <StatCard label="총 PC" value={stats.machines.total} color="#94a3b8" />
-          <StatCard label="사용중" value={stats.machines.inUse} color="#0ea5e9" />
-          <StatCard label="대기" value={stats.machines.ready} color="#10b981" />
-          <StatCard label="꺼짐" value={stats.machines.off} color="#64748b" />
-          <StatCard label="부팅중" value={stats.machines.booting} color="#f59e0b" />
-          <StatCard label="접속자" value={stats.activeSessions} color="#8b5cf6" />
-          <StatCard label="대기열" value={stats.queueCount} color="#ef4444" />
+        <div style={S.statsBar}>
+          <StatBtn label="총 PC" value={stats.machines.total} color="#475569" active={statusFilter==='all'} onClick={() => setStatusFilter('all')} />
+          <StatBtn label="사용중" value={stats.machines.inUse} color="#ef4444" active={statusFilter==='IN_USE'} onClick={() => setStatusFilter('IN_USE')} />
+          <StatBtn label="대기" value={stats.machines.ready} color="#22c55e" active={statusFilter==='READY'} onClick={() => setStatusFilter('READY')} />
+          <StatBtn label="점검" value={stats.machines.maintenance} color="#f59e0b" active={statusFilter==='MAINTENANCE'} onClick={() => setStatusFilter('MAINTENANCE')} />
+          <StatBtn label="부팅중" value={stats.machines.booting} color="#3b82f6" active={statusFilter==='BOOTING'} onClick={() => setStatusFilter('BOOTING')} />
+          <StatBtn label="꺼짐" value={stats.machines.off} color="#aaa" active={statusFilter==='OFF'} onClick={() => setStatusFilter('OFF')} />
+          <div style={S.statDivider} />
+          <StatBtn label="접속자" value={stats.activeSessions} color="#8b5cf6" active={false} onClick={() => {}} />
+          <StatBtn label="대기열" value={stats.queueCount} color="#e11d48" active={false} onClick={() => {}} />
         </div>
       )}
 
       {/* App Stats */}
       {stats && Object.keys(stats.apps).length > 0 && (
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>실행 중인 프로그램</h2>
-          <div style={styles.appGrid}>
-            {Object.entries(stats.apps).map(([app, info]) => (
-              <div key={app} style={styles.appCard}>
-                {info.icon && <img src={info.icon} alt="" style={styles.appIcon} />}
-                <span style={styles.appName}>{app}</span>
-                <span style={styles.appCount}>{info.count}명</span>
-              </div>
-            ))}
-          </div>
+        <div style={S.appBar}>
+          {Object.entries(stats.apps).map(([app, info]) => (
+            <span key={app} style={S.appChip}>
+              {info.icon && <img src={info.icon} alt="" style={{width:14,height:14,borderRadius:2}} />}
+              {app} <b>{info.count}</b>
+            </span>
+          ))}
         </div>
       )}
 
       {/* Store Tabs */}
-      {stores.length > 0 && (
-        <div style={styles.section}>
-          <div style={styles.storeTabs}>
-            <button
-              style={{ ...styles.storeTab, ...(selectedStore === 'all' ? styles.storeTabActive : {}) }}
-              onClick={() => setSelectedStore('all')}
-            >
-              전체 ({machines.length})
-            </button>
-            {stores.map((s) => (
-              <button
-                key={s.id}
-                style={{ ...styles.storeTab, ...(selectedStore === s.id ? styles.storeTabActive : {}) }}
-                onClick={() => setSelectedStore(s.id)}
-              >
-                {s.name} ({s.pcCount})
-              </button>
-            ))}
-            <button
-              style={{ ...styles.storeTab, ...(selectedStore === 'none' ? styles.storeTabActive : {}) }}
-              onClick={() => setSelectedStore('none')}
-            >
-              미배정
-            </button>
-          </div>
-        </div>
-      )}
+      <div style={S.filterBar}>
+        <button style={{...S.tab, ...(selectedStore==='all'?S.tabActive:{})}} onClick={() => setSelectedStore('all')}>전체 ({machines.length})</button>
+        {stores.map(s => (
+          <button key={s.id} style={{...S.tab, ...(selectedStore===s.id?S.tabActive:{})}} onClick={() => setSelectedStore(s.id)}>{s.name} ({s.pcCount})</button>
+        ))}
+        <button style={{...S.tab, ...(selectedStore==='none'?S.tabActive:{})}} onClick={() => setSelectedStore('none')}>미배정</button>
+      </div>
 
-      {/* PC Grid */}
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>PC 현황 ({filteredMachines.length}대)</h2>
-        <div style={styles.pcGrid}>
-          {filteredMachines.map((m) => (
-            <div key={m.id} style={{ ...styles.pcCard, borderColor: STATUS_COLOR[m.status] || '#334155' }}>
-              <div style={styles.pcHeader}>
-                <span style={{ ...styles.pcStatus, background: STATUS_COLOR[m.status] }}></span>
-                <span style={styles.pcName}>{m.name}</span>
-                <span style={styles.pcStatusLabel}>{STATUS_LABEL[m.status]}</span>
-              </div>
-
-              <div style={styles.pcInfo}>
-                <div style={styles.pcRow}><span style={styles.pcLabel}>IP</span><span>{m.sunshineHost}</span></div>
-                {m.storeName && <div style={styles.pcRow}><span style={styles.pcLabel}>매장</span><span style={{color:'#8b5cf6'}}>{m.storeName}</span></div>}
-                {m.currentUser && (
-                  <div style={styles.pcRow}><span style={styles.pcLabel}>이용자</span><span>{m.currentUser.username || m.currentUser.email}</span></div>
-                )}
-                {m.currentApp && (
-                  <div style={styles.pcRow}>
-                    <span style={styles.pcLabel}>실행</span>
-                    <span style={styles.pcApp}>
-                      {m.currentAppIcon && <img src={m.currentAppIcon} alt="" style={{ width: 16, height: 16, borderRadius: 2 }} />}
+      {/* Table */}
+      <div style={S.tableWrap}>
+        <table style={S.table}>
+          <thead>
+            <tr style={S.thead}>
+              <th style={{...S.th, width:50}}>No</th>
+              <th style={{...S.th, width:70}}>상태</th>
+              <th style={S.th}>PC</th>
+              <th style={S.th}>IP</th>
+              <th style={S.th}>매장</th>
+              <th style={S.th}>이용자</th>
+              <th style={S.th}>실행중</th>
+              <th style={{...S.th, width:100}}>액션</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((m, i) => (
+              <tr key={m.id} style={{...S.tr, background: ROW_BG[m.status] || '#fff'}}
+                onMouseEnter={e => (e.currentTarget.style.background = '#f0f7ff')}
+                onMouseLeave={e => (e.currentTarget.style.background = ROW_BG[m.status] || '#fff')}>
+                <td style={S.td}>{i + 1}</td>
+                <td style={S.td}>
+                  <span style={{...S.dot, background: STATUS_DOT[m.status]}} />
+                  <span style={{fontSize:12, color:'#666'}}>{STATUS_LABEL[m.status]}</span>
+                </td>
+                <td style={{...S.td, fontWeight:600}}>{m.name}</td>
+                <td style={{...S.td, fontFamily:'monospace', fontSize:12, color:'#666'}}>{m.sunshineHost}</td>
+                <td style={{...S.td, color:'#7c3aed', fontSize:12}}>{m.storeName || '-'}</td>
+                <td style={{...S.td, fontSize:12}}>{m.currentUser ? (m.currentUser.username || m.currentUser.email) : '-'}</td>
+                <td style={{...S.td, fontSize:12}}>
+                  {m.currentApp ? (
+                    <span style={{display:'flex',alignItems:'center',gap:4}}>
+                      {m.currentAppIcon && <img src={m.currentAppIcon} alt="" style={{width:14,height:14,borderRadius:2}} />}
                       {m.currentApp}
                     </span>
-                  </div>
-                )}
-                {m.lastPing && (
-                  <div style={styles.pcRow}><span style={styles.pcLabel}>핑</span><span style={styles.pcPing}>{new Date(m.lastPing).toLocaleTimeString('ko-KR')}</span></div>
-                )}
-              </div>
-
-              <div style={styles.pcActions}>
-                {m.status === 'OFF' && (
-                  <button style={{ ...styles.btn, ...styles.btnGreen }} onClick={() => updateMachine(m.id, { status: 'BOOTING' })}>
-                    켜기
-                  </button>
-                )}
-                {(m.status === 'READY' || m.status === 'IN_USE') && (
-                  <button style={{ ...styles.btn, ...styles.btnRed }} onClick={() => updateMachine(m.id, { status: 'OFF', isAvailable: true, currentApp: null, currentAppIcon: null })}>
-                    끄기
-                  </button>
-                )}
-                {m.status === 'MAINTENANCE' && (
-                  <button style={{ ...styles.btn, ...styles.btnBlue }} onClick={() => updateMachine(m.id, { status: 'READY', isAvailable: true })}>
-                    복구
-                  </button>
-                )}
-                {m.status !== 'MAINTENANCE' && m.status !== 'OFF' && (
-                  <button style={{ ...styles.btn, ...styles.btnAmber }} onClick={() => updateMachine(m.id, { status: 'MAINTENANCE', isAvailable: false })}>
-                    점검
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+                  ) : '-'}
+                </td>
+                <td style={S.td}>
+                  {m.status === 'OFF' && <button style={{...S.actionBtn,...S.actionGreen}} onClick={() => updateMachine(m.id, {status:'BOOTING'})}>켜기</button>}
+                  {m.status === 'READY' && <button style={{...S.actionBtn,...S.actionRed}} onClick={() => updateMachine(m.id, {status:'OFF',isAvailable:true,currentApp:null,currentAppIcon:null})}>끄기</button>}
+                  {m.status === 'IN_USE' && <button style={{...S.actionBtn,...S.actionAmber}} onClick={() => updateMachine(m.id, {status:'MAINTENANCE',isAvailable:false})}>점검</button>}
+                  {m.status === 'MAINTENANCE' && <button style={{...S.actionBtn,...S.actionBlue}} onClick={() => updateMachine(m.id, {status:'READY',isAvailable:true})}>복구</button>}
+                  {m.status === 'BOOTING' && <span style={{fontSize:11,color:'#3b82f6'}}>부팅중...</span>}
+                </td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr><td colSpan={8} style={{...S.td, textAlign:'center' as const, color:'#aaa', padding:30}}>등록된 PC가 없습니다</td></tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Queue */}
       {queue.length > 0 && (
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>대기열 ({queue.length}명)</h2>
-          <div style={styles.queueList}>
-            {queue.map((q, i) => (
-              <div key={q.id} style={styles.queueItem}>
-                <span style={styles.queuePos}>{i + 1}번</span>
-                <span style={styles.queueUser}>{q.user.username || q.user.email}</span>
-                <span style={styles.queueTime}>{new Date(q.createdAt).toLocaleTimeString('ko-KR')}</span>
-              </div>
-            ))}
-          </div>
+        <div style={S.queueSection}>
+          <h3 style={S.queueTitle}>대기열 ({queue.length}명)</h3>
+          <table style={S.table}>
+            <thead>
+              <tr style={S.thead}>
+                <th style={{...S.th, width:60}}>순번</th>
+                <th style={S.th}>사용자</th>
+                <th style={{...S.th, width:120}}>대기시간</th>
+              </tr>
+            </thead>
+            <tbody>
+              {queue.map((q, i) => (
+                <tr key={q.id} style={S.tr}>
+                  <td style={{...S.td, fontWeight:700, color:'#e11d48'}}>{i+1}번</td>
+                  <td style={S.td}>{q.user.username || q.user.email}</td>
+                  <td style={{...S.td, color:'#888', fontSize:12}}>{new Date(q.createdAt).toLocaleTimeString('ko-KR')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
   )
 }
 
-// ─── Stat Card ───────────────────────────────────────────────────────────────
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+// ─── StatBtn ─────────────────────────────────────────────────────────────────
+function StatBtn({ label, value, color, active, onClick }: { label: string; value: number; color: string; active: boolean; onClick: () => void }) {
   return (
-    <div style={styles.statCard}>
-      <div style={{ ...styles.statValue, color }}>{value}</div>
-      <div style={styles.statLabel}>{label}</div>
-    </div>
+    <button onClick={onClick} style={{
+      ...S.statBtn,
+      borderColor: active ? color : '#e5e7eb',
+      background: active ? `${color}11` : '#fff',
+    }}>
+      <div style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{label}</div>
+    </button>
   )
 }
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
-const styles: Record<string, React.CSSProperties> = {
+const S: Record<string, React.CSSProperties> = {
   page: {
-    minHeight: '100vh', background: '#0f172a', color: '#f1f5f9',
-    fontFamily: '-apple-system, "Segoe UI", system-ui, sans-serif',
-    padding: '0 0 40px 0',
+    minHeight: '100vh', background: '#f8f9fa', color: '#333',
+    fontFamily: '"Pretendard", -apple-system, "Segoe UI", "Malgun Gothic", sans-serif',
+    fontSize: 13,
   },
-  loading: {
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    height: '100vh', fontSize: 18, color: '#94a3b8',
-  },
+  loadingPage: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#f8f9fa' },
+  loadingText: { fontSize: 16, color: '#aaa' },
 
   // Header
   header: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '16px 20px', borderBottom: '1px solid #1e293b',
-    position: 'sticky' as const, top: 0, background: '#0f172a', zIndex: 10,
+    padding: '10px 20px', background: '#fff', borderBottom: '1px solid #e5e7eb',
+    position: 'sticky' as const, top: 0, zIndex: 10,
   },
-  headerLeft: { display: 'flex', alignItems: 'center', gap: 12 },
-  headerRight: { display: 'flex', alignItems: 'center', gap: 12 },
-  logo: {
-    fontSize: 20, fontWeight: 800, margin: 0,
-    background: 'linear-gradient(135deg, #0ea5e9, #6366f1)',
-    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-  },
-  logoSub: { fontSize: 14, fontWeight: 600, opacity: 0.7 },
-  headerTime: { fontSize: 13, color: '#64748b' },
+  logoWrap: { display: 'flex', alignItems: 'baseline', gap: 6 },
+  logo: { fontSize: 18, fontWeight: 800, color: '#1e40af' },
+  logoAdmin: { fontSize: 13, fontWeight: 600, color: '#94a3b8' },
+  clock: { fontSize: 12, color: '#94a3b8' },
 
-  // Stats Bar
+  // Stats
   statsBar: {
-    display: 'flex', gap: 8, padding: '16px 20px', overflowX: 'auto' as const,
-    flexWrap: 'wrap' as const,
+    display: 'flex', gap: 6, padding: '12px 20px', flexWrap: 'wrap' as const,
+    alignItems: 'center', background: '#fff', borderBottom: '1px solid #e5e7eb',
   },
-  statCard: {
-    background: '#1e293b', borderRadius: 10, padding: '12px 16px',
-    minWidth: 80, textAlign: 'center' as const, flex: '1 1 80px',
+  statBtn: {
+    padding: '8px 14px', borderRadius: 8, border: '2px solid #e5e7eb',
+    background: '#fff', cursor: 'pointer', textAlign: 'center' as const,
+    minWidth: 70, transition: 'all 0.15s',
   },
-  statValue: { fontSize: 24, fontWeight: 800 },
-  statLabel: { fontSize: 11, color: '#94a3b8', marginTop: 2, fontWeight: 600 },
+  statDivider: { width: 1, height: 36, background: '#e5e7eb', margin: '0 4px' },
 
-  // Section
-  section: { padding: '0 20px', marginTop: 20 },
-  sectionTitle: { fontSize: 16, fontWeight: 700, marginBottom: 12, color: '#e2e8f0' },
+  // App bar
+  appBar: {
+    display: 'flex', gap: 6, padding: '8px 20px', flexWrap: 'wrap' as const,
+    background: '#fff', borderBottom: '1px solid #e5e7eb',
+  },
+  appChip: {
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+    padding: '3px 10px', borderRadius: 20, background: '#f1f5f9',
+    fontSize: 12, color: '#475569',
+  },
 
-  // App Stats
-  appGrid: { display: 'flex', gap: 8, flexWrap: 'wrap' as const },
-  appCard: {
-    display: 'flex', alignItems: 'center', gap: 8,
-    background: '#1e293b', borderRadius: 8, padding: '8px 14px',
+  // Filter tabs
+  filterBar: {
+    display: 'flex', gap: 4, padding: '10px 20px',
+    background: '#fff', borderBottom: '1px solid #e5e7eb',
   },
-  appIcon: { width: 20, height: 20, borderRadius: 4 },
-  appName: { fontSize: 13, fontWeight: 600 },
-  appCount: { fontSize: 13, color: '#0ea5e9', fontWeight: 700 },
+  tab: {
+    padding: '6px 14px', borderRadius: 6, border: '1px solid #d1d5db',
+    background: '#fff', color: '#666', fontSize: 12, fontWeight: 600,
+    cursor: 'pointer', transition: 'all 0.12s',
+  },
+  tabActive: {
+    background: '#1e40af', color: '#fff', borderColor: '#1e40af',
+  },
 
-  // PC Grid
-  pcGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-    gap: 12,
+  // Table
+  tableWrap: { padding: '0 20px', marginTop: 12 },
+  table: {
+    width: '100%', borderCollapse: 'collapse' as const,
+    background: '#fff', borderRadius: 8, overflow: 'hidden',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
   },
-  pcCard: {
-    background: '#1e293b', borderRadius: 12, padding: 14,
-    border: '2px solid #334155', transition: 'border-color 0.2s',
+  thead: { background: '#f5f5f5' },
+  th: {
+    padding: '10px 12px', textAlign: 'left' as const,
+    fontSize: 11, fontWeight: 700, color: '#888',
+    textTransform: 'uppercase' as const, letterSpacing: 0.5,
+    borderBottom: '2px solid #e5e7eb',
   },
-  pcHeader: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 },
-  pcStatus: { width: 10, height: 10, borderRadius: '50%', flexShrink: 0 },
-  pcName: { fontSize: 15, fontWeight: 700, flex: 1 },
-  pcStatusLabel: { fontSize: 11, color: '#94a3b8', fontWeight: 600 },
+  tr: {
+    borderBottom: '1px solid #f0f0f0', transition: 'background 0.1s',
+    height: 40,
+  },
+  td: {
+    padding: '6px 12px', fontSize: 13, verticalAlign: 'middle' as const,
+  },
+  dot: {
+    display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
+    marginRight: 6, verticalAlign: 'middle',
+  },
 
-  pcInfo: { display: 'flex', flexDirection: 'column' as const, gap: 4, marginBottom: 10 },
-  pcRow: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 },
-  pcLabel: { color: '#64748b', minWidth: 36, fontWeight: 600 },
-  pcApp: { display: 'flex', alignItems: 'center', gap: 4 },
-  pcPing: { color: '#94a3b8' },
-
-  pcActions: { display: 'flex', gap: 6, flexWrap: 'wrap' as const },
-  btn: {
-    padding: '5px 12px', borderRadius: 6, border: 'none',
-    fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'opacity 0.15s',
+  // Action buttons
+  actionBtn: {
+    padding: '3px 10px', borderRadius: 4, border: 'none',
+    fontSize: 11, fontWeight: 600, cursor: 'pointer',
   },
-  btnGreen: { background: 'rgba(16,185,129,0.15)', color: '#10b981' },
-  btnRed: { background: 'rgba(239,68,68,0.15)', color: '#ef4444' },
-  btnBlue: { background: 'rgba(14,165,233,0.15)', color: '#0ea5e9' },
-  btnAmber: { background: 'rgba(245,158,11,0.15)', color: '#f59e0b' },
-
-  // Store Tabs
-  storeTabs: {
-    display: 'flex', gap: 6, flexWrap: 'wrap' as const,
-  },
-  storeTab: {
-    padding: '8px 16px', borderRadius: 8, border: '1px solid #334155',
-    background: '#1e293b', color: '#94a3b8', fontSize: 13, fontWeight: 600,
-    cursor: 'pointer', transition: 'all 0.15s',
-  },
-  storeTabActive: {
-    background: 'rgba(14,165,233,0.15)', color: '#0ea5e9', borderColor: 'rgba(14,165,233,0.4)',
-  },
+  actionGreen: { background: '#dcfce7', color: '#16a34a' },
+  actionRed: { background: '#fee2e2', color: '#dc2626' },
+  actionAmber: { background: '#fef3c7', color: '#d97706' },
+  actionBlue: { background: '#dbeafe', color: '#2563eb' },
 
   // Queue
-  queueList: { display: 'flex', flexDirection: 'column' as const, gap: 6 },
-  queueItem: {
-    display: 'flex', alignItems: 'center', gap: 12,
-    background: '#1e293b', borderRadius: 8, padding: '10px 14px',
-  },
-  queuePos: { fontSize: 14, fontWeight: 800, color: '#f59e0b', minWidth: 40 },
-  queueUser: { fontSize: 13, fontWeight: 600, flex: 1 },
-  queueTime: { fontSize: 12, color: '#64748b' },
+  queueSection: { padding: '16px 20px' },
+  queueTitle: { fontSize: 14, fontWeight: 700, color: '#333', marginBottom: 8 },
 }
