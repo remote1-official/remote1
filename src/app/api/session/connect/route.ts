@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
     if (existing) {
       return NextResponse.json({
         sessionId:   existing.id,
+        machineId:   existing.machine.id,
         host:        existing.machine.sunshineHost,
         machineName: existing.machine.name,
         machineSpec: existing.machine.spec ?? '',
@@ -74,6 +75,7 @@ export async function POST(req: NextRequest) {
       // PC 배정 성공
       return NextResponse.json({
         sessionId:   result.session.id,
+        machineId:   result.machine.id,
         host:        result.machine.sunshineHost,
         machineName: result.machine.name,
         machineSpec: result.machine.spec ?? '',

@@ -894,16 +894,125 @@ ipcMain.handle('api:keepAlive', async () => {
 });
 
 // ─── IPC: Moonlight ───────────────────────────────────────────────────────────
-ipcMain.handle('moonlight:launch', async (_, host) => {
+// ─── 자동 페어링 ─────────────────────────────────────────────────────────────
+function autoPairMoonlight(host, machineId) {
+  return new Promise((resolve) => {
+    const exePath = findMoonlightExe();
+    if (!exePath) { resolve(false); return; }
+
+    console.log('[AutoPair] Moonlight pair 시작:', host);
+
+    const pairProc = spawn(exePath, ['pair', host], {
+      detached: false,
+      windowsHide: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let pinFound = false;
+    let output = '';
+
+    const onData = (data) => {
+      const text = data.toString();
+      output += text;
+      console.log('[AutoPair]', text.trim());
+
+      // PIN 추출: "PIN: 1234" 또는 "pin 1234" 또는 4자리 숫자 패턴
+      const match = text.match(/(?:pin[:\s]*|PIN[:\s]*)(\d{4})/i) || text.match(/(\d{4})/);
+      if (match && !pinFound) {
+        pinFound = true;
+        const pin = match[1];
+        console.log('[AutoPair] PIN 캡처:', pin);
+
+        // 서버에 PIN 전송 → 모니터가 Sunshine에 전달
+        authedRequest('POST', '/api/session/pair', { machineId, pin })
+          .then(() => console.log('[AutoPair] PIN 서버 전송 완료'))
+          .catch((err) => console.error('[AutoPair] PIN 전송 실패:', err.message));
+      }
+    };
+
+    pairProc.stdout.on('data', onData);
+    pairProc.stderr.on('data', onData);
+
+    // PIN을 stdout에서 못 찾으면 윈도우 텍스트에서 찾기
+    setTimeout(() => {
+      if (!pinFound) {
+        execFile('powershell.exe', [
+          '-NonInteractive', '-WindowStyle', 'Hidden', '-Command',
+          '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Get-Process Moonlight -ErrorAction SilentlyContinue | ForEach-Object { $_.MainWindowTitle }'
+        ], { windowsHide: true, timeout: 5000 }, (err, stdout) => {
+          const title = (stdout || '').trim();
+          console.log('[AutoPair] Window title:', title);
+          const match2 = title.match(/(\d{4})/);
+          if (match2 && !pinFound) {
+            pinFound = true;
+            const pin = match2[1];
+            console.log('[AutoPair] PIN from window:', pin);
+            authedRequest('POST', '/api/session/pair', { machineId, pin })
+              .then(() => console.log('[AutoPair] PIN 서버 전송 완료'))
+              .catch(() => {});
+          }
+        });
+      }
+    }, 3000);
+
+    // 페어링 완료 대기 (최대 30초)
+    const timeout = setTimeout(() => {
+      if (pairProc && !pairProc.killed) {
+        try { pairProc.kill(); } catch (_) {}
+      }
+      resolve(pinFound);
+    }, 30000);
+
+    pairProc.on('exit', (code) => {
+      clearTimeout(timeout);
+      console.log('[AutoPair] pair 프로세스 종료, code:', code);
+      // code 0 = 성공
+      resolve(code === 0 || pinFound);
+    });
+  });
+}
+
+ipcMain.handle('moonlight:launch', async (_, host, machineId) => {
   try {
     const settings = loadSettings();
 
-    // Moonlight를 독립 창모드로 실행 (사이드바와 별개)
+    // Moonlight를 독립 창모드로 실행
     launchMoonlight(host, settings);
 
-    // 스트리밍 연결 완료 감지 시작 (Moonlight 창 타이틀 폴링)
-    startMoonlightTitlePoll();
+    // "not been paired" 감지를 위해 Moonlight 출력 모니터링
+    let pairNeeded = false;
+    const pairCheck = (data) => {
+      const text = data.toString();
+      if (text.includes('not been paired')) {
+        pairNeeded = true;
+      }
+    };
 
+    if (moonlightProcess) {
+      moonlightProcess.stdout.on('data', pairCheck);
+      moonlightProcess.stderr.on('data', pairCheck);
+    }
+
+    // 5초간 대기 후 페어링 필요 여부 확인
+    await new Promise(r => setTimeout(r, 5000));
+
+    if (pairNeeded && machineId) {
+      console.log('[Launch] 페어링 안됨 → 자동 페어링 시도');
+      killMoonlight();
+
+      const paired = await autoPairMoonlight(host, machineId);
+      if (paired) {
+        // 페어링 후 재시도
+        await new Promise(r => setTimeout(r, 2000));
+        launchMoonlight(host, settings);
+        startMoonlightTitlePoll();
+        return { ok: true };
+      }
+      return { ok: false, error: '자동 페어링에 실패했습니다. Sunshine 설정을 확인해주세요.' };
+    }
+
+    // 페어링 OK → 스트리밍 연결 감지 시작
+    startMoonlightTitlePoll();
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };

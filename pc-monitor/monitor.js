@@ -3,16 +3,98 @@
 const https = require('https');
 const http = require('http');
 const { URL } = require('url');
-const { execFile, exec } = require('child_process');
+const { execFile, exec, execSync } = require('child_process');
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
+const readline = require('readline');
+
+// ─── 실행 모드 분기 ──────────────────────────────────────────────────────────
+const args = process.argv.slice(2);
+
+if (args.includes('--run')) {
+  // 백그라운드 모드 — 바로 메인 실행
+} else if (args.includes('--uninstall')) {
+  uninstallMonitor();
+  process.exit(0);
+} else {
+  showMenu();
+}
+
+function showMenu() {
+  console.log('');
+  console.log('  ╔══════════════════════════════════╗');
+  console.log('  ║   REMOTE1 PC 모니터 설치         ║');
+  console.log('  ╚══════════════════════════════════╝');
+  console.log('');
+  console.log('  설치를 진행합니다...');
+  console.log('');
+  installMonitor();
+  return;
+}
+
+function getExePath() { return process.execPath; }
+
+function installMonitor() {
+  const exePath = getExePath();
+  console.log('');
+  console.log(`  경로: ${exePath}`);
+
+  try {
+    // 기존 작업 제거
+    try { execSync('schtasks /delete /tn "REMOTE1-Monitor" /f', { windowsHide: true, stdio: 'ignore' }); } catch (_) {}
+
+    // 작업 스케줄러 등록 (exe 직접 실행)
+    execSync(`schtasks /create /tn "REMOTE1-Monitor" /tr "\\"${exePath}\\" --run" /sc onlogon /rl highest /f`, { windowsHide: true });
+
+    console.log('');
+    console.log('  [완료] 설치 완료!');
+    console.log('  - PC 부팅 시 자동 실행 (창 안 보임)');
+    console.log('  - 제거: 이 프로그램 다시 실행 → 2번');
+    console.log('');
+
+    // 바로 백그라운드 실행
+    console.log('  모니터를 시작합니다...');
+    const { spawn: sp } = require('child_process');
+    const child = sp(exePath, ['--run'], { detached: true, stdio: 'ignore', windowsHide: true });
+    child.unref();
+
+    console.log('  [실행됨] exe 파일을 삭제하면 자동으로 멈춥니다.');
+    console.log('');
+    console.log('  5초 후 이 창이 닫힙니다...');
+    setTimeout(() => process.exit(0), 5000);
+  } catch (err) {
+    console.log('');
+    console.log('  [오류] 관리자 권한이 필요합니다.');
+    console.log('  → 우클릭 → 관리자 권한으로 실행');
+    console.log('');
+    console.log('  5초 후 종료...');
+    setTimeout(() => process.exit(1), 5000);
+  }
+}
+
+function uninstallMonitor() {
+  console.log('');
+  try { execSync('taskkill /f /im "REMOTE1-모니터.exe"', { windowsHide: true, stdio: 'ignore' }); } catch (_) {}
+  try { execSync('schtasks /delete /tn "REMOTE1-Monitor" /f', { windowsHide: true, stdio: 'ignore' }); } catch (_) {}
+
+  console.log('  [완료] 모니터 제거 완료');
+  console.log('');
+}
+
+function startMonitor() {
+  main().catch((err) => { console.error('[Fatal]', err); process.exit(1); });
+}
 
 // ─── 설정 ─────────────────────────────────────────────────────────────────────
 const CONFIG = {
   SERVER_URL: 'https://project-six-sable-26.vercel.app',
   REPORT_INTERVAL: 10000,  // 10초마다 서버에 보고
+  PAIR_POLL_INTERVAL: 3000, // 3초마다 페어링 PIN 확인
   MACHINE_ID: null,        // 자동 감지 (IP 기반)
+  SUNSHINE_USER: 'skylove441',
+  SUNSHINE_PASS: '@Lee76177500',
+  SUNSHINE_PORT: 47990,
 };
 
 // 주요 게임/프로그램 목록 (프로세스명 → 표시명)
@@ -52,6 +134,18 @@ const APP_MAP = {
   'explorer.exe':        null, // 제외
   'svchost.exe':         null, // 제외
   'SearchHost.exe':      null, // 제외
+  'cmd.exe':             null, // 제외
+  'conhost.exe':         null, // 제외
+  'powershell.exe':      null, // 제외
+  'TextInputHost.exe':   null, // 제외
+  'REMOTE1-모니터.exe':   null, // 자기 자신 제외
+  // PC방 기본 프로그램 제외
+  'CRAFTBOX.exe':        null,
+  'craftbox.exe':        null,
+  'PURPLE.exe':          null,
+  'purple.exe':          null,
+  'PikaLive.exe':        null,
+  'pikalive.exe':        null,
 };
 
 // ─── HTTP Helper ──────────────────────────────────────────────────────────────
@@ -103,7 +197,7 @@ function getRunningApps() {
     const cmd = 'powershell.exe';
     const args = [
       '-NonInteractive', '-WindowStyle', 'Hidden', '-Command',
-      'Get-Process | Where-Object { $_.MainWindowTitle -ne "" } | Select-Object -Property ProcessName, MainWindowTitle | ConvertTo-Json -Compress'
+      '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Get-Process | Where-Object { $_.MainWindowTitle -ne "" } | Select-Object -Property ProcessName, MainWindowTitle | ConvertTo-Json -Compress'
     ];
 
     execFile(cmd, args, { windowsHide: true, timeout: 10000 }, (err, stdout) => {
@@ -130,11 +224,29 @@ function detectMainApp(processes) {
   // 게임 못 찾으면 창 있는 프로세스 중 첫 번째
   for (const proc of processes) {
     const name = proc.ProcessName + '.exe';
-    if (APP_MAP[name] === null) continue; // 시스템 프로세스 제외
+    if (APP_MAP[name] === null) continue;
     if (proc.MainWindowTitle) return proc.MainWindowTitle;
   }
 
   return null;
+}
+
+const TITLE_BLACKLIST = ['CRAFTBOX', '크래프트박스', '피카라이브', 'PikaLive', 'PURPLE', 'Microsoft Text Input'];
+
+function detectAllApps(processes) {
+  const apps = [];
+  const seen = new Set();
+  for (const proc of processes) {
+    const name = proc.ProcessName + '.exe';
+    if (APP_MAP[name] === null) continue;
+    const display = APP_MAP[name] || proc.MainWindowTitle || proc.ProcessName;
+    if (!display || seen.has(display)) continue;
+    // 창 제목 블랙리스트 체크
+    if (TITLE_BLACKLIST.some(b => display.includes(b))) continue;
+    seen.add(display);
+    apps.push(display);
+  }
+  return apps;
 }
 
 // ─── MAC 주소 자동 감지 ──────────────────────────────────────────────────────
@@ -188,8 +300,10 @@ async function report() {
   const processes = await getRunningApps();
   const currentApp = detectMainApp(processes);
 
+  const allApps = detectAllApps(processes);
+
   const data = {
-    currentApp: currentApp,
+    currentApp: allApps.length > 0 ? allApps.join(', ') : null,
     lastPing: new Date().toISOString(),
   };
 
@@ -233,6 +347,57 @@ async function checkShutdownCommand() {
   } catch (_) {}
 }
 
+// ─── 자동 페어링: Sunshine API로 PIN 수락 ─────────────────────────────────────
+function acceptSunshinePin(pin) {
+  return new Promise((resolve) => {
+    const postData = JSON.stringify({ pin: pin.toString() });
+    const auth = Buffer.from(`${CONFIG.SUNSHINE_USER}:${CONFIG.SUNSHINE_PASS}`).toString('base64');
+
+    const req = https.request({
+      hostname: '127.0.0.1',
+      port: CONFIG.SUNSHINE_PORT,
+      path: '/api/pin',
+      method: 'POST',
+      rejectUnauthorized: false, // Sunshine은 self-signed cert 사용
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData),
+        'Authorization': `Basic ${auth}`,
+      },
+    }, (res) => {
+      let data = '';
+      res.on('data', (c) => (data += c));
+      res.on('end', () => {
+        console.log(`[Pair] Sunshine 응답: ${res.statusCode} ${data}`);
+        resolve(res.statusCode === 200);
+      });
+    });
+    req.on('error', (err) => {
+      console.log(`[Pair] Sunshine 연결 실패: ${err.message}`);
+      resolve(false);
+    });
+    req.write(postData);
+    req.end();
+  });
+}
+
+async function checkPendingPin() {
+  if (!CONFIG.MACHINE_ID) return;
+
+  try {
+    const result = await apiRequest('GET', `/api/session/pair?machineId=${CONFIG.MACHINE_ID}`);
+    if (result.pin) {
+      console.log(`[Pair] PIN 수신: ${result.pin} → Sunshine에 전달 중...`);
+      const ok = await acceptSunshinePin(result.pin);
+      if (ok) {
+        console.log('[Pair] 페어링 성공!');
+      } else {
+        console.log('[Pair] 페어링 실패 — Sunshine 응답 확인 필요');
+      }
+    }
+  } catch (_) {}
+}
+
 // ─── 메인 ─────────────────────────────────────────────────────────────────────
 async function main() {
   console.log('═══════════════════════════════════════');
@@ -255,15 +420,18 @@ async function main() {
   // 셧다운 명령 체크 (30초마다)
   setInterval(checkShutdownCommand, 30000);
 
+  // 자동 페어링 PIN 폴링 (3초마다)
+  setInterval(checkPendingPin, CONFIG.PAIR_POLL_INTERVAL);
+
   // 즉시 첫 보고
   await report();
-  console.log('[Monitor] 모니터링 시작');
+  console.log('[Monitor] 모니터링 시작 (자동 페어링 활성)');
 }
 
-main().catch((err) => {
-  console.error('[Fatal]', err);
-  process.exit(1);
-});
+// --run 모드일 때만 자동 실행
+if (args.includes('--run')) {
+  startMonitor();
+}
 
 process.on('SIGINT', () => {
   console.log('\n[Monitor] 종료');

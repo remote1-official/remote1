@@ -31,7 +31,7 @@ contextBridge.exposeInMainWorld('R1', {
   queueCancel:  () => ipcRenderer.invoke('api:queueCancel'),
 
   // ── Moonlight ────────────────────────────────────────────────────────────
-  moonlightLaunch:          (host) => ipcRenderer.invoke('moonlight:launch', host),
+  moonlightLaunch:          (host, machineId) => ipcRenderer.invoke('moonlight:launch', host, machineId),
   resizeEmbed:              (fullscreen) => ipcRenderer.invoke('moonlight:resizeEmbed', fullscreen),
   moonlightKill:            ()     => ipcRenderer.invoke('moonlight:kill'),
   moonlightIsInstalled:     ()     => ipcRenderer.invoke('moonlight:isInstalled'),

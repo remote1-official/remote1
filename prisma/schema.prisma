@@ -85,6 +85,7 @@ model Machine {
   lastUserId    String?                             // 마지막 사용자
   currentApp    String?                             // 현재 실행 중인 프로그램
   currentAppIcon String?                            // 현재 프로그램 아이콘 URL
+  pendingPin    String?                             // 자동 페어링용 PIN (임시)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 

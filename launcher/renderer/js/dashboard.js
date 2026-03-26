@@ -622,7 +622,8 @@ async function connect() {
     els.connectingMsg.textContent = '스트리밍 연결 중...';
 
     if (session.host) {
-      const mlResult = await window.R1.moonlightLaunch(session.host);
+      els.connectingMsg.textContent = '원격 PC 연결 중...';
+      const mlResult = await window.R1.moonlightLaunch(session.host, session.machineId);
       if (!mlResult.ok) {
         if (btnConnect) btnConnect.classList.remove('hidden');
         if (viewConnecting) viewConnecting.classList.add('hidden');
@@ -819,7 +820,7 @@ function startQueuePoll() {
         els.connectingMsg.textContent = '스트리밍 연결 중...';
         updateStatusDisplay();
 
-        const mlResult = await window.R1.moonlightLaunch(result.data.host);
+        const mlResult = await window.R1.moonlightLaunch(result.data.host, result.data.machineId);
         if (!mlResult.ok) {
           const btnConnect = $('btn-connect');
           const viewConnecting = $('view-connecting');
