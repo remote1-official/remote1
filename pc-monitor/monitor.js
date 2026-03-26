@@ -137,6 +137,28 @@ function detectMainApp(processes) {
   return null;
 }
 
+// ─── MAC 주소 자동 감지 ──────────────────────────────────────────────────────
+function getLocalMac() {
+  const ifaces = os.networkInterfaces();
+  const localIp = getLocalIp();
+  for (const name of Object.keys(ifaces)) {
+    for (const iface of ifaces[name]) {
+      if (iface.family === 'IPv4' && iface.address === localIp && iface.mac && iface.mac !== '00:00:00:00:00:00') {
+        return iface.mac.toUpperCase();
+      }
+    }
+  }
+  // fallback: 아무 외부 인터페이스
+  for (const name of Object.keys(ifaces)) {
+    for (const iface of ifaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') {
+        return iface.mac.toUpperCase();
+      }
+    }
+  }
+  return null;
+}
+
 // ─── 자동 Machine ID 찾기 ────────────────────────────────────────────────────
 async function findMyMachineId() {
   const localIp = getLocalIp();
@@ -158,17 +180,31 @@ async function findMyMachineId() {
 }
 
 // ─── 서버에 보고 ──────────────────────────────────────────────────────────────
+let macReported = false;
+
 async function report() {
   if (!CONFIG.MACHINE_ID) return;
 
   const processes = await getRunningApps();
   const currentApp = detectMainApp(processes);
 
+  const data = {
+    currentApp: currentApp,
+    lastPing: new Date().toISOString(),
+  };
+
+  // MAC 주소 자동 등록 (첫 1회)
+  if (!macReported) {
+    const mac = getLocalMac();
+    if (mac) {
+      data.macAddress = mac;
+      macReported = true;
+      console.log(`[Report] MAC 주소 자동 등록: ${mac}`);
+    }
+  }
+
   try {
-    await apiRequest('PATCH', `/api/admin/machines/${CONFIG.MACHINE_ID}`, {
-      currentApp: currentApp,
-      lastPing: new Date().toISOString(),
-    });
+    await apiRequest('PATCH', `/api/admin/machines/${CONFIG.MACHINE_ID}`, data);
 
     if (currentApp) {
       console.log(`[Report] ${currentApp}`);

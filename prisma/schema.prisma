@@ -51,10 +51,29 @@ enum PaymentStatus {
   CANCELED
 }
 
+// ─── Store (매장) ────────────────────────────────────────────────────────────
+
+model Store {
+  id          String   @id @default(cuid())
+  name        String                         // 매장 이름 (예: 텐PC)
+  ipRanges    String?                        // IP 대역 (쉼표 구분, 예: "211.181.226.0/25,210.216.35.0/25")
+  gateway1    String?                        // 게이트웨이 1
+  gateway2    String?                        // 게이트웨이 2
+  address     String?                        // 매장 주소
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  machines Machine[]
+
+  @@map("stores")
+}
+
 // ─── Remote PC ───────────────────────────────────────────────────────────────
 
 model Machine {
   id            String        @id @default(cuid())
+  storeId       String?                             // 소속 매장
+  store         Store?        @relation(fields: [storeId], references: [id])
   name          String                              // 표시 이름 (예: PC-1)
   sunshineHost  String        @unique               // Sunshine 서버 IP/호스트 (Moonlight 접속 주소)
   localIp       String?                             // 내부 IP (핑/셧다운용)

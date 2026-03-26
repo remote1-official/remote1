@@ -9,8 +9,18 @@ interface MachineUser {
   email: string
 }
 
+interface StoreInfo {
+  id: string
+  name: string
+  pcCount: number
+  readyCount: number
+  inUseCount: number
+}
+
 interface Machine {
   id: string
+  storeId: string | null
+  storeName: string | null
   name: string
   sunshineHost: string
   localIp: string | null
@@ -52,23 +62,28 @@ const BASE = ''  // same origin
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const [machines, setMachines] = useState<Machine[]>([])
+  const [stores, setStores] = useState<StoreInfo[]>([])
+  const [selectedStore, setSelectedStore] = useState<string>('all')
   const [queue, setQueue] = useState<QueueEntry[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchAll = useCallback(async () => {
     try {
-      const [mRes, qRes, sRes] = await Promise.all([
+      const [mRes, qRes, sRes, stRes] = await Promise.all([
         fetch(`${BASE}/api/admin/machines`),
         fetch(`${BASE}/api/admin/queue`),
         fetch(`${BASE}/api/admin/stats`),
+        fetch(`${BASE}/api/admin/stores`),
       ])
       const mData = await mRes.json()
       const qData = await qRes.json()
       const sData = await sRes.json()
+      const stData = await stRes.json()
       setMachines(mData.machines || [])
       setQueue(qData.queue || [])
       setStats(sData)
+      setStores(stData.stores || [])
     } catch (e) {
       console.error('Fetch error', e)
     } finally {
@@ -81,6 +96,12 @@ export default function AdminPage() {
     const interval = setInterval(fetchAll, 5000) // 5초마다 폴링
     return () => clearInterval(interval)
   }, [fetchAll])
+
+  const filteredMachines = selectedStore === 'all'
+    ? machines
+    : selectedStore === 'none'
+      ? machines.filter((m) => !m.storeId)
+      : machines.filter((m) => m.storeId === selectedStore)
 
   const updateMachine = async (id: string, data: Record<string, unknown>) => {
     await fetch(`${BASE}/api/admin/machines/${id}`, {
@@ -140,11 +161,40 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* Store Tabs */}
+      {stores.length > 0 && (
+        <div style={styles.section}>
+          <div style={styles.storeTabs}>
+            <button
+              style={{ ...styles.storeTab, ...(selectedStore === 'all' ? styles.storeTabActive : {}) }}
+              onClick={() => setSelectedStore('all')}
+            >
+              전체 ({machines.length})
+            </button>
+            {stores.map((s) => (
+              <button
+                key={s.id}
+                style={{ ...styles.storeTab, ...(selectedStore === s.id ? styles.storeTabActive : {}) }}
+                onClick={() => setSelectedStore(s.id)}
+              >
+                {s.name} ({s.pcCount})
+              </button>
+            ))}
+            <button
+              style={{ ...styles.storeTab, ...(selectedStore === 'none' ? styles.storeTabActive : {}) }}
+              onClick={() => setSelectedStore('none')}
+            >
+              미배정
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* PC Grid */}
       <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>PC 현황 ({machines.length}대)</h2>
+        <h2 style={styles.sectionTitle}>PC 현황 ({filteredMachines.length}대)</h2>
         <div style={styles.pcGrid}>
-          {machines.map((m) => (
+          {filteredMachines.map((m) => (
             <div key={m.id} style={{ ...styles.pcCard, borderColor: STATUS_COLOR[m.status] || '#334155' }}>
               <div style={styles.pcHeader}>
                 <span style={{ ...styles.pcStatus, background: STATUS_COLOR[m.status] }}></span>
@@ -154,6 +204,7 @@ export default function AdminPage() {
 
               <div style={styles.pcInfo}>
                 <div style={styles.pcRow}><span style={styles.pcLabel}>IP</span><span>{m.sunshineHost}</span></div>
+                {m.storeName && <div style={styles.pcRow}><span style={styles.pcLabel}>매장</span><span style={{color:'#8b5cf6'}}>{m.storeName}</span></div>}
                 {m.currentUser && (
                   <div style={styles.pcRow}><span style={styles.pcLabel}>이용자</span><span>{m.currentUser.username || m.currentUser.email}</span></div>
                 )}
@@ -311,6 +362,19 @@ const styles: Record<string, React.CSSProperties> = {
   btnRed: { background: 'rgba(239,68,68,0.15)', color: '#ef4444' },
   btnBlue: { background: 'rgba(14,165,233,0.15)', color: '#0ea5e9' },
   btnAmber: { background: 'rgba(245,158,11,0.15)', color: '#f59e0b' },
+
+  // Store Tabs
+  storeTabs: {
+    display: 'flex', gap: 6, flexWrap: 'wrap' as const,
+  },
+  storeTab: {
+    padding: '8px 16px', borderRadius: 8, border: '1px solid #334155',
+    background: '#1e293b', color: '#94a3b8', fontSize: 13, fontWeight: 600,
+    cursor: 'pointer', transition: 'all 0.15s',
+  },
+  storeTabActive: {
+    background: 'rgba(14,165,233,0.15)', color: '#0ea5e9', borderColor: 'rgba(14,165,233,0.4)',
+  },
 
   // Queue
   queueList: { display: 'flex', flexDirection: 'column' as const, gap: 6 },

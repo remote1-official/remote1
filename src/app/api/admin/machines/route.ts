@@ -8,6 +8,7 @@ export async function GET() {
     const machines = await prisma.machine.findMany({
       orderBy: { name: 'asc' },
       include: {
+        store: { select: { id: true, name: true } },
         sessions: {
           where: { status: 'ACTIVE' },
           include: { user: { select: { id: true, username: true, email: true } } },
@@ -18,6 +19,8 @@ export async function GET() {
 
     const result = machines.map((m) => ({
       id:             m.id,
+      storeId:        m.storeId,
+      storeName:      m.store?.name ?? null,
       name:           m.name,
       sunshineHost:   m.sunshineHost,
       localIp:        m.localIp,
@@ -42,7 +45,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { name, sunshineHost, localIp, macAddress, spec } = body
+    const { name, sunshineHost, localIp, macAddress, spec, storeId } = body
 
     if (!name || !sunshineHost) {
       return NextResponse.json({ error: 'name, sunshineHost 필수' }, { status: 400 })
@@ -52,9 +55,10 @@ export async function POST(req: NextRequest) {
       data: {
         name,
         sunshineHost,
-        localIp:    localIp || null,
+        localIp:     localIp || null,
         macAddress:  macAddress || null,
         spec:        spec || null,
+        storeId:     storeId || null,
         status:      'OFF',
         isAvailable: true,
       },
