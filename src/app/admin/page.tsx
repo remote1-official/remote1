@@ -196,7 +196,7 @@ export default function AdminPage() {
                 </td>
                 <td style={S.td}>
                   {m.status === 'OFF' && <button style={{...S.actionBtn,...S.actionGreen}} onClick={() => updateMachine(m.id, {status:'BOOTING'})}>켜기</button>}
-                  {m.status === 'READY' && <button style={{...S.actionBtn,...S.actionRed}} onClick={() => updateMachine(m.id, {status:'OFF',isAvailable:true,currentApp:null,currentAppIcon:null})}>끄기</button>}
+                  {m.status === 'READY' && <><button style={{...S.actionBtn,...S.actionAmber}} onClick={() => updateMachine(m.id, {status:'MAINTENANCE',isAvailable:false})}>점검</button><button style={{...S.actionBtn,...S.actionRed}} onClick={() => updateMachine(m.id, {status:'OFF',isAvailable:true,currentApp:null,currentAppIcon:null})}>끄기</button></>}
                   {m.status === 'IN_USE' && <button style={{...S.actionBtn,...S.actionAmber}} onClick={() => updateMachine(m.id, {status:'MAINTENANCE',isAvailable:false})}>점검</button>}
                   {m.status === 'MAINTENANCE' && <button style={{...S.actionBtn,...S.actionBlue}} onClick={() => updateMachine(m.id, {status:'READY',isAvailable:true})}>복구</button>}
                   {m.status === 'BOOTING' && <span style={{fontSize:11,color:'#3b82f6'}}>부팅중...</span>}
