@@ -839,6 +839,10 @@ ipcMain.handle('api:connect', async () => {
   if (!auth.accessToken) return { ok: false, error: '로그인이 필요합니다' };
   try {
     const { data } = await authedRequest('POST', '/api/session/connect');
+    // 대기열 응답 (queued: true)
+    if (data.queued) {
+      return { ok: true, data };
+    }
     return { ok: true, data };
   } catch (err) {
     console.error('[api:connect] error:', err.statusCode, err.message);
@@ -846,6 +850,26 @@ ipcMain.handle('api:connect', async () => {
       return { ok: false, error: '로그인이 만료되었습니다. 다시 로그인해주세요.' };
     }
     return { ok: false, error: err.message };
+  }
+});
+
+ipcMain.handle('api:queueStatus', async () => {
+  if (!auth.accessToken) return { ok: false };
+  try {
+    const { data } = await authedRequest('GET', '/api/session/queue-status');
+    return { ok: true, data };
+  } catch (_) {
+    return { ok: false };
+  }
+});
+
+ipcMain.handle('api:queueCancel', async () => {
+  if (!auth.accessToken) return { ok: false };
+  try {
+    await authedRequest('DELETE', '/api/session/queue-status');
+    return { ok: true };
+  } catch (_) {
+    return { ok: false };
   }
 });
 

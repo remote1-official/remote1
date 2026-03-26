@@ -2,7 +2,7 @@
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const state = {
-  status: 'idle',          // 'idle' | 'connecting' | 'connected'
+  status: 'idle',          // 'idle' | 'connecting' | 'queued' | 'connected'
   user: null,              // { id, email, name, credits, username }
   session: null,           // { host, machineName, machineSpec }
   credits: 0,              // current credits (minutes)
@@ -13,6 +13,8 @@ const state = {
   noticeIndex: 0,          // current notice index
   muted: false,
   mouseGrabbed: false,
+  queuePosition: null,
+  queueId: null,
 };
 
 let timerInterval  = null;
@@ -235,6 +237,10 @@ function updateStatusDisplay() {
     dot.classList.add('loading');
     text.textContent = '연결 중...';
     sub.textContent  = 'PC 배정 중입니다';
+  } else if (status === 'queued') {
+    dot.classList.add('loading');
+    text.textContent = `대기 ${state.queuePosition}번`;
+    sub.textContent  = 'PC 배정 대기 중...';
   } else if (status === 'connected') {
     dot.classList.add('online');
     text.textContent = '연결됨';
@@ -590,6 +596,17 @@ async function connect() {
     els.connectingMsg.textContent = '빈 PC 배정 중...';
     const result = await window.R1.connect();
 
+    // ─── 대기열 응답 처리 ──────────────────────────────
+    if (result.data && result.data.queued) {
+      state.status = 'queued';
+      state.queuePosition = result.data.position;
+      state.queueId = result.data.queueId;
+      els.connectingMsg.textContent = `대기중... (대기 ${result.data.position}번)`;
+      updateStatusDisplay();
+      startQueuePoll();
+      return;
+    }
+
     if (!result.ok) {
       if (btnConnect) btnConnect.classList.remove('hidden');
       if (viewConnecting) viewConnecting.classList.add('hidden');
@@ -620,7 +637,6 @@ async function connect() {
     window.R1.usbConnect().catch(() => {});
 
     // Moonlight 실행 성공 — 스트리밍 연결 대기 중 (버튼 상태 유지)
-    // moonlight:streamConnected 이벤트가 오면 그때 "이용 차감 중"으로 전환
     els.connectingMsg.textContent = '원격 PC 연결 대기 중...';
 
   } catch (err) {
@@ -774,6 +790,61 @@ els.close.addEventListener('click', async () => {
 })();
 
 // (Moonlight install page removed - bundled with launcher)
+
+// ─── Queue Polling (대기열 폴링) ──────────────────────────────────────────────
+let queuePollInterval = null;
+
+function startQueuePoll() {
+  stopQueuePoll();
+  queuePollInterval = setInterval(async () => {
+    if (state.status !== 'queued') {
+      stopQueuePoll();
+      return;
+    }
+
+    try {
+      // 대기열 상태 확인 대신 다시 connect 시도 (PC가 빈 경우 바로 배정)
+      const result = await window.R1.connect();
+
+      if (result.data && result.data.queued) {
+        // 아직 대기 중 — 위치 업데이트
+        state.queuePosition = result.data.position;
+        els.connectingMsg.textContent = `대기중... (대기 ${result.data.position}번)`;
+        updateStatusDisplay();
+      } else if (result.ok && result.data && result.data.host) {
+        // PC 배정됨!
+        stopQueuePoll();
+        state.session = result.data;
+        state.status = 'connecting';
+        els.connectingMsg.textContent = '스트리밍 연결 중...';
+        updateStatusDisplay();
+
+        const mlResult = await window.R1.moonlightLaunch(result.data.host);
+        if (!mlResult.ok) {
+          const btnConnect = $('btn-connect');
+          const viewConnecting = $('view-connecting');
+          if (btnConnect) btnConnect.classList.remove('hidden');
+          if (viewConnecting) viewConnecting.classList.add('hidden');
+          state.status = 'idle';
+          showAlert('idle-alert', mlResult.error || '스트리밍 연결에 실패했습니다.', 'warn');
+          await window.R1.disconnect().catch(() => {});
+          updateStatusDisplay();
+          return;
+        }
+
+        window.R1.usbConnect().catch(() => {});
+        els.connectingMsg.textContent = '원격 PC 연결 대기 중...';
+      }
+    } catch (_) {}
+  }, 5000); // 5초마다 폴링
+}
+
+function stopQueuePoll() {
+  if (queuePollInterval) {
+    clearInterval(queuePollInterval);
+    queuePollInterval = null;
+  }
+}
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 async function init() {

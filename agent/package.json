@@ -1,0 +1,12 @@
+{
+  "name": "remote1-agent",
+  "version": "1.0.0",
+  "description": "REMOTE1 카운터 PC 에이전트 — WOL, 자동 스케일링, 모니터링",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js"
+  },
+  "dependencies": {
+    "wake_on_lan": "^1.0.0"
+  }
+}

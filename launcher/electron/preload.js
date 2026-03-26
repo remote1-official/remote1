@@ -24,9 +24,11 @@ contextBridge.exposeInMainWorld('R1', {
   getUser: ()                   => ipcRenderer.invoke('api:getUser'),
 
   // ── Session API ──────────────────────────────────────────────────────────
-  connect:    () => ipcRenderer.invoke('api:connect'),
-  disconnect: (usedMinutes) => ipcRenderer.invoke('api:disconnect', usedMinutes),
-  keepAlive:  () => ipcRenderer.invoke('api:keepAlive'),
+  connect:      () => ipcRenderer.invoke('api:connect'),
+  disconnect:   (usedMinutes) => ipcRenderer.invoke('api:disconnect', usedMinutes),
+  keepAlive:    () => ipcRenderer.invoke('api:keepAlive'),
+  queueStatus:  () => ipcRenderer.invoke('api:queueStatus'),
+  queueCancel:  () => ipcRenderer.invoke('api:queueCancel'),
 
   // ── Moonlight ────────────────────────────────────────────────────────────
   moonlightLaunch:          (host) => ipcRenderer.invoke('moonlight:launch', host),
