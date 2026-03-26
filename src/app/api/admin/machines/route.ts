@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   try {
     const machines = await prisma.machine.findMany({
-      orderBy: { name: 'asc' },
+      orderBy: { sunshineHost: 'asc' },
       include: {
         store: { select: { id: true, name: true } },
         sessions: {
