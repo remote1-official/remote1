@@ -36,18 +36,23 @@ export default function AdminPage() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [now, setNow] = useState(new Date())
+  const [autoManage, setAutoManage] = useState(false)
+  const [minReadyPCs, setMinReadyPCs] = useState(4)
 
   const fetchAll = useCallback(async () => {
     try {
-      const [mRes, qRes, sRes, stRes] = await Promise.all([
+      const [mRes, qRes, sRes, stRes, setRes] = await Promise.all([
         fetch('/api/admin/machines'), fetch('/api/admin/queue'),
         fetch('/api/admin/stats'), fetch('/api/admin/stores'),
+        fetch('/api/admin/settings'),
       ])
-      const [mData, qData, sData, stData] = await Promise.all([mRes.json(), qRes.json(), sRes.json(), stRes.json()])
+      const [mData, qData, sData, stData, setData] = await Promise.all([mRes.json(), qRes.json(), sRes.json(), stRes.json(), setRes.json()])
       setMachines(mData.machines || [])
       setQueue(qData.queue || [])
       setStats(sData)
       setStores(stData.stores || [])
+      setAutoManage(!!setData.autoManage)
+      setMinReadyPCs(setData.minReadyPCs ?? 4)
     } catch (e) { console.error('Fetch error', e) }
     finally { setLoading(false) }
   }, [])
@@ -62,6 +67,18 @@ export default function AdminPage() {
   const filtered = machines
     .filter(m => selectedStore === 'all' ? true : selectedStore === 'none' ? !m.storeId : m.storeId === selectedStore)
     .filter(m => statusFilter === 'all' ? true : m.status === statusFilter)
+
+  const toggleAutoManage = async () => {
+    const next = !autoManage
+    setAutoManage(next)
+    await fetch('/api/admin/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ autoManage: next }) })
+  }
+
+  const changeMinReady = async (val: number) => {
+    const v = Math.max(1, Math.min(20, val))
+    setMinReadyPCs(v)
+    await fetch('/api/admin/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ minReadyPCs: v }) })
+  }
 
   const updateMachine = async (id: string, data: Record<string, unknown>) => {
     await fetch(`/api/admin/machines/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
@@ -78,7 +95,30 @@ export default function AdminPage() {
           <span style={S.logo}>REMOTE1</span>
           <span style={S.logoAdmin}>Admin</span>
         </div>
-        <span style={S.clock}>{now.toLocaleString('ko-KR')}</span>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          {/* 자동관리 토글 */}
+          <div style={S.autoBox}>
+            <span style={{fontSize:12,color:'#666',fontWeight:600}}>자동관리</span>
+            <button onClick={toggleAutoManage} style={{
+              ...S.toggleBtn,
+              background: autoManage ? '#22c55e' : '#d1d5db',
+            }}>
+              <span style={{
+                ...S.toggleKnob,
+                transform: autoManage ? 'translateX(18px)' : 'translateX(2px)',
+              }} />
+            </button>
+            {autoManage && (
+              <div style={{display:'flex',alignItems:'center',gap:4}}>
+                <button style={S.minBtn} onClick={() => changeMinReady(minReadyPCs - 1)}>-</button>
+                <span style={{fontSize:13,fontWeight:700,minWidth:20,textAlign:'center' as const}}>{minReadyPCs}</span>
+                <button style={S.minBtn} onClick={() => changeMinReady(minReadyPCs + 1)}>+</button>
+                <span style={{fontSize:11,color:'#888'}}>대</span>
+              </div>
+            )}
+          </div>
+          <span style={S.clock}>{now.toLocaleString('ko-KR')}</span>
+        </div>
       </header>
 
       {/* Stats Bar */}
@@ -305,6 +345,26 @@ const S: Record<string, React.CSSProperties> = {
   actionRed: { background: '#fee2e2', color: '#dc2626' },
   actionAmber: { background: '#fef3c7', color: '#d97706' },
   actionBlue: { background: '#dbeafe', color: '#2563eb' },
+
+  // Auto manage
+  autoBox: {
+    display: 'flex', alignItems: 'center', gap: 8,
+    padding: '4px 12px', borderRadius: 8, background: '#f8f9fa', border: '1px solid #e5e7eb',
+  },
+  toggleBtn: {
+    width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
+    position: 'relative' as const, transition: 'background 0.2s', padding: 0,
+  },
+  toggleKnob: {
+    width: 18, height: 18, borderRadius: '50%', background: '#fff',
+    position: 'absolute' as const, top: 2, transition: 'transform 0.2s',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+  },
+  minBtn: {
+    width: 22, height: 22, borderRadius: 4, border: '1px solid #d1d5db',
+    background: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700,
+    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333',
+  },
 
   // Queue
   queueSection: { padding: '16px 20px' },
