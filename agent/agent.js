@@ -3,8 +3,82 @@
 const https = require('https');
 const http = require('http');
 const { URL } = require('url');
-const { exec } = require('child_process');
+const { exec, execSync } = require('child_process');
 const dgram = require('dgram');
+const path = require('path');
+const readline = require('readline');
+
+// ─── 실행 모드 분기 ──────────────────────────────────────────────────────────
+const args = process.argv.slice(2);
+
+if (args.includes('--run')) {
+  // 백그라운드 모드 — 바로 메인 루프 실행
+} else if (args.includes('--uninstall')) {
+  uninstall();
+  process.exit(0);
+} else {
+  // 메뉴 모드
+  showMenu();
+}
+
+function showMenu() {
+  console.log('');
+  console.log('  ╔══════════════════════════════════╗');
+  console.log('  ║   REMOTE1 카운터 에이전트 v2.0   ║');
+  console.log('  ╚══════════════════════════════════╝');
+  console.log('');
+  console.log('  설치 + 실행을 진행합니다...');
+  console.log('');
+  install();
+  return;
+}
+
+function getExePath() {
+  return process.execPath;
+}
+
+function install() {
+  const exePath = getExePath();
+  console.log('');
+  console.log(`  에이전트 경로: ${exePath}`);
+
+  try {
+    // 기존 작업 제거
+    try { execSync('schtasks /delete /tn "REMOTE1-Agent" /f', { windowsHide: true, stdio: 'ignore' }); } catch (_) {}
+
+    // 작업 스케줄러 등록 (로그온 시 자동 실행, 최소화)
+    execSync(`schtasks /create /tn "REMOTE1-Agent" /tr "\\"${exePath}\\" --run" /sc onlogon /rl highest /f`, { windowsHide: true });
+
+    console.log('');
+    console.log('  [완료] 자동 시작 등록 완료!');
+    console.log('  - PC 부팅 시 자동 실행됩니다');
+    console.log('  - 제거: 이 프로그램 다시 실행 → 3번');
+    console.log('');
+  } catch (err) {
+    console.log('');
+    console.log('  [오류] 관리자 권한이 필요합니다.');
+    console.log('  → 이 파일을 우클릭 → 관리자 권한으로 실행');
+    console.log('');
+    console.log('  5초 후 종료...');
+    setTimeout(() => process.exit(1), 5000);
+    return;
+  }
+
+  // 바로 실행
+  startAgent();
+}
+
+function uninstall() {
+  console.log('');
+  try { execSync('taskkill /f /im "REMOTE1-에이전트.exe"', { windowsHide: true, stdio: 'ignore' }); } catch (_) {}
+  try { execSync('schtasks /delete /tn "REMOTE1-Agent" /f', { windowsHide: true, stdio: 'ignore' }); } catch (_) {}
+  console.log('  [완료] 에이전트 제거 완료');
+  console.log('');
+}
+
+function startAgent() {
+  mainLoop().catch((err) => { console.error('[Fatal]', err); process.exit(1); });
+}
 
 // ─── 설정 ─────────────────────────────────────────────────────────────────────
 const CONFIG = {
@@ -196,16 +270,27 @@ async function autoManage() {
     }
   }
 
-  // 대기 PC가 너무 많으면 → 초과분 셧다운
-  const excess = readyCount - minReady;
-  if (excess > 0) {
-    console.log(`[AutoManage] 대기 ${readyCount}대 > 최소 ${minReady}대 → ${excess}대 셧다운`);
-    // 가장 마지막에 켜진 PC부터 끄기
-    const toShutdown = readyPCs.slice(-excess);
-    for (const m of toShutdown) {
-      if (m.localIp) {
-        await shutdownHost(m.localIp, m.name);
-        await updateMachine(m.id, { status: 'OFF', isAvailable: true });
+  // 대기 PC 초과분은 자동으로 끄지 않음 (관리자가 수동으로 켠 것일 수 있음)
+  // 단, READY 상태에서 30분 이상 이용자가 없으면 → 최소 대기 수를 초과한 PC만 셧다운
+  const IDLE_TIMEOUT = 30 * 60 * 1000; // 30분
+  const now = Date.now();
+
+  if (readyCount > minReady) {
+    const idlePCs = readyPCs.filter(m => {
+      if (!m.lastPing) return false;
+      const idleTime = now - new Date(m.lastPing).getTime();
+      return idleTime > IDLE_TIMEOUT;
+    });
+
+    // 최소 대기 수는 유지하면서, 30분 이상 미사용 초과분만 끄기
+    const canShutdown = Math.min(idlePCs.length, readyCount - minReady);
+    if (canShutdown > 0) {
+      console.log(`[AutoManage] ${canShutdown}대 30분 이상 미사용 → 셧다운`);
+      for (let i = 0; i < canShutdown; i++) {
+        if (idlePCs[i].localIp) {
+          await shutdownHost(idlePCs[i].localIp, idlePCs[i].name);
+          await updateMachine(idlePCs[i].id, { status: 'OFF', isAvailable: true });
+        }
       }
     }
   }
@@ -250,11 +335,6 @@ async function mainLoop() {
     console.log(`[${ts}] 대기:${ready} 사용:${inUse} 부팅:${booting} 꺼짐:${off} | 자동관리:${adminSettings.autoManage ? 'ON' : 'OFF'}`);
   }, 60000);
 }
-
-mainLoop().catch((err) => {
-  console.error('[Fatal]', err);
-  process.exit(1);
-});
 
 process.on('SIGINT', () => {
   console.log('\n[Agent] 종료');

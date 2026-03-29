@@ -9,6 +9,7 @@ const NAV = [
   { href: '/mypage/schedule', label: '예약 종료',       icon: '⏰' },
   { href: '/mypage/charge',   label: '시간 충전',       icon: '⚡' },
   { href: '/mypage/payments', label: '결제 및 충전 목록', icon: '💳' },
+  { href: '/mypage/refund',   label: '환불',             icon: '↩️' },
 ]
 
 export default function MypageLayout({ children }: { children: React.ReactNode }) {

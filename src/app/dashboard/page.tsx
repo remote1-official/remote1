@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 const PACKAGES = [
-  { id: 'basic',    label: '기본',     time: '1시간',  credits: 60,  price: '9,900원',  popular: false },
-  { id: 'standard', label: '스탠다드', time: '3시간',  credits: 180, price: '29,900원', popular: true  },
-  { id: 'premium',  label: '프리미엄', time: '10시간', credits: 600, price: '59,900원', popular: false },
+  { id: 'starter',  label: '스타터',     time: '10시간',  credits: 600,   price: '11,000원', bonus: null,              popular: false },
+  { id: 'standard', label: '스탠다드',   time: '30시간',  credits: 1980,  price: '33,000원', bonus: '서비스 +3시간',   popular: true  },
+  { id: 'premium',  label: '프리미엄',   time: '60시간',  credits: 3960,  price: '66,000원', bonus: '서비스 +6시간',   popular: false },
+  { id: 'pro',      label: '프로',       time: '100시간', credits: 6660,  price: '110,000원', bonus: '서비스 +11시간', popular: false },
+  { id: 'promax',   label: '프로 MAX',   time: '300시간', credits: 19980, price: '330,000원', bonus: '서비스 +33시간', popular: false },
 ]
 
 export default function DashboardPage() {
@@ -104,7 +106,8 @@ export default function DashboardPage() {
               )}
               <p className="font-semibold text-gray-900">{pkg.label}</p>
               <p className="text-3xl font-bold mt-2">{pkg.time}</p>
-              <p className="text-gray-400 text-sm mt-1">{pkg.credits}크레딧</p>
+              {pkg.bonus && <p className="text-sm font-semibold text-indigo-500 mt-1">{pkg.bonus}</p>}
+              <p className="text-gray-400 text-sm mt-1">{Math.round(parseInt(pkg.price.replace(/,/g,'')) / pkg.credits * 60).toLocaleString()}원/시간</p>
               <p className="text-xl font-semibold text-indigo-600 mt-4">{pkg.price}</p>
               <button
                 onClick={() => handlePayment(pkg.id)}

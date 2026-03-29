@@ -16,7 +16,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '사용자를 찾을 수 없습니다' }, { status: 404 })
     }
 
-    if (user.credits <= 0) {
+    if (user.isSuspended) {
+      return NextResponse.json(
+        { error: '이용이 정지된 계정입니다. 고객센터에 문의해주세요.' },
+        { status: 403 }
+      )
+    }
+
+    if ((user.credits ?? 0) <= 0) {
       return NextResponse.json(
         { error: '크레딧이 부족합니다. 웹사이트에서 크레딧을 충전해주세요.' },
         { status: 400 }

@@ -8,5 +8,8 @@
   },
   "dependencies": {
     "wake_on_lan": "^1.0.0"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
   }
 }

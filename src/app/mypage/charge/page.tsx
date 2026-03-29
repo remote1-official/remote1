@@ -4,35 +4,48 @@ import { apiFetch } from '@/lib/apiClient'
 
 const PACKAGES = [
   {
-    id:      'hour10',
+    id:      'starter',
     hours:   10,
     price:   11000,
     label:   '10시간',
+    bonus:   null,
     badge:   null,
     popular: false,
   },
   {
-    id:      'hour30',
-    hours:   30,
-    price:   30000,
+    id:      'standard',
+    hours:   33,
+    price:   33000,
     label:   '30시간',
-    badge:   '🔥 핫딜! BEST 추천',
+    bonus:   '서비스 +3시간',
+    badge:   '🔥 BEST 추천',
     popular: true,
   },
   {
-    id:      'hour50',
-    hours:   50,
-    price:   48000,
-    label:   '50시간',
+    id:      'premium',
+    hours:   66,
+    price:   66000,
+    label:   '60시간',
+    bonus:   '서비스 +6시간',
     badge:   null,
     popular: false,
   },
   {
-    id:      'hour100',
-    hours:   100,
-    price:   95000,
+    id:      'pro',
+    hours:   111,
+    price:   110000,
     label:   '100시간',
+    bonus:   '서비스 +11시간',
     badge:   null,
+    popular: false,
+  },
+  {
+    id:      'promax',
+    hours:   333,
+    price:   330000,
+    label:   '300시간',
+    bonus:   '서비스 +33시간',
+    badge:   '💎 최고 가성비',
     popular: false,
   },
 ]
@@ -123,6 +136,7 @@ export default function ChargePage() {
 
             <div>
               <p className="text-3xl font-black text-white">{pkg.label}</p>
+              {pkg.bonus && <p className="text-sm font-semibold text-sky-400 mt-0.5">{pkg.bonus}</p>}
               <p className="text-sm text-gray-400 mt-0.5">{perHour(pkg.price, pkg.hours)}</p>
             </div>
 

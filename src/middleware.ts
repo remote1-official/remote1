@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const PUBLIC_PATHS = ['/login', '/signup', '/api/auth/login', '/api/auth/signup', '/api/auth/refresh', '/api/auth/sms', '/api/auth/logout', '/api/notices', '/api/admin']
+// Note: /api/admin routes are public at middleware level (cookie-based admin auth is checked in each route handler)
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl

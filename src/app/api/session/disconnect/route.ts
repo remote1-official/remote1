@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       message:          '세션이 종료되었습니다',
       creditsUsed:      creditsToDeduct,
-      creditsRemaining: Math.max(0, updatedUser.credits),
+      creditsRemaining: Math.max(0, updatedUser.credits ?? 0),
     })
   } catch (error) {
     console.error('[SESSION DISCONNECT ERROR]', error)

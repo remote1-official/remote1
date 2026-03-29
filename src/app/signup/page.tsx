@@ -11,9 +11,19 @@ export default function SignupPage() {
     email:        '',
     phone:        '',
     password:     '',
+    mainGame:     '',
     agreeTerms:   false,
     agreePrivacy: false,
   })
+
+  const GAME_OPTIONS = [
+    '로스트아크',
+    'FC온라인',
+    '메이플스토리',
+    '리니지클래식',
+    '웹젠게임',
+    '기타 비가맹게임',
+  ]
 
   const [phoneVerified, setPhoneVerified]   = useState(false)
   const [smsToken, setSmsToken]             = useState('')
@@ -160,6 +170,10 @@ export default function SignupPage() {
       newErrors.password = '영문과 숫자를 모두 포함해야 합니다'
     }
 
+    if (!form.mainGame) {
+      newErrors.mainGame = '주 이용게임을 선택해주세요'
+    }
+
     if (!form.agreeTerms) {
       newErrors.agreeTerms = '이용약관에 동의해주세요'
     }
@@ -183,6 +197,7 @@ export default function SignupPage() {
           email:         form.email,
           phone:         form.phone.replace(/[^0-9]/g, ''),
           password:      form.password,
+          mainGame:      form.mainGame,
           phoneVerified: phoneVerified,
           agreeTerms:    form.agreeTerms,
           agreePrivacy:  form.agreePrivacy,
@@ -359,6 +374,27 @@ export default function SignupPage() {
               <p className="mt-1 text-xs text-gray-500">영문과 숫자를 포함해 8자 이상</p>
               {errors.password && (
                 <p className="mt-1 text-xs text-red-400">{errors.password}</p>
+              )}
+            </div>
+
+            {/* 주 이용게임 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1.5">
+                주 이용게임 <span className="text-red-400">*</span>
+              </label>
+              <select
+                className="input-field w-full"
+                value={form.mainGame}
+                onChange={(e) => setField('mainGame', e.target.value)}
+                required
+              >
+                <option value="">선택해주세요</option>
+                {GAME_OPTIONS.map(g => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
+              </select>
+              {errors.mainGame && (
+                <p className="mt-1 text-xs text-red-400">{errors.mainGame}</p>
               )}
             </div>
 

@@ -38,6 +38,9 @@ export default function AdminPage() {
   const [now, setNow] = useState(new Date())
   const [autoManage, setAutoManage] = useState(false)
   const [minReadyPCs, setMinReadyPCs] = useState(4)
+  const [showAddPC, setShowAddPC] = useState(false)
+  const [newPC, setNewPC] = useState({ name: '', sunshineHost: '', localIp: '', spec: '' })
+  const [showAppPopup, setShowAppPopup] = useState(false)
 
   const fetchAll = useCallback(async () => {
     try {
@@ -64,6 +67,17 @@ export default function AdminPage() {
     return () => { clearInterval(i1); clearInterval(i2) }
   }, [fetchAll])
 
+  // 팝업 바깥 클릭 시 닫기
+  useEffect(() => {
+    if (!showAppPopup) return
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (!target.closest('[data-app-popup]')) setShowAppPopup(false)
+    }
+    document.addEventListener('click', handler)
+    return () => document.removeEventListener('click', handler)
+  }, [showAppPopup])
+
   const filtered = machines
     .filter(m => selectedStore === 'all' ? true : selectedStore === 'none' ? !m.storeId : m.storeId === selectedStore)
     .filter(m => statusFilter === 'all' ? true : m.status === statusFilter)
@@ -85,6 +99,20 @@ export default function AdminPage() {
     fetchAll()
   }
 
+  const addMachine = async () => {
+    if (!newPC.name || !newPC.sunshineHost) return alert('PC명과 IP는 필수입니다')
+    await fetch('/api/admin/machines', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...newPC, localIp: newPC.localIp || newPC.sunshineHost }) })
+    setNewPC({ name: '', sunshineHost: '', localIp: '', spec: '' })
+    setShowAddPC(false)
+    fetchAll()
+  }
+
+  const deleteMachine = async (id: string, name: string) => {
+    if (!confirm(`"${name}" PC를 삭제하시겠습니까?`)) return
+    await fetch(`/api/admin/machines/${id}`, { method: 'DELETE' })
+    fetchAll()
+  }
+
   if (loading) return <div style={S.loadingPage}><div style={S.loadingText}>로딩 중...</div></div>
 
   return (
@@ -96,6 +124,9 @@ export default function AdminPage() {
           <span style={S.logoAdmin}>Admin</span>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <a href="/admin/users" style={{fontSize:12,fontWeight:700,color:'#1e40af',textDecoration:'none',padding:'6px 14px',borderRadius:6,border:'1px solid #1e40af',background:'#eff6ff'}}>회원 관리</a>
+          <a href="/admin/logs" style={{fontSize:12,fontWeight:700,color:'#059669',textDecoration:'none',padding:'6px 14px',borderRadius:6,border:'1px solid #059669',background:'#ecfdf5'}}>기록 관리</a>
+          <button onClick={async () => { await fetch('/api/admin/auth', { method: 'DELETE' }); window.location.reload() }} style={{fontSize:11,fontWeight:600,color:'#dc2626',padding:'6px 12px',borderRadius:6,border:'1px solid #fca5a5',background:'#fef2f2',cursor:'pointer'}}>로그아웃</button>
           {/* 자동관리 토글 */}
           <div style={S.autoBox}>
             <span style={{fontSize:12,color:'#666',fontWeight:600}}>자동관리</span>
@@ -131,7 +162,29 @@ export default function AdminPage() {
           <StatBtn label="부팅중" value={stats.machines.booting} color="#3b82f6" active={statusFilter==='BOOTING'} onClick={() => setStatusFilter('BOOTING')} />
           <StatBtn label="꺼짐" value={stats.machines.off} color="#aaa" active={statusFilter==='OFF'} onClick={() => setStatusFilter('OFF')} />
           <div style={S.statDivider} />
-          <StatBtn label="접속자" value={stats.activeSessions} color="#8b5cf6" active={false} onClick={() => {}} />
+          <div style={{position:'relative'}} data-app-popup>
+            <StatBtn label="접속자" value={stats.activeSessions} color="#8b5cf6" active={showAppPopup} onClick={() => setShowAppPopup(!showAppPopup)} />
+            {showAppPopup && (
+              <div style={S.appPopup}>
+                <div style={S.appPopupTitle}>게임별 접속자</div>
+                {Object.keys(stats.apps).length > 0 ? (
+                  Object.entries(stats.apps)
+                    .sort((a, b) => b[1].count - a[1].count)
+                    .map(([app, info]) => (
+                      <div key={app} style={S.appPopupRow}>
+                        <span style={{display:'flex',alignItems:'center',gap:6,flex:1}}>
+                          {info.icon && <img src={info.icon} alt="" style={{width:16,height:16,borderRadius:2}} />}
+                          <span>{app}</span>
+                        </span>
+                        <span style={{fontWeight:800,color:'#8b5cf6'}}>{info.count}명</span>
+                      </div>
+                    ))
+                ) : (
+                  <div style={{padding:'12px 0',textAlign:'center' as const,color:'#aaa',fontSize:12}}>현재 실행 중인 게임이 없습니다</div>
+                )}
+              </div>
+            )}
+          </div>
           <StatBtn label="대기열" value={stats.queueCount} color="#e11d48" active={false} onClick={() => {}} />
         </div>
       )}
@@ -156,6 +209,33 @@ export default function AdminPage() {
         ))}
         <button style={{...S.tab, ...(selectedStore==='none'?S.tabActive:{})}} onClick={() => setSelectedStore('none')}>미배정</button>
       </div>
+
+      {/* Add PC Button + Modal */}
+      <div style={{padding:'0 20px 8px', display:'flex', justifyContent:'flex-end'}}>
+        <button onClick={() => setShowAddPC(!showAddPC)} style={{...S.actionBtn, ...S.actionBlue, padding:'6px 16px', fontSize:13}}>+ PC 추가</button>
+      </div>
+      {showAddPC && (
+        <div style={{margin:'0 20px 12px', padding:16, background:'#fff', borderRadius:8, border:'1px solid #e5e7eb', display:'flex', gap:8, alignItems:'flex-end', flexWrap:'wrap' as const}}>
+          <div>
+            <div style={{fontSize:11,color:'#888',marginBottom:2}}>PC명 *</div>
+            <input value={newPC.name} onChange={e => setNewPC({...newPC, name:e.target.value})} placeholder="PC-1" style={S.input} />
+          </div>
+          <div>
+            <div style={{fontSize:11,color:'#888',marginBottom:2}}>Sunshine IP *</div>
+            <input value={newPC.sunshineHost} onChange={e => setNewPC({...newPC, sunshineHost:e.target.value})} placeholder="192.168.0.3" style={S.input} />
+          </div>
+          <div>
+            <div style={{fontSize:11,color:'#888',marginBottom:2}}>내부 IP</div>
+            <input value={newPC.localIp} onChange={e => setNewPC({...newPC, localIp:e.target.value})} placeholder="비우면 위와 동일" style={S.input} />
+          </div>
+          <div>
+            <div style={{fontSize:11,color:'#888',marginBottom:2}}>스펙</div>
+            <input value={newPC.spec} onChange={e => setNewPC({...newPC, spec:e.target.value})} placeholder="i5 / RTX 3060" style={S.input} />
+          </div>
+          <button onClick={addMachine} style={{...S.actionBtn,...S.actionGreen, padding:'6px 20px', fontSize:13}}>등록</button>
+          <button onClick={() => setShowAddPC(false)} style={{...S.actionBtn, padding:'6px 12px', fontSize:13, background:'#f3f4f6', color:'#666', border:'1px solid #ddd'}}>취소</button>
+        </div>
+      )}
 
       {/* Table */}
       <div style={S.tableWrap}>
@@ -200,6 +280,7 @@ export default function AdminPage() {
                   {m.status === 'IN_USE' && <button style={{...S.actionBtn,...S.actionAmber}} onClick={() => updateMachine(m.id, {status:'MAINTENANCE',isAvailable:false})}>점검</button>}
                   {m.status === 'MAINTENANCE' && <button style={{...S.actionBtn,...S.actionBlue}} onClick={() => updateMachine(m.id, {status:'READY',isAvailable:true})}>복구</button>}
                   {m.status === 'BOOTING' && <span style={{fontSize:11,color:'#3b82f6'}}>부팅중...</span>}
+                  <button style={{...S.actionBtn, background:'#fee2e2', color:'#dc2626', border:'1px solid #fca5a5', fontSize:10, padding:'2px 6px', marginLeft:2}} onClick={() => deleteMachine(m.id, m.name)}>삭제</button>
                 </td>
               </tr>
             ))}
@@ -366,7 +447,29 @@ const S: Record<string, React.CSSProperties> = {
     display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333',
   },
 
+  // Input
+  input: {
+    padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db',
+    fontSize: 13, outline: 'none', width: 150,
+  },
+
   // Queue
   queueSection: { padding: '16px 20px' },
   queueTitle: { fontSize: 14, fontWeight: 700, color: '#333', marginBottom: 8 },
+
+  // App popup
+  appPopup: {
+    position: 'absolute' as const, top: '100%', left: '50%', transform: 'translateX(-50%)',
+    marginTop: 8, minWidth: 220, background: '#fff', borderRadius: 10,
+    boxShadow: '0 4px 20px rgba(0,0,0,0.15)', border: '1px solid #e5e7eb',
+    zIndex: 100, overflow: 'hidden',
+  },
+  appPopupTitle: {
+    padding: '10px 14px', fontSize: 12, fontWeight: 700, color: '#8b5cf6',
+    borderBottom: '1px solid #f0f0f0', background: '#faf5ff',
+  },
+  appPopupRow: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    padding: '8px 14px', fontSize: 13, borderBottom: '1px solid #f8f8f8',
+  },
 }

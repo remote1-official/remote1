@@ -2,7 +2,7 @@
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const state = {
-  status: 'idle',          // 'idle' | 'connecting' | 'queued' | 'connected'
+  status: 'idle',          // 'idle' | 'connecting' | 'connected'
   user: null,              // { id, email, name, credits, username }
   session: null,           // { host, machineName, machineSpec }
   credits: 0,              // current credits (minutes)
@@ -13,8 +13,6 @@ const state = {
   noticeIndex: 0,          // current notice index
   muted: false,
   mouseGrabbed: false,
-  queuePosition: null,
-  queueId: null,
 };
 
 let timerInterval  = null;
@@ -35,7 +33,7 @@ const els = {
   endSession:  $('btn-end-session'),
   userAvatar:  $('user-avatar'),
   userName:    $('user-name'),
-  userEmail:   $('user-email'),
+  userPlan:    $('user-plan'),
   creditsValue: $('credits-value'),
   creditsSub:   $('credits-sub'),
   statusDot:    $('status-dot'),
@@ -201,7 +199,21 @@ function updateSidebar() {
     const initial = displayName[0].toUpperCase();
     els.userAvatar.textContent = initial;
     els.userName.textContent   = displayName;
-    els.userEmail.textContent  = u.email || '';
+    // 사용중인 요금제 표시 (크레딧 기반 추정)
+    const planMap = [
+      { max: 600, name: '스타터' },
+      { max: 1980, name: '스탠다드' },
+      { max: 3960, name: '프리미엄' },
+      { max: 6660, name: '프로' },
+      { max: 19980, name: '프로 MAX' },
+    ];
+    const credits = u.credits || 0;
+    let planName = '서비스';
+    for (const p of planMap) {
+      if (credits <= p.max) { planName = p.name; break; }
+    }
+    if (credits > 19980) planName = '프로 MAX';
+    els.userPlan.textContent = planName + ' 이용중';
   }
   updateCreditsDisplay();
   updateStatusDisplay();
@@ -237,10 +249,6 @@ function updateStatusDisplay() {
     dot.classList.add('loading');
     text.textContent = '연결 중...';
     sub.textContent  = 'PC 배정 중입니다';
-  } else if (status === 'queued') {
-    dot.classList.add('loading');
-    text.textContent = `대기 ${state.queuePosition}번`;
-    sub.textContent  = 'PC 배정 대기 중...';
   } else if (status === 'connected') {
     dot.classList.add('online');
     text.textContent = '연결됨';
@@ -485,12 +493,15 @@ window.R1.on('moonlight:exited', ({ code } = {}) => {
     disconnect('원격 스트리밍이 종료되었습니다.');
   } else if (state.status === 'connecting') {
     // Moonlight가 연결 완료 전에 종료됨
-    const btnConnect = $('btn-connect');
+    const connectBtns = $('connect-buttons');
     const viewConnecting = $('view-connecting');
-    if (btnConnect) btnConnect.classList.remove('hidden');
+    if (connectBtns) connectBtns.classList.remove('hidden');
     if (viewConnecting) viewConnecting.classList.add('hidden');
+    const usbipProg = $('usbip-progress');
+    if (usbipProg) usbipProg.classList.add('hidden');
     state.status = 'idle';
     showAlert('idle-alert', '스트리밍 연결이 실패했습니다.', 'warn');
+    window.R1.usbipDisconnect().catch(() => {});
     window.R1.disconnect().catch(() => {});
     updateStatusDisplay();
   }
@@ -574,6 +585,131 @@ window.R1.on('shortcut:fired', (action) => {
 // ─── Connect Flow ─────────────────────────────────────────────────────────────
 els.btnConnect.addEventListener('click', () => connect());
 
+// ─── 가상USB 접속 Flow ───────────────────────────────────────────────────────
+const btnConnectUsb = $('btn-connect-usb');
+if (btnConnectUsb) btnConnectUsb.addEventListener('click', () => connectWithUSB());
+
+// USB/IP 진행상태 표시
+window.R1.on('usbip:progress', ({ step, status }) => {
+  const stepsEl = $('usbip-steps');
+  if (!stepsEl) return;
+  const icon = status === 'loading' ? '⏳' : status === 'error' ? '❌' : '✅';
+  const line = document.createElement('div');
+  line.textContent = `${icon} ${step}: ${status}`;
+  line.style.padding = '2px 0';
+  stepsEl.appendChild(line);
+  stepsEl.scrollTop = stepsEl.scrollHeight;
+});
+
+async function connectWithUSB() {
+  if (state.status !== 'idle') return;
+  if (state.credits <= 0) {
+    showAlert('idle-alert', '이용 시간이 없습니다. 충전해주세요.', 'warn');
+    return;
+  }
+
+  hideAlert('idle-alert');
+
+  // 버튼 숨기고 진행상태 표시
+  const connectBtns = $('connect-buttons');
+  const usbipProgress = $('usbip-progress');
+  const usbipSteps = $('usbip-steps');
+  const viewConnecting = $('view-connecting');
+
+  if (connectBtns) connectBtns.classList.add('hidden');
+  if (usbipProgress) usbipProgress.classList.remove('hidden');
+  if (usbipSteps) usbipSteps.innerHTML = '';
+
+  state.status = 'connecting';
+  updateStatusDisplay();
+
+  try {
+    // 1) PC 배정
+    const addStep = (text) => {
+      if (usbipSteps) {
+        const line = document.createElement('div');
+        line.textContent = text;
+        line.style.padding = '2px 0';
+        usbipSteps.appendChild(line);
+      }
+    };
+
+    addStep('⏳ 빈 PC 배정 중...');
+    const result = await window.R1.connect();
+
+    if (!result.ok) {
+      addStep('❌ PC 배정 실패: ' + (result.error || ''));
+      resetUSBFlow(connectBtns, usbipProgress);
+      return;
+    }
+    addStep('✅ PC 배정 완료');
+
+    const session = result.data;
+    state.session = session;
+
+    // 2) USB/IP 연결 (원스톱)
+    addStep('⏳ 가상USB 연결 시작...');
+    const usbResult = await window.R1.usbipConnect(session.host);
+
+    if (!usbResult.ok) {
+      addStep('❌ 가상USB 연결 실패: ' + (usbResult.error || ''));
+      // USB 실패해도 일반 접속으로 계속할지 물어보기
+      const fallback = await showModal(
+        'USB 연결 실패',
+        '가상USB 연결에 실패했습니다. 일반 접속으로 계속하시겠습니까?',
+        '일반 접속', '취소'
+      );
+      if (fallback !== 'confirm') {
+        await window.R1.disconnect().catch(() => {});
+        resetUSBFlow(connectBtns, usbipProgress);
+        return;
+      }
+    } else {
+      addStep('✅ 가상USB 연결 완료');
+    }
+
+    // 3) 스트리밍 시작
+    addStep('⏳ 스트리밍 시작 중...');
+    if (usbipProgress) usbipProgress.classList.add('hidden');
+    if (viewConnecting) viewConnecting.classList.remove('hidden');
+    els.connectingMsg.textContent = '스트리밍 연결 중...';
+
+    if (session.host) {
+      const mlResult = await window.R1.moonlightLaunch(session.host);
+      if (!mlResult.ok) {
+        if (connectBtns) connectBtns.classList.remove('hidden');
+        if (viewConnecting) viewConnecting.classList.add('hidden');
+        state.status = 'idle';
+        showAlert('idle-alert', mlResult.error || '스트리밍 연결에 실패했습니다.', 'warn');
+        await window.R1.usbipDisconnect().catch(() => {});
+        await window.R1.disconnect().catch(() => {});
+        updateStatusDisplay();
+        return;
+      }
+    }
+
+    els.connectingMsg.textContent = '원격 PC 연결 대기 중...';
+
+  } catch (err) {
+    if (connectBtns) connectBtns.classList.remove('hidden');
+    if (usbipProgress) usbipProgress.classList.add('hidden');
+    const viewConnecting2 = $('view-connecting');
+    if (viewConnecting2) viewConnecting2.classList.add('hidden');
+    state.status = 'idle';
+    showAlert('idle-alert', err.message || '연결 중 오류가 발생했습니다.', 'warn');
+    await window.R1.usbipDisconnect().catch(() => {});
+    await window.R1.disconnect().catch(() => {});
+    updateStatusDisplay();
+  }
+}
+
+function resetUSBFlow(connectBtns, usbipProgress) {
+  if (connectBtns) connectBtns.classList.remove('hidden');
+  if (usbipProgress) usbipProgress.classList.add('hidden');
+  state.status = 'idle';
+  updateStatusDisplay();
+}
+
 async function connect() {
   if (state.status !== 'idle') return;
   if (state.credits <= 0) {
@@ -584,9 +720,9 @@ async function connect() {
   hideAlert('idle-alert');
 
   // 접속 버튼 숨기고 스피너 표시
-  const btnConnect = $('btn-connect');
+  const connectBtns = $('connect-buttons');
   const viewConnecting = $('view-connecting');
-  if (btnConnect) btnConnect.classList.add('hidden');
+  if (connectBtns) connectBtns.classList.add('hidden');
   if (viewConnecting) viewConnecting.classList.remove('hidden');
 
   state.status = 'connecting';
@@ -596,19 +732,8 @@ async function connect() {
     els.connectingMsg.textContent = '빈 PC 배정 중...';
     const result = await window.R1.connect();
 
-    // ─── 대기열 응답 처리 ──────────────────────────────
-    if (result.data && result.data.queued) {
-      state.status = 'queued';
-      state.queuePosition = result.data.position;
-      state.queueId = result.data.queueId;
-      els.connectingMsg.textContent = `대기중... (대기 ${result.data.position}번)`;
-      updateStatusDisplay();
-      startQueuePoll();
-      return;
-    }
-
     if (!result.ok) {
-      if (btnConnect) btnConnect.classList.remove('hidden');
+      if (connectBtns) connectBtns.classList.remove('hidden');
       if (viewConnecting) viewConnecting.classList.add('hidden');
       state.status = 'idle';
       showAlert('idle-alert', result.error || 'PC 배정에 실패했습니다.', 'warn');
@@ -622,8 +747,7 @@ async function connect() {
     els.connectingMsg.textContent = '스트리밍 연결 중...';
 
     if (session.host) {
-      els.connectingMsg.textContent = '원격 PC 연결 중...';
-      const mlResult = await window.R1.moonlightLaunch(session.host, session.machineId);
+      const mlResult = await window.R1.moonlightLaunch(session.host);
       if (!mlResult.ok) {
         if (btnConnect) btnConnect.classList.remove('hidden');
         if (viewConnecting) viewConnecting.classList.add('hidden');
@@ -635,9 +759,10 @@ async function connect() {
       }
     }
 
-    window.R1.usbConnect().catch(() => {});
+    // (일반 접속은 USB/IP 없이 바로 스트리밍)
 
     // Moonlight 실행 성공 — 스트리밍 연결 대기 중 (버튼 상태 유지)
+    // moonlight:streamConnected 이벤트가 오면 그때 "이용 차감 중"으로 전환
     els.connectingMsg.textContent = '원격 PC 연결 대기 중...';
 
   } catch (err) {
@@ -704,7 +829,7 @@ async function disconnect(reason) {
   state.scheduleMinutes = null;
   state.scheduleRemaining = null;
 
-  window.R1.usbDisconnect().catch(() => {});
+  window.R1.usbipDisconnect().catch(() => {});
   await window.R1.disconnect(usedMinutes).catch(() => {});
 
   state.session = null;
@@ -716,10 +841,12 @@ async function disconnect(reason) {
   updateSidebarSchedule();
 
   // UI 복원: 접속 버튼 보이기, 세션 정보 숨기기
-  const btnConnect = $('btn-connect');
+  const connectBtns = $('connect-buttons');
   const sessionInfo = $('session-info');
-  if (btnConnect) btnConnect.classList.remove('hidden');
+  const usbipProgress = $('usbip-progress');
+  if (connectBtns) connectBtns.classList.remove('hidden');
   if (sessionInfo) sessionInfo.classList.add('hidden');
+  if (usbipProgress) usbipProgress.classList.add('hidden');
   els.endSession.classList.add('hidden');
   updateStatusDisplay();
   updateCreditsDisplay();
@@ -735,10 +862,19 @@ async function keepAlive() {
 
   stopTimers();
   state.scheduleMinutes = null;
+  state.scheduleRemaining = null;
   state.session = null;
+  state.status = 'idle';
+  state.elapsed = 0;
+
+  const connectBtns = $('connect-buttons');
+  const sessionInfo = $('session-info');
+  if (connectBtns) connectBtns.classList.remove('hidden');
+  if (sessionInfo) sessionInfo.classList.add('hidden');
 
   showView('idle');
   updateStatusDisplay();
+  updateCreditsDisplay();
   showAlert('idle-alert', '오프라인 모드로 전환되었습니다. 세션은 유지됩니다.', 'info');
 }
 
@@ -791,61 +927,6 @@ els.close.addEventListener('click', async () => {
 })();
 
 // (Moonlight install page removed - bundled with launcher)
-
-// ─── Queue Polling (대기열 폴링) ──────────────────────────────────────────────
-let queuePollInterval = null;
-
-function startQueuePoll() {
-  stopQueuePoll();
-  queuePollInterval = setInterval(async () => {
-    if (state.status !== 'queued') {
-      stopQueuePoll();
-      return;
-    }
-
-    try {
-      // 대기열 상태 확인 대신 다시 connect 시도 (PC가 빈 경우 바로 배정)
-      const result = await window.R1.connect();
-
-      if (result.data && result.data.queued) {
-        // 아직 대기 중 — 위치 업데이트
-        state.queuePosition = result.data.position;
-        els.connectingMsg.textContent = `대기중... (대기 ${result.data.position}번)`;
-        updateStatusDisplay();
-      } else if (result.ok && result.data && result.data.host) {
-        // PC 배정됨!
-        stopQueuePoll();
-        state.session = result.data;
-        state.status = 'connecting';
-        els.connectingMsg.textContent = '스트리밍 연결 중...';
-        updateStatusDisplay();
-
-        const mlResult = await window.R1.moonlightLaunch(result.data.host, result.data.machineId);
-        if (!mlResult.ok) {
-          const btnConnect = $('btn-connect');
-          const viewConnecting = $('view-connecting');
-          if (btnConnect) btnConnect.classList.remove('hidden');
-          if (viewConnecting) viewConnecting.classList.add('hidden');
-          state.status = 'idle';
-          showAlert('idle-alert', mlResult.error || '스트리밍 연결에 실패했습니다.', 'warn');
-          await window.R1.disconnect().catch(() => {});
-          updateStatusDisplay();
-          return;
-        }
-
-        window.R1.usbConnect().catch(() => {});
-        els.connectingMsg.textContent = '원격 PC 연결 대기 중...';
-      }
-    } catch (_) {}
-  }, 5000); // 5초마다 폴링
-}
-
-function stopQueuePoll() {
-  if (queuePollInterval) {
-    clearInterval(queuePollInterval);
-    queuePollInterval = null;
-  }
-}
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
@@ -906,8 +987,8 @@ function updateSidebarSchedule() {
 
     // Show countdown
     sidebarCountdownEl.classList.remove('hidden');
-    sidebarCountdownTime.textContent = formatCountdown(remaining);
-    sidebarCountdownSub.textContent = `${hh}:${mm} 자동 종료`;
+    sidebarCountdownTime.textContent = `종료 시간 : ${hh}시 ${mm}분`;
+    sidebarCountdownSub.textContent = `남은 시간 ${formatCountdown(remaining)}`;
 
     // Color warning
     sidebarCountdownEl.classList.remove('warning', 'danger');

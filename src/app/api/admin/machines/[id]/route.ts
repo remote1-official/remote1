@@ -2,8 +2,11 @@
 // PATCH: PC 상태 변경, 정보 수정 / DELETE: PC 삭제
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin, isAdminError } from '@/lib/adminAuth'
+import { logAdmin } from '@/lib/adminLog'
 
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const admin = requireAdmin(req); if (isAdminError(admin)) return admin
   try {
     const { id } = await context.params
     const body = await req.json()
@@ -22,10 +25,24 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     if (body.currentAppIcon !== undefined) updateData.currentAppIcon = body.currentAppIcon
     if (body.storeId !== undefined)       updateData.storeId = body.storeId || null
 
+    // Determine log action based on status change
     const machine = await prisma.machine.update({
       where: { id },
       data: updateData,
     })
+
+    if (body.status) {
+      const actionMap: Record<string, string> = {
+        BOOTING: 'PC_ON', OFF: 'PC_OFF', MAINTENANCE: 'PC_MAINTENANCE', READY: 'PC_RECOVER',
+      }
+      const action = actionMap[body.status]
+      if (action) {
+        const statusLabel: Record<string, string> = {
+          BOOTING: '켜기', OFF: '끄기', MAINTENANCE: '점검', READY: '복구',
+        }
+        await logAdmin(admin.adminId, action, machine.name, `${machine.name} 상태 변경: ${statusLabel[body.status]}`)
+      }
+    }
 
     return NextResponse.json({ ok: true, machine })
   } catch (error) {
@@ -35,9 +52,12 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 }
 
 export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const admin = requireAdmin(req); if (isAdminError(admin)) return admin
   try {
     const { id } = await context.params
+    const machine = await prisma.machine.findUnique({ where: { id } })
     await prisma.machine.delete({ where: { id } })
+    await logAdmin(admin.adminId, 'PC_DELETE', machine?.name || id, `PC 삭제: ${machine?.name || id}`)
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error('[ADMIN MACHINE DELETE]', error)

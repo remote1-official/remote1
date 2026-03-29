@@ -18,6 +18,7 @@ const signupSchema = z.object({
     .min(8, '비밀번호는 최소 8자 이상이어야 합니다')
     .regex(/[A-Za-z]/, '영문자를 포함해야 합니다')
     .regex(/[0-9]/, '숫자를 포함해야 합니다'),
+  mainGame: z.string().optional(),
   phoneVerified: z.boolean().optional(),
   agreeTerms: z.boolean().optional(),
   agreePrivacy: z.boolean().optional(),
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { username, email, phone, password } = parsed.data
+    const { username, email, phone, password, mainGame } = parsed.data
 
     // 아이디 중복 확인
     const existingUsername = await prisma.user.findUnique({ where: { username } })
@@ -65,6 +66,7 @@ export async function POST(req: NextRequest) {
         username,
         email,
         phone,
+        mainGame,
         password: hashedPassword,
       },
       select: {

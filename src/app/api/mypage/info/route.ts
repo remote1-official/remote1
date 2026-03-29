@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { id: authUser.userId },
-    select: { id: true, username: true, email: true, phone: true, credits: true, createdAt: true },
+    select: { id: true, username: true, email: true, phone: true, mainGame: true, credits: true, createdAt: true },
   })
   if (!user) return NextResponse.json({ error: '사용자를 찾을 수 없습니다' }, { status: 404 })
 

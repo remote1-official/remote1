@@ -1,9 +1,27 @@
 {
   "name": "remote1-pc-monitor",
-  "version": "1.0.0",
+  "version": "2.4.0",
   "description": "REMOTE1 PC 모니터링 에이전트 — 각 PC에 설치, 프로그램/게임 감지, 서버 보고",
   "main": "monitor.js",
+  "pkg": {
+    "assets": [
+      "usbip.exe",
+      "attacher.exe",
+      "usbip_vhci.inf",
+      "usbip_vhci.sys",
+      "usbip_vhci.cat",
+      "usbip_vhci_ude.inf",
+      "usbip_vhci_ude.sys",
+      "usbip_vhci_ude.cat",
+      "usbip_root.inf",
+      "usbip_test.pfx"
+    ]
+  },
   "scripts": {
     "start": "node monitor.js"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1",
+    "rcedit": "^5.0.2"
   }
 }

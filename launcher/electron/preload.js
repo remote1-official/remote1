@@ -24,14 +24,12 @@ contextBridge.exposeInMainWorld('R1', {
   getUser: ()                   => ipcRenderer.invoke('api:getUser'),
 
   // ── Session API ──────────────────────────────────────────────────────────
-  connect:      () => ipcRenderer.invoke('api:connect'),
-  disconnect:   (usedMinutes) => ipcRenderer.invoke('api:disconnect', usedMinutes),
-  keepAlive:    () => ipcRenderer.invoke('api:keepAlive'),
-  queueStatus:  () => ipcRenderer.invoke('api:queueStatus'),
-  queueCancel:  () => ipcRenderer.invoke('api:queueCancel'),
+  connect:    () => ipcRenderer.invoke('api:connect'),
+  disconnect: (usedMinutes) => ipcRenderer.invoke('api:disconnect', usedMinutes),
+  keepAlive:  () => ipcRenderer.invoke('api:keepAlive'),
 
   // ── Moonlight ────────────────────────────────────────────────────────────
-  moonlightLaunch:          (host, machineId) => ipcRenderer.invoke('moonlight:launch', host, machineId),
+  moonlightLaunch:          (host) => ipcRenderer.invoke('moonlight:launch', host),
   resizeEmbed:              (fullscreen) => ipcRenderer.invoke('moonlight:resizeEmbed', fullscreen),
   moonlightKill:            ()     => ipcRenderer.invoke('moonlight:kill'),
   moonlightIsInstalled:     ()     => ipcRenderer.invoke('moonlight:isInstalled'),
@@ -46,9 +44,10 @@ contextBridge.exposeInMainWorld('R1', {
   loadCredentials: () => ipcRenderer.invoke('credentials:load'),
   saveCredentials: (data) => ipcRenderer.invoke('credentials:save', data),
 
-  // ── USB (silent) ─────────────────────────────────────────────────────────
-  usbConnect:    () => ipcRenderer.invoke('usb:connect'),
-  usbDisconnect: () => ipcRenderer.invoke('usb:disconnect'),
+  // ── USB/IP 가상 USB ─────────────────────────────────────────────────────
+  usbipListDevices: ()     => ipcRenderer.invoke('usbip:listDevices'),
+  usbipConnect:     (host) => ipcRenderer.invoke('usbip:connect', host),
+  usbipDisconnect:  ()     => ipcRenderer.invoke('usbip:disconnect'),
 
   // ── Notices ──────────────────────────────────────────────────────────────
   fetchNotices: () => ipcRenderer.invoke('notices:fetch'),
@@ -58,7 +57,7 @@ contextBridge.exposeInMainWorld('R1', {
 
   // ── Events (renderer listeners) ─────────────────────────────────────────
   on: (channel, fn) => {
-    const allowed = ['moonlight:exited', 'moonlight:streamConnected', 'shortcut:fired', 'overlay:enter', 'overlay:exit', 'overlay:init'];
+    const allowed = ['moonlight:exited', 'moonlight:streamConnected', 'shortcut:fired', 'overlay:enter', 'overlay:exit', 'overlay:init', 'usbip:progress', 'usbip:activated', 'usbip:toggleState'];
     if (allowed.includes(channel)) {
       ipcRenderer.on(channel, (_, ...args) => fn(...args));
     }

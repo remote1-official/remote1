@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,37 +9,104 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  username     String?  @unique
-  phone        String?
+  id           String    @id(map: "User_pkey") @default(dbgenerated("(gen_random_uuid())::text"))
+  email        String    @unique(map: "User_email_key")
   password     String
-  credits      Int      @default(0)   // 충전된 시간(분) 또는 크레딧
+  phone        String?
+  credits      Int?      @default(30)
   refreshToken String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  payments Payment[]
-  sessions Session[]
-  queues   Queue[]
+  createdAt    DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime? @default(now()) @updatedAt @db.Timestamp(6)
+  username     String?   @unique
+  mainGame     String?
+  isSuspended  Boolean   @default(false)
+  payments     Payment[]
+  queues       Queue[]
+  sessions     Session[]
 
   @@map("users")
 }
 
 model Payment {
-  id            String        @id @default(cuid())
-  userId        String
-  user          User          @relation(fields: [userId], references: [id])
-  orderId       String        @unique  // 토스 주문 ID
-  paymentKey    String?       // 토스 결제 키 (승인 후)
-  amount        Int           // 결제 금액 (원)
-  creditsAdded  Int           // 충전된 크레딧
-  status        PaymentStatus @default(PENDING)
-  method        String?       // 카드, 가상계좌 등
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id           String    @id(map: "Payment_pkey") @default(dbgenerated("(gen_random_uuid())::text"))
+  orderId      String    @unique(map: "Payment_orderId_key")
+  paymentKey   String?
+  amount       Int
+  creditsAdded Int
+  status       String?   @default("PENDING")
+  method       String?
+  userId       String?
+  createdAt    DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime? @default(now()) @updatedAt @db.Timestamp(6)
+  user         User?     @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@map("payments")
+}
+
+model Store {
+  id        String    @id @default(cuid())
+  name      String
+  ipRanges  String?
+  gateway1  String?
+  gateway2  String?
+  address   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  machines  Machine[]
+
+  @@map("stores")
+}
+
+model Machine {
+  id             String        @id @default(cuid())
+  name           String
+  sunshineHost   String        @unique
+  spec           String?
+  isAvailable    Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  currentApp     String?
+  currentAppIcon String?
+  lastPing       DateTime?
+  lastUserId     String?
+  localIp        String?
+  macAddress     String?
+  status         MachineStatus @default(OFF)
+  storeId        String?
+  pendingPin     String?
+  store          Store?        @relation(fields: [storeId], references: [id])
+  sessions       Session[]
+
+  @@map("machines")
+}
+
+model Queue {
+  id        String      @id @default(cuid())
+  userId    String
+  position  Int
+  status    QueueStatus @default(WAITING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @default(now()) @updatedAt
+  user      User        @relation(fields: [userId], references: [id])
+
+  @@map("queue")
+}
+
+model Session {
+  id             String        @id @default(cuid())
+  userId         String
+  machineId      String
+  startedAt      DateTime      @default(now())
+  endedAt        DateTime?
+  creditsUsed    Int?
+  scheduledEndAt DateTime?
+  status         SessionStatus @default(ACTIVE)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now()) @updatedAt
+  machine        Machine       @relation(fields: [machineId], references: [id])
+  user           User          @relation(fields: [userId], references: [id])
+
+  @@map("sessions")
 }
 
 enum PaymentStatus {
@@ -51,95 +116,34 @@ enum PaymentStatus {
   CANCELED
 }
 
-// ─── Store (매장) ────────────────────────────────────────────────────────────
-
-model Store {
-  id          String   @id @default(cuid())
-  name        String                         // 매장 이름 (예: 텐PC)
-  ipRanges    String?                        // IP 대역 (쉼표 구분, 예: "211.181.226.0/25,210.216.35.0/25")
-  gateway1    String?                        // 게이트웨이 1
-  gateway2    String?                        // 게이트웨이 2
-  address     String?                        // 매장 주소
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  machines Machine[]
-
-  @@map("stores")
-}
-
-// ─── Remote PC ───────────────────────────────────────────────────────────────
-
-model Machine {
-  id            String        @id @default(cuid())
-  storeId       String?                             // 소속 매장
-  store         Store?        @relation(fields: [storeId], references: [id])
-  name          String                              // 표시 이름 (예: PC-1)
-  sunshineHost  String        @unique               // Sunshine 서버 IP/호스트 (Moonlight 접속 주소)
-  localIp       String?                             // 내부 IP (핑/셧다운용)
-  macAddress    String?                             // MAC 주소 (WOL용)
-  spec          String?                             // 스펙 정보 (예: i9-13900K / RTX 4090)
-  status        MachineStatus @default(OFF)         // 현재 상태
-  isAvailable   Boolean       @default(true)        // 관리자가 사용 가능하게 설정했는지
-  lastPing      DateTime?                           // 마지막 핑 응답 시간
-  lastUserId    String?                             // 마지막 사용자
-  currentApp    String?                             // 현재 실행 중인 프로그램
-  currentAppIcon String?                            // 현재 프로그램 아이콘 URL
-  pendingPin    String?                             // 자동 페어링용 PIN (임시)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  sessions Session[]
-
-  @@map("machines")
-}
-
 enum MachineStatus {
-  OFF         // 꺼짐
-  BOOTING     // 부팅 중 (WOL 전송됨)
-  READY       // 켜짐, 사용 가능
-  IN_USE      // 사용 중
-  MAINTENANCE // 점검 중
-}
-
-model Queue {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  position  Int                              // 대기 순번
-  status    QueueStatus @default(WAITING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("queue")
+  OFF
+  BOOTING
+  READY
+  IN_USE
+  MAINTENANCE
 }
 
 enum QueueStatus {
-  WAITING     // 대기 중
-  ASSIGNED    // PC 배정됨
-  CANCELLED   // 취소
-  EXPIRED     // 만료
-}
-
-model Session {
-  id               String        @id @default(cuid())
-  userId           String
-  user             User          @relation(fields: [userId], references: [id])
-  machineId        String
-  machine          Machine       @relation(fields: [machineId], references: [id])
-  startedAt        DateTime      @default(now())
-  endedAt          DateTime?
-  creditsUsed      Int?                            // 세션에서 소모된 크레딧(분)
-  scheduledEndAt   DateTime?                       // 예약 종료 시각
-  status           SessionStatus @default(ACTIVE)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-
-  @@map("sessions")
+  WAITING
+  ASSIGNED
+  CANCELLED
+  EXPIRED
 }
 
 enum SessionStatus {
   ACTIVE
   ENDED
-  INTERRUPTED  // 비정상 종료
+  INTERRUPTED
+}
+
+model AdminLog {
+  id        String   @id @default(uuid())
+  adminId   String
+  action    String
+  target    String
+  detail    String
+  createdAt DateTime @default(now())
+
+  @@map("admin_logs")
 }

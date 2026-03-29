@@ -226,7 +226,7 @@ section{padding:84px 24px}
 .how-desc{font-size:13px;color:var(--tx2);line-height:1.75}
 
 /* ── PRICING ── */
-.price-g{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.price-g{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
 .price-c{background:#fff;border:1.5px solid var(--bd);border-radius:20px;padding:34px 30px;transition:all .2s}
 .price-c.hot{border-color:var(--p1);background:linear-gradient(170deg,#f0f9ff,#f5f3ff);position:relative}
 .price-hot{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:11px;font-weight:700;padding:4px 18px;border-radius:20px;white-space:nowrap;font-family:var(--mono)}
@@ -263,6 +263,10 @@ section{padding:84px 24px}
 .nb{background:#fff;border:1px solid var(--bd);border-radius:18px;padding:30px}
 .nb-head{font-size:17px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;font-family:var(--head)}
 .nb-more{font-size:12px;color:var(--p1);font-weight:500;cursor:pointer;font-family:var(--sans)}
+.notice-item{border-bottom:1px solid var(--bd);cursor:pointer;transition:background .12s}
+.notice-item:hover{background:rgba(14,165,233,.04)}
+.notice-head{display:flex;align-items:center;gap:10px;padding:14px 0}
+.notice-body{padding:0 0 16px 0;font-size:13px;color:var(--tx2);line-height:1.7}
 .ni{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--bd);cursor:pointer;transition:all .12s}
 .ni:last-child{border:none}
 .ni:hover .ni-title{color:var(--p1)}
@@ -383,6 +387,26 @@ footer{background:#0f172a;padding:60px 24px 32px}
     <label class="md-label">비밀번호</label>
     <input class="md-input" type="password" id="su_p" placeholder="영문+숫자 8자 이상"/>
     <div class="md-hint">영문과 숫자를 포함해 8자 이상</div>
+    <label class="md-label">주 이용게임</label>
+    <select class="md-input" id="su_game" style="cursor:pointer">
+      <option value="">선택해주세요</option>
+      <option value="로스트아크">로스트아크</option>
+      <option value="FC온라인">FC온라인</option>
+      <option value="메이플스토리">메이플스토리</option>
+      <option value="리니지클래식">리니지클래식</option>
+      <option value="웹젠게임">웹젠게임</option>
+      <option value="기타 비가맹게임">기타 비가맹게임</option>
+    </select>
+    <div style="margin:14px 0 6px;display:flex;flex-direction:column;gap:8px">
+      <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px;color:var(--tx2)">
+        <input type="checkbox" id="su_agreeTerms" style="margin-top:2px;accent-color:var(--p1);cursor:pointer"/>
+        <span><strong style="color:var(--tx1)">이용약관</strong>에 동의합니다 <span style="color:#f87171">(필수)</span></span>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px;color:var(--tx2)">
+        <input type="checkbox" id="su_agreePrivacy" style="margin-top:2px;accent-color:var(--p1);cursor:pointer"/>
+        <span><strong style="color:var(--tx1)">개인정보 처리방침</strong>에 동의합니다 <span style="color:#f87171">(필수)</span></span>
+      </label>
+    </div>
     <button class="md-btn" onclick="doSignup()">무료로 시작하기</button>
     <div class="md-sw">이미 계정이 있으신가요? <a onclick="sw('mdSignup','mdLogin')">로그인</a></div>
   </div>
@@ -475,25 +499,112 @@ footer{background:#0f172a;padding:60px 24px 32px}
       <div style="font-size:12px;color:rgba(255,255,255,.8)">현재 잔여 시간</div>
       <div id="mdChargeCreditVal" style="font-size:22px;font-weight:800;font-family:var(--head);margin-top:2px">-</div>
     </div>
-    <div class="ci" onclick="selCharge(this,'hour10')">
+    <div class="ci" onclick="selCharge(this,'starter')">
       <div class="ci-l"><div class="cin">스타터</div><div class="cit">10시간 이용권</div></div>
       <div class="ci-r"><div class="cip">11,000원</div><div style="font-size:11px;color:var(--tx3)">1,100원/시간</div></div>
     </div>
-    <div class="ci on" onclick="selCharge(this,'hour30')" style="border-color:var(--p1);background:#f0f9ff;position:relative">
-      <div style="position:absolute;top:-10px;left:14px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px">🔥 핫딜! BEST 추천</div>
-      <div class="ci-l"><div class="cin">스탠다드</div><div class="cit">30시간 이용권</div></div>
-      <div class="ci-r"><div class="cip">30,000원</div><div style="font-size:11px;color:var(--tx3)">1,000원/시간</div></div>
+    <div class="ci on" onclick="selCharge(this,'standard')" style="border-color:var(--p1);background:#f0f9ff;position:relative">
+      <div style="position:absolute;top:-10px;left:14px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px">🔥 BEST 추천</div>
+      <div class="ci-l"><div class="cin">스탠다드</div><div class="cit">30시간 이용권 <span style="color:var(--p1);font-weight:700">서비스 +3시간</span></div></div>
+      <div class="ci-r"><div class="cip">33,000원</div><div style="font-size:11px;color:var(--tx3)">1,000원/시간</div></div>
     </div>
-    <div class="ci" onclick="selCharge(this,'hour50')">
-      <div class="ci-l"><div class="cin">프리미엄</div><div class="cit">50시간 이용권</div></div>
-      <div class="ci-r"><div class="cip">48,000원</div><div style="font-size:11px;color:var(--tx3)">960원/시간</div></div>
+    <div class="ci" onclick="selCharge(this,'premium')">
+      <div class="ci-l"><div class="cin">프리미엄</div><div class="cit">60시간 이용권 <span style="color:var(--p1);font-weight:700">서비스 +6시간</span></div></div>
+      <div class="ci-r"><div class="cip">66,000원</div><div style="font-size:11px;color:var(--tx3)">1,000원/시간</div></div>
     </div>
-    <div class="ci" onclick="selCharge(this,'hour100')">
-      <div class="ci-l"><div class="cin">프로</div><div class="cit">100시간 이용권</div></div>
-      <div class="ci-r"><div class="cip">95,000원</div><div style="font-size:11px;color:var(--tx3)">950원/시간</div></div>
+    <div class="ci" onclick="selCharge(this,'pro')">
+      <div class="ci-l"><div class="cin">프로</div><div class="cit">100시간 이용권 <span style="color:var(--p1);font-weight:700">서비스 +11시간</span></div></div>
+      <div class="ci-r"><div class="cip">110,000원</div><div style="font-size:11px;color:var(--tx3)">991원/시간</div></div>
+    </div>
+    <div class="ci" onclick="selCharge(this,'promax')" style="position:relative">
+      <div style="position:absolute;top:-10px;left:14px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px">💎 최고 가성비</div>
+      <div class="ci-l"><div class="cin">프로 MAX</div><div class="cit">300시간 이용권 <span style="color:var(--p1);font-weight:700">서비스 +33시간</span></div></div>
+      <div class="ci-r"><div class="cip">330,000원</div><div style="font-size:11px;color:var(--tx3)">991원/시간</div></div>
     </div>
     <button class="md-btn" onclick="doCharge()">결제하기</button>
     <p style="font-size:11px;color:var(--tx3);text-align:center;margin-top:10px">결제는 토스페이먼츠를 통해 안전하게 처리됩니다.</p>
+  </div>
+</div>
+
+<!-- ══════════════ NOTICES MODAL ══════════════ -->
+<div class="ov" id="mdNotices">
+  <div class="md" style="max-width:640px">
+    <button class="md-x" onclick="closeModal('mdNotices')">×</button>
+    <h2>공지사항</h2>
+    <p class="md-sub">서비스 관련 최신 소식을 확인하세요</p>
+    <div style="margin-top:16px" id="noticesListFull">
+      <div class="notice-item" onclick="toggleNoticeDetail(this)">
+        <div class="notice-head">
+          <span class="nbadge b-noti">공지</span>
+          <span style="flex:1;font-size:14px;font-weight:500;color:var(--tx)">2026년 3월 서버 점검 안내 (3/20 새벽 2~4시)</span>
+          <span style="font-size:12px;color:var(--tx3);white-space:nowrap">03.18</span>
+        </div>
+        <div class="notice-body" style="display:none">
+          안녕하세요, REMOTE1입니다.<br><br>
+          서버 안정화를 위해 아래와 같이 정기 점검을 진행합니다.<br><br>
+          <strong>점검 일시:</strong> 2026년 3월 20일 (목) 새벽 02:00 ~ 04:00 (약 2시간)<br>
+          <strong>영향 범위:</strong> 전체 서비스 일시 중단<br>
+          <strong>점검 내용:</strong> 서버 인프라 업그레이드 및 보안 패치<br><br>
+          점검 시간 동안 서비스 이용이 불가하오니 양해 부탁드립니다.<br>
+          점검 중 사용된 크레딧은 자동 복구됩니다.
+        </div>
+      </div>
+      <div class="notice-item" onclick="toggleNoticeDetail(this)">
+        <div class="notice-head">
+          <span class="nbadge b-upd">업데이트</span>
+          <span style="flex:1;font-size:14px;font-weight:500;color:var(--tx)">클라이언트 v2.1.0 — 연결 안정성 대폭 개선</span>
+          <span style="font-size:12px;color:var(--tx3);white-space:nowrap">03.10</span>
+        </div>
+        <div class="notice-body" style="display:none">
+          REMOTE1 클라이언트 v2.1.0이 출시되었습니다.<br><br>
+          <strong>주요 변경사항:</strong><br>
+          • P2P 연결 안정성 50% 향상<br>
+          • 자동 재접속 기능 추가<br>
+          • 음성 지연 최소화<br>
+          • UI 개선 및 버그 수정<br><br>
+          런처 실행 시 자동 업데이트됩니다.
+        </div>
+      </div>
+      <div class="notice-item" onclick="toggleNoticeDetail(this)">
+        <div class="notice-head">
+          <span class="nbadge b-noti">공지</span>
+          <span style="flex:1;font-size:14px;font-weight:500;color:var(--tx)">개인정보 처리방침 개정 안내 (4/1 시행)</span>
+          <span style="font-size:12px;color:var(--tx3);white-space:nowrap">03.01</span>
+        </div>
+        <div class="notice-body" style="display:none">
+          개인정보보호법 개정에 따라 개인정보 처리방침이 일부 변경됩니다.<br><br>
+          <strong>시행일:</strong> 2026년 4월 1일<br>
+          <strong>변경 내용:</strong> 개인정보 보유 기간 명확화, 제3자 제공 항목 정리<br><br>
+          자세한 내용은 홈페이지 하단 개인정보 처리방침 링크에서 확인하실 수 있습니다.
+        </div>
+      </div>
+      <div class="notice-item" onclick="toggleNoticeDetail(this)">
+        <div class="notice-head">
+          <span class="nbadge b-upd">업데이트</span>
+          <span style="flex:1;font-size:14px;font-weight:500;color:var(--tx)">RTX 4090 서버 20대 추가 확충 완료</span>
+          <span style="font-size:12px;color:var(--tx3);white-space:nowrap">02.20</span>
+        </div>
+        <div class="notice-body" style="display:none">
+          더 쾌적한 게이밍 환경을 위해 RTX 4090 탑재 서버 20대를 추가했습니다.<br><br>
+          • 총 서버 대수: 50대 → 70대<br>
+          • 피크 시간대 대기 시간 대폭 감소<br>
+          • 4K 해상도 지원 강화
+        </div>
+      </div>
+      <div class="notice-item" onclick="toggleNoticeDetail(this)">
+        <div class="notice-head">
+          <span class="nbadge b-noti">공지</span>
+          <span style="flex:1;font-size:14px;font-weight:500;color:var(--tx)">발로란트, 오버워치2 PC방 혜택 정상 적용 안내</span>
+          <span style="font-size:12px;color:var(--tx3);white-space:nowrap">02.10</span>
+        </div>
+        <div class="notice-body" style="display:none">
+          가맹 PC방을 통해 접속 시 발로란트, 오버워치2의 PC방 혜택이 정상 적용됩니다.<br><br>
+          • 발로란트: 모든 요원 무료 해금<br>
+          • 오버워치2: 모든 영웅 무료 해금<br><br>
+          혜택은 접속 즉시 자동 적용됩니다.
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -508,6 +619,7 @@ footer{background:#0f172a;padding:60px 24px 32px}
       <button class="mp-tab" onclick="mpTab(this,'mp-schedule')">예약 종료</button>
       <button class="mp-tab" onclick="mpTab(this,'mp-charge')">시간 충전</button>
       <button class="mp-tab" onclick="mpTab(this,'mp-payments')">결제 및 충전 목록</button>
+      <button class="mp-tab" onclick="mpTab(this,'mp-refund')">환불</button>
     </div>
     <div class="mp-body">
 
@@ -562,6 +674,21 @@ footer{background:#0f172a;padding:60px 24px 32px}
       <div id="mp-payments" style="display:none">
         <h2>결제 및 충전 목록</h2><p class="mp-sub">결제 내역을 확인하세요</p>
         <div id="mpPaymentsContent"><div style="text-align:center;color:var(--tx3);padding:40px;font-size:13px">불러오는 중...</div></div>
+      </div>
+
+      <!-- ── 환불 ── -->
+      <div id="mp-refund" style="display:none">
+        <h2>환불</h2><p class="mp-sub">환불 가능한 결제 내역을 확인하세요</p>
+        <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:16px">
+          <div style="font-size:13px;font-weight:600;color:var(--tx1);margin-bottom:8px">환불 안내</div>
+          <ul style="font-size:12px;color:var(--tx3);list-style:disc;padding-left:18px;line-height:1.8">
+            <li>결제일로부터 <span style="color:var(--p1);font-weight:600">7일 이내</span>에만 환불이 가능합니다.</li>
+            <li>환불 시 기본 수수료 <span style="color:#eab308;font-weight:600">1,000원</span>이 차감됩니다.</li>
+            <li>사용한 시간은 시간당 <span style="font-weight:600;color:var(--tx1)">1,100원</span>으로 차감됩니다.</li>
+            <li>환불 금액 = 결제금액 - 사용시간 차감 - 기본 수수료(1,000원)</li>
+          </ul>
+        </div>
+        <div id="mpRefundContent"><div style="text-align:center;color:var(--tx3);padding:40px;font-size:13px">불러오는 중...</div></div>
       </div>
 
     </div>
@@ -707,7 +834,7 @@ footer{background:#0f172a;padding:60px 24px 32px}
             <div style="width:8px;height:8px;border-radius:50%;background:var(--p1);animation:pulse 2s infinite"></div>
             <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--p1);letter-spacing:1px">NOTICE</span>
           </div>
-          <span style="font-size:12px;color:var(--p1);cursor:pointer;font-weight:500" onclick="document.getElementById('notice').scrollIntoView({behavior:'smooth'})">더보기 →</span>
+          <span style="font-size:12px;color:var(--p1);cursor:pointer;font-weight:500" onclick="openModal('mdNotices')">더보기 →</span>
         </div>
         <!-- 공지 목록 -->
         <div style="padding:8px 0">
@@ -738,9 +865,8 @@ footer{background:#0f172a;padding:60px 24px 32px}
           </div>
         </div>
         <!-- 카드 하단 -->
-        <div style="padding:14px 20px;background:#f8faff;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between">
+        <div style="padding:14px 20px;background:#f8faff;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:flex-end">
           <span style="font-size:12px;color:var(--tx3)">최근 업데이트 <b style="color:var(--tx2)">2026.03.18</b></span>
-          <button onclick="openModal('mdSignup')" style="padding:7px 16px;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans)">무료 시작하기</button>
         </div>
       </div>
     </div>
@@ -819,7 +945,7 @@ footer{background:#0f172a;padding:60px 24px 32px}
     <div class="sec-tag">PRICING</div>
     <h2 class="sec-h">요금 안내</h2>
     <p class="sec-sub">전국 모든 가맹점에서 동일하게 적용됩니다</p>
-    <div class="price-g">
+    <div class="price-g" style="grid-template-columns:repeat(5,1fr)">
       <div class="price-c">
         <div class="pname">STARTER</div>
         <div class="pamount">₩11,000</div>
@@ -829,28 +955,41 @@ footer{background:#0f172a;padding:60px 24px 32px}
         <button class="pbtn" onclick="chkLogin()">구매하기</button>
       </div>
       <div class="price-c hot">
-        <div class="price-hot">🔥 핫딜! BEST 추천</div>
+        <div class="price-hot">🔥 BEST 추천</div>
         <div class="pname">STANDARD</div>
-        <div class="pamount">₩30,000</div>
-        <div class="ptime">30시간 이용권</div>
-        <div style="font-size:13px;color:var(--p1);font-weight:600;margin-top:4px">시간당 1,000원</div>
+        <div class="pamount">₩33,000</div>
+        <div class="ptime">30시간 + 서비스 3시간</div>
+        <div style="font-size:15px;font-weight:700;color:var(--p1);margin-top:2px">총 33시간</div>
+        <div style="font-size:13px;color:var(--tx3);margin-top:2px">1,000원/시간</div>
         <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 30일</li><li>가장 인기있는 패키지</li></ul>
         <button class="pbtn" onclick="chkLogin()">구매하기</button>
       </div>
       <div class="price-c">
         <div class="pname">PREMIUM</div>
-        <div class="pamount">₩48,000</div>
-        <div class="ptime">50시간 이용권</div>
-        <div style="font-size:13px;color:var(--tx3);margin-top:4px">시간당 960원</div>
-        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 60일</li><li>합리적인 가성비</li></ul>
+        <div class="pamount">₩66,000</div>
+        <div class="ptime">60시간 + 서비스 6시간</div>
+        <div style="font-size:15px;font-weight:700;color:var(--p1);margin-top:2px">총 66시간</div>
+        <div style="font-size:13px;color:var(--tx3);margin-top:2px">1,000원/시간</div>
+        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 30일</li><li>합리적인 가성비</li></ul>
         <button class="pbtn" onclick="chkLogin()">구매하기</button>
       </div>
       <div class="price-c">
         <div class="pname">PRO</div>
-        <div class="pamount">₩95,000</div>
-        <div class="ptime">100시간 이용권</div>
-        <div style="font-size:13px;color:var(--tx3);margin-top:4px">시간당 950원</div>
-        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 90일</li><li>최저 시간당 가격</li><li>우선 좌석 배정</li></ul>
+        <div class="pamount">₩110,000</div>
+        <div class="ptime">100시간 + 서비스 11시간</div>
+        <div style="font-size:15px;font-weight:700;color:var(--p1);margin-top:2px">총 111시간</div>
+        <div style="font-size:13px;color:var(--tx3);margin-top:2px">991원/시간</div>
+        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 30일</li><li>우선 좌석 배정</li></ul>
+        <button class="pbtn" onclick="chkLogin()">구매하기</button>
+      </div>
+      <div class="price-c hot">
+        <div class="price-hot">💎 최고 가성비</div>
+        <div class="pname">PRO MAX</div>
+        <div class="pamount">₩330,000</div>
+        <div class="ptime">300시간 + 서비스 33시간</div>
+        <div style="font-size:15px;font-weight:700;color:var(--p1);margin-top:2px">총 333시간</div>
+        <div style="font-size:13px;color:var(--tx3);margin-top:2px">991원/시간</div>
+        <ul class="plist"><li>모든 가맹 PC 접속 가능</li><li>실시간 고객 지원</li><li>유효기간 30일</li><li>최저 시간당 가격</li><li>우선 좌석 배정</li></ul>
         <button class="pbtn" onclick="chkLogin()">구매하기</button>
       </div>
     </div>
@@ -899,7 +1038,7 @@ footer{background:#0f172a;padding:60px 24px 32px}
     <h2 class="sec-h">공지사항</h2>
     <p class="sec-sub">서비스 관련 최신 소식을 확인하세요</p>
     <div class="nb" style="max-width:100%">
-      <div class="nb-head">공지사항 <span class="nb-more">더보기 →</span></div>
+      <div class="nb-head">공지사항 <span class="nb-more" onclick="openModal('mdNotices')" style="cursor:pointer">더보기 →</span></div>
       <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">2026년 3월 서버 점검 안내 (3/20 새벽 2~4시)</span><span class="ni-date">03.18</span></div>
       <div class="ni"><span class="nbadge b-upd">업데이트</span><span class="ni-title">클라이언트 v2.1.0 — 연결 안정성 대폭 개선</span><span class="ni-date">03.10</span></div>
       <div class="ni"><span class="nbadge b-noti">공지</span><span class="ni-title">개인정보 처리방침 개정 안내 (4/1 시행)</span><span class="ni-date">03.01</span></div>
@@ -1019,9 +1158,9 @@ footer{background:#0f172a;padding:60px 24px 32px}
 <!-- ══ CTA ══ -->
 <div class="cta-sec">
   <h2>지금 바로 시작하세요!</h2>
-  <p>회원가입하고 무료 30분 체험 크레딧을 받아보세요</p>
+  <p>전국 가맹 PC방을 집에서 편하게 이용해보세요</p>
   <button class="btn-cta" onclick="openModal('mdSignup')">
-    무료 회원가입 →
+    회원가입 →
   </button>
 </div>
 
@@ -1187,12 +1326,14 @@ async function doSignup(){
   const e=document.getElementById('su_e').value.trim();
   const phone=document.getElementById('su_phone').value.replace(/[^0-9]/g,'');
   const p=document.getElementById('su_p').value;
-  if(!username||!e||!phone||!p){ msg('suMsg','모든 항목을 입력해주세요','err'); return; }
+  const mainGame=document.getElementById('su_game').value;
+  if(!username||!e||!phone||!p||!mainGame){ msg('suMsg','모든 항목을 입력해주세요','err'); return; }
+  if(!document.getElementById('su_agreeTerms').checked||!document.getElementById('su_agreePrivacy').checked){ msg('suMsg','이용약관과 개인정보 처리방침에 동의해주세요','err'); return; }
   if(username.length<4||!/^[a-zA-Z0-9_]+$/.test(username)){ msg('suMsg','아이디는 영문+숫자+_ 4자 이상이어야 합니다','err'); return; }
   // if(!suPhoneVerified){ msg('suMsg','휴대폰 인증이 필요합니다','err'); return; }
   if(p.length<8||!/[a-zA-Z]/.test(p)||!/[0-9]/.test(p)){ msg('suMsg','비밀번호는 영문+숫자 8자 이상이어야 합니다','err'); return; }
   try {
-    const res=await fetch('/api/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,name:username,email:e,phone,password:p,phoneVerified:true,agreeTerms:true,agreePrivacy:true})});
+    const res=await fetch('/api/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,name:username,email:e,phone,password:p,mainGame,phoneVerified:true,agreeTerms:true,agreePrivacy:true})});
     const data=await res.json();
     if(!res.ok){ msg('suMsg',data.error||'회원가입 실패','err'); return; }
     msg('suMsg','회원가입이 완료되었습니다! 로그인해주세요','ok');
@@ -1235,10 +1376,11 @@ async function doCharge(){
 let mpUserInfo=null, mpHistPage=1, mpHistTotal=0, mpPayPage=1, mpPayTotal=0, mpSchedSession=null, mpSelPkg='hour30';
 const MP_LIMIT=8;
 const MP_PKGS=[
-  {id:'hour10',name:'스타터',desc:'10시간 이용권',price:11000,hours:10,hot:false},
-  {id:'hour30',name:'스탠다드',desc:'30시간 이용권',price:30000,hours:30,hot:true,badge:'🔥 핫딜! BEST 추천'},
-  {id:'hour50',name:'프리미엄',desc:'50시간 이용권',price:48000,hours:50,hot:false},
-  {id:'hour100',name:'프로',desc:'100시간 이용권',price:95000,hours:100,hot:false},
+  {id:'starter',name:'스타터',desc:'10시간 이용권',price:11000,hours:10,hot:false},
+  {id:'standard',name:'스탠다드',desc:'30시간 이용권 서비스 +3시간',price:33000,hours:33,hot:true,badge:'🔥 BEST 추천'},
+  {id:'premium',name:'프리미엄',desc:'60시간 이용권 서비스 +6시간',price:66000,hours:66,hot:false},
+  {id:'pro',name:'프로',desc:'100시간 이용권 서비스 +11시간',price:110000,hours:111,hot:false},
+  {id:'promax',name:'프로 MAX',desc:'300시간 이용권 서비스 +33시간',price:330000,hours:333,hot:false,badge:'💎 최고 가성비'},
 ];
 function mpFetch(url,opt={}){
   const tk=sessionStorage.getItem('accessToken');
@@ -1251,7 +1393,7 @@ function fmtCredits(c){const h=Math.floor(c/60),m=c%60;return h>0?h+'시간'+(m>
 function mpTab(btn,id){
   document.querySelectorAll('.mp-tab').forEach(t=>t.classList.remove('on'));
   btn.classList.add('on');
-  ['mp-info','mp-history','mp-schedule','mp-charge','mp-payments'].forEach(s=>{
+  ['mp-info','mp-history','mp-schedule','mp-charge','mp-payments','mp-refund'].forEach(s=>{
     document.getElementById(s).style.display=s===id?'block':'none';
   });
   if(id==='mp-info') mpLoadInfo();
@@ -1259,6 +1401,7 @@ function mpTab(btn,id){
   if(id==='mp-schedule') mpLoadSchedule();
   if(id==='mp-charge') mpLoadCharge();
   if(id==='mp-payments'){mpPayPage=1;mpLoadPayments();}
+  if(id==='mp-refund') mpLoadRefund();
 }
 function openMypage(){
   if(!user){openModal('mdLogin');return;}
@@ -1280,6 +1423,7 @@ async function mpLoadInfo(){
       <div class="mp-info-row"><span class="mp-il">아이디</span><span class="mp-ir">${data.user.username||'-'}</span></div>
       <div class="mp-info-row"><span class="mp-il">이메일</span><span class="mp-ir">${data.user.email}</span></div>
       <div class="mp-info-row"><span class="mp-il">휴대폰</span><span class="mp-ir">${data.user.phone||'-'}</span></div>
+      <div class="mp-info-row"><span class="mp-il">주 이용게임</span><span class="mp-ir" style="color:var(--p1);font-weight:600">${data.user.mainGame||'-'}</span></div>
       <div class="mp-info-row"><span class="mp-il">가입일</span><span class="mp-ir">${new Date(data.user.createdAt).toLocaleDateString('ko-KR')}</span></div>
     `;
     document.getElementById('mpInfoEdit').style.display='none';
@@ -1312,22 +1456,64 @@ async function mpSaveInfo(){
 }
 
 // ── History
+const histPlanMap={11000:'스타터',33000:'스탠다드',66000:'프리미엄',110000:'프로',330000:'프로 MAX'};
+function matchPlanToSession(sessions, payments){
+  const pays=payments.filter(p=>p.status==='DONE').sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
+  const sess=[...sessions].sort((a,b)=>new Date(a.startedAt)-new Date(b.startedAt));
+  const result={};
+  let payIdx=0, usedFromPay=0;
+  sess.forEach(s=>{
+    const used=s.creditsUsed||0;
+    const sessTime=new Date(s.startedAt).getTime();
+    // 세션 시작 시점 이전 결제만 사용 (이후 결제는 아직 미적용)
+    while(payIdx<pays.length && new Date(pays[payIdx].createdAt).getTime()<=sessTime){
+      if(usedFromPay>=pays[payIdx].creditsAdded){
+        usedFromPay-=pays[payIdx].creditsAdded;
+        payIdx++;
+      }else break;
+    }
+    if(payIdx<pays.length && new Date(pays[payIdx].createdAt).getTime()<=sessTime){
+      const p=pays[payIdx];
+      const name=p.method==='ADMIN'?'서비스':(histPlanMap[p.amount]||'이용권');
+      result[s.id]=name;
+      usedFromPay+=used;
+    }else{
+      result[s.id]='서비스';
+    }
+  });
+  return result;
+}
 async function mpLoadHistory(){
   const el=document.getElementById('mpHistoryContent');
   el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:30px;font-size:13px">불러오는 중...</div>';
   try{
-    const res=await mpFetch('/api/mypage/sessions?page='+mpHistPage+'&limit='+MP_LIMIT);
-    const data=await res.json();
-    if(!res.ok)return;
+    const [sessRes, payRes]=await Promise.all([
+      mpFetch('/api/mypage/sessions?page='+mpHistPage+'&limit='+MP_LIMIT),
+      mpFetch('/api/mypage/payments?page=1&limit=100')
+    ]);
+    const data=await sessRes.json();
+    const payData=await payRes.json();
+    if(!sessRes.ok)return;
     const ss=data.sessions||[];mpHistTotal=data.total||0;
+    const allPayments=payData.payments||[];
     const tp=Math.max(1,Math.ceil(mpHistTotal/MP_LIMIT));
     if(ss.length===0){el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:40px;font-size:13px">사용 기록이 없습니다</div>';return;}
-    const statusMap={ACTIVE:['이용 중','mp-badge-ok'],ENDED:['종료','mp-badge-gray'],INTERRUPTED:['비정상 종료','mp-badge-err']};
-    let html='<table class="mp-tbl"><thead><tr><th>시작</th><th>종료</th><th>이용시간</th><th>상태</th><th></th></tr></thead><tbody>';
+    const planMatch=matchPlanToSession(ss,allPayments);
+    const statusMap={ACTIVE:['이용 중','mp-badge-ok'],INTERRUPTED:['비정상 종료','mp-badge-err']};
+    let html='<table class="mp-tbl"><thead><tr><th>시작</th><th>종료</th><th>이용시간</th><th>요금제</th><th></th></tr></thead><tbody>';
     ss.forEach(s=>{
-      const st=statusMap[s.status]||['–','mp-badge-gray'];
+      const plan=planMatch[s.id]||'서비스';
+      const planColor=plan==='서비스'?'color:#a78bfa':'color:var(--p1)';
       const dur=s.endedAt?fmtCredits(Math.round((new Date(s.endedAt)-new Date(s.startedAt))/60000)):'진행 중';
-      html+=`<tr><td>${fmtDt(s.startedAt)}</td><td>${s.endedAt?fmtDt(s.endedAt):'-'}</td><td>${dur}</td><td><span class="mp-badge ${st[1]}">${st[0]}</span></td>`;
+      if(s.status==='ACTIVE'){
+        const st=statusMap.ACTIVE;
+        html+=`<tr><td>${fmtDt(s.startedAt)}</td><td>-</td><td>${dur}</td><td><span class="mp-badge ${st[1]}">${st[0]}</span></td>`;
+      }else if(s.status==='INTERRUPTED'){
+        const st=statusMap.INTERRUPTED;
+        html+=`<tr><td>${fmtDt(s.startedAt)}</td><td>${fmtDt(s.endedAt)}</td><td>${dur}</td><td><span class="mp-badge ${st[1]}">${st[0]}</span></td>`;
+      }else{
+        html+=`<tr><td>${fmtDt(s.startedAt)}</td><td>${s.endedAt?fmtDt(s.endedAt):'-'}</td><td>${dur}</td><td><span style="font-weight:600;font-size:12px;${planColor}">${plan}</span></td>`;
+      }
       html+=`<td>${s.status==='ACTIVE'?'<button class="mp-btn mp-btn-danger" style="padding:4px 10px;font-size:11px" onclick="mpDisconnect(\''+s.id+'\')">종료</button>':''}</td></tr>`;
     });
     html+='</tbody></table>';
@@ -1462,20 +1648,110 @@ async function mpLoadPayments(){
   try{
     const res=await mpFetch('/api/mypage/payments?page='+mpPayPage+'&limit='+MP_LIMIT);
     const data=await res.json();
-    if(!res.ok)return;
+    if(!res.ok){el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:40px;font-size:13px">결제 내역이 없습니다 (총 0건)</div>';return;}
     const ps=data.payments||[];mpPayTotal=data.total||0;
     const tp=Math.max(1,Math.ceil(mpPayTotal/MP_LIMIT));
     if(ps.length===0){el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:40px;font-size:13px">결제 내역이 없습니다</div>';return;}
     const stMap={PENDING:['대기','mp-badge-wait'],DONE:['완료','mp-badge-ok'],FAILED:['실패','mp-badge-err'],CANCELED:['취소','mp-badge-gray']};
-    let html='<table class="mp-tbl"><thead><tr><th>날짜</th><th>금액</th><th>충전 시간</th><th>결제수단</th><th>상태</th></tr></thead><tbody>';
+    const planMap={11000:'스타터',33000:'스탠다드',66000:'프리미엄',110000:'프로',330000:'프로 MAX'};
+    function getPlan(p){if(p.method==='ADMIN'||p.amount===0)return'서비스';return planMap[p.amount]||'이용권';}
+    let html='<table class="mp-tbl"><thead><tr><th>날짜</th><th>요금제</th><th>금액</th><th>충전 시간</th><th>상태</th></tr></thead><tbody>';
     ps.forEach(p=>{
       const st=stMap[p.status]||['–','mp-badge-gray'];
-      html+=`<tr><td>${fmtDt(p.createdAt)}</td><td style="font-weight:600">${fmtPrice(p.amount)}</td><td style="color:var(--p1);font-weight:600">${fmtCredits(p.creditsAdded)}</td><td>${p.method||'-'}</td><td><span class="mp-badge ${st[1]}">${st[0]}</span></td></tr>`;
+      const plan=getPlan(p);
+      const planColor=plan==='서비스'?'color:#a78bfa':'color:var(--tx1)';
+      html+=`<tr><td>${fmtDt(p.createdAt)}</td><td style="font-weight:600;${planColor}">${plan}</td><td style="font-weight:600">${p.amount>0?fmtPrice(p.amount):'-'}</td><td style="color:var(--p1);font-weight:600">${fmtCredits(p.creditsAdded)}</td><td><span class="mp-badge ${st[1]}">${st[0]}</span></td></tr>`;
     });
     html+='</tbody></table>';
     html+=`<div class="mp-pag"><span>총 ${mpPayTotal}건</span><div style="display:flex;gap:6px"><button onclick="mpPayPage--;mpLoadPayments()" ${mpPayPage<=1?'disabled':''}>이전</button><span style="padding:5px 8px">${mpPayPage}/${tp}</span><button onclick="mpPayPage++;mpLoadPayments()" ${mpPayPage>=tp?'disabled':''}>다음</button></div></div>`;
     el.innerHTML=html;
   }catch{el.innerHTML='<div class="msg-err">불러오기 실패</div>';}
+}
+
+// ── Refund
+async function mpLoadRefund(){
+  const el=document.getElementById('mpRefundContent');
+  el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:30px;font-size:13px">불러오는 중...</div>';
+  try{
+    const res=await mpFetch('/api/mypage/refund');
+    const data=await res.json();
+    if(!res.ok){
+      // 에러여도 0원 배너 표시
+      el.innerHTML='<div style="background:linear-gradient(135deg,var(--p1),var(--p2));border-radius:14px;padding:18px;margin-bottom:16px"><div style="font-size:12px;color:rgba(255,255,255,.7)">총 환불 가능 금액</div><div style="font-size:24px;font-weight:800;color:#fff;margin-top:2px">0원</div></div><div style="text-align:center;color:var(--tx3);padding:30px;font-size:13px">환불 가능한 결제 내역이 없습니다<br><span style="font-size:11px">(7일 이내 유료 결제만 환불 가능, 관리자 충전은 환불 불가)</span></div>';
+      return;
+    }
+    const items=(data.refundable||[]).filter(r=>r.status!=='소진');
+    const totalRefund=data.totalRefundable||0;
+
+    // 총 환불 가능 금액 배너 + 계산 내역
+    let html='<div style="background:linear-gradient(135deg,var(--p1),var(--p2));border-radius:14px;padding:18px;margin-bottom:16px">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center">';
+    html+='<div><div style="font-size:12px;color:rgba(255,255,255,.7)">총 환불 가능 금액</div><div style="font-size:24px;font-weight:800;color:#fff;margin-top:2px">'+fmtPrice(totalRefund)+'</div></div>';
+    html+='<button style="padding:10px 24px;border-radius:10px;font-size:14px;font-weight:600;border:none;background:#fff;color:var(--p1);cursor:pointer" onclick="alert(\'환불 신청은 관리자에게 문의해주세요.\\n고객센터: 카카오톡 @remote1\')">환불 신청</button>';
+    html+='</div>';
+    // 계산 내역 요약
+    if(items.length>0){
+      const subtotal=items.reduce((s,i)=>s+(i.canRefund?i.refundAmount:0),0);
+      const fee=subtotal>0?1000:0;
+      html+='<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);font-size:12px;color:rgba(255,255,255,.8)">';
+      html+='<div style="font-weight:600;margin-bottom:6px;color:rgba(255,255,255,.6)">계산 내역</div>';
+      items.forEach(item=>{
+        if(!item.canRefund)return;
+        if(item.status==='사용중'){
+          html+='<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>'+item.planName+' (사용중) : '+item.remainingHours+'시간 × '+fmtPrice(item.hourlyRate)+'</span><span style="font-weight:700">'+fmtPrice(item.refundAmount)+'</span></div>';
+        }else{
+          html+='<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>'+item.planName+' (사용대기) : 전액</span><span style="font-weight:700">'+fmtPrice(item.refundAmount)+'</span></div>';
+        }
+      });
+      if(fee>0){
+        html+='<div style="display:flex;justify-content:space-between;margin-bottom:3px;color:rgba(255,200,200,.9)"><span>환불 수수료 (1회)</span><span style="font-weight:700">-'+fmtPrice(fee)+'</span></div>';
+      }
+      html+='<div style="border-top:1px solid rgba(255,255,255,.2);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;font-weight:700"><span>합계</span><span>'+fmtPrice(totalRefund)+'</span></div>';
+      html+='</div>';
+    }else{
+      html+='<div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,.6)">7일 이내 유료 결제 내역이 없어 환불 가능 금액이 없습니다.</div>';
+    }
+    html+='</div>';
+
+    // 아이템 없으면 안내
+    if(items.length===0){
+      html+='<div style="text-align:center;color:var(--tx3);padding:30px;font-size:13px">환불 가능한 결제 내역이 없습니다<br><span style="font-size:11px">(7일 이내 유료 결제만 환불 가능, 관리자 충전은 환불 불가)</span></div>';
+    }
+
+    // 각 요금제별 상세
+    items.forEach(item=>{
+      if(item.status==='소진')return; // 소진된 요금제는 표시 안함
+      const statusColor=item.status==='사용중'?'color:#fbbf24;background:rgba(251,191,36,.12)':'color:#34d399;background:rgba(52,211,153,.12)';
+      const statusLabel=item.status==='사용중'?'사용중':'사용대기';
+
+      html+='<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:14px">';
+      html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
+      html+='<div><div style="font-size:16px;font-weight:700;color:var(--tx1)">'+item.planName+' 이용권</div>';
+      html+='<div style="font-size:11px;color:var(--tx3);margin-top:3px">결제일: '+fmtDt(item.purchasedAt)+' (잔여 '+item.daysLeft+'일)</div></div>';
+      html+='<span style="font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;'+statusColor+'">'+statusLabel+'</span>';
+      html+='</div>';
+
+      html+='<div style="background:rgba(0,0,0,.15);border-radius:10px;padding:14px;font-size:13px">';
+      if(item.status==='사용중'){
+        html+='<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--tx3)">잔여 시간</span><span style="color:var(--tx1);font-weight:500">'+item.remainingHours+'시간 (전체 '+item.totalHours+'시간)</span></div>';
+        html+='<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--tx3)">잔여 시간 환산 ('+item.remainingHours+'시간 × '+fmtPrice(item.hourlyRate)+')</span><span style="color:var(--tx1);font-weight:500">'+fmtPrice(item.remainingHours*item.hourlyRate)+'</span></div>';
+      }else{
+        html+='<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--tx3)">결제 금액 (미사용)</span><span style="color:var(--tx1);font-weight:500">'+fmtPrice(item.amount)+'</span></div>';
+        html+='<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--tx3)">수수료</span><span style="color:var(--tx3)">없음</span></div>';
+      }
+      html+='<div style="border-top:1px solid var(--bd);padding-top:8px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;color:var(--tx1)">환불 금액</span><span style="font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--p1),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+fmtPrice(item.refundAmount)+'</span></div>';
+      html+='</div>';
+      html+='</div>';
+    });
+    el.innerHTML=html;
+  }catch{el.innerHTML='<div class="msg-err">불러오기 실패</div>';}
+}
+
+// ── Notices
+function toggleNoticeDetail(el){
+  const body=el.querySelector('.notice-body');
+  if(!body)return;
+  body.style.display=body.style.display==='none'?'block':'none';
 }
 
 // ── DOWNLOAD
@@ -1626,210 +1902,31 @@ function submitRvPage(){
   setTimeout(()=>{ msgEl.innerHTML=''; },3000);
 }
 </script>
-<!-- ══ 실시간 상담 채팅 위젯 ══ -->
-<style>
-#chatWidget{position:fixed;bottom:28px;right:28px;z-index:9000;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
-#chatBtn{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(14,165,233,.4);transition:transform .2s;position:relative}
-#chatBtn:hover{transform:scale(1.08)}
-#chatBadge{position:absolute;top:-3px;right:-3px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;font-family:var(--mono)}
-#chatTooltip{background:#0f172a;color:#fff;font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;white-space:nowrap;animation:fadeInRight .3s ease;box-shadow:0 4px 14px rgba(0,0,0,.2)}
-@keyframes fadeInRight{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
-#chatBox{display:none;width:320px;background:#fff;border-radius:18px;box-shadow:0 16px 48px rgba(0,0,0,.15);overflow:hidden;animation:chatPop .22s ease}
-@keyframes chatPop{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-#chatHeader{background:linear-gradient(135deg,var(--p1),var(--p2));padding:16px 18px;display:flex;align-items:center;justify-content:space-between}
-#chatHeader-l{display:flex;align-items:center;gap:10px}
-#chatHeader-av{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:18px}
-#chatHeader-info{}
-#chatHeader-name{font-size:14px;font-weight:700;color:#fff}
-#chatHeader-status{display:flex;align-items:center;gap:4px;font-size:11px;color:rgba(255,255,255,.8)}
-#chatHeader-status::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block}
-#chatClose{background:none;border:none;color:rgba(255,255,255,.8);font-size:20px;cursor:pointer;padding:2px;line-height:1}
-#chatClose:hover{color:#fff}
-#chatMsgs{height:260px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:#f8faff}
-.chat-msg{max-width:80%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.55}
-.chat-msg.from{background:#fff;border:1px solid var(--border);color:var(--tx);border-radius:14px 14px 14px 4px;align-self:flex-start}
-.chat-msg.to{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border-radius:14px 14px 4px 14px;align-self:flex-end}
-.chat-time{font-size:10px;color:var(--tx3);margin-top:3px}
-.chat-typing{display:flex;align-items:center;gap:4px;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:14px 14px 14px 4px;align-self:flex-start;width:56px}
-.chat-typing span{width:7px;height:7px;border-radius:50%;background:var(--tx3);animation:typing .9s ease-in-out infinite}
-.chat-typing span:nth-child(2){animation-delay:.2s}
-.chat-typing span:nth-child(3){animation-delay:.4s}
-@keyframes typing{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
-#chatQuicks{padding:10px 14px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--border);background:#fff}
-.cq{padding:5px 11px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:20px;font-size:11px;color:var(--p1);cursor:pointer;font-weight:600;transition:all .15s;white-space:nowrap}
-.cq:hover{background:var(--p1);color:#fff;border-color:var(--p1)}
-#chatInputArea{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);background:#fff}
-#chatInput{flex:1;padding:9px 13px;border:1.5px solid var(--border);border-radius:22px;font-size:13px;font-family:var(--sans);outline:none;transition:border .15s;background:#f8faff}
-#chatInput:focus{border-color:var(--p1);background:#fff}
-#chatSend{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
-#chatSend:hover{opacity:.87}
-</style>
-
-<div id="chatWidget">
-  <div id="chatTooltip">💬 실시간 상담</div>
-  <div id="chatBox">
-    <div id="chatHeader">
-      <div id="chatHeader-l">
-        <div id="chatHeader-av">🎧</div>
-        <div id="chatHeader-info">
-          <div id="chatHeader-name">리모트원 고객지원</div>
-          <div id="chatHeader-status">온라인 · 평균 응답 1분</div>
-        </div>
-      </div>
-      <button id="chatClose" onclick="toggleChat()">×</button>
-    </div>
-    <div id="chatMsgs">
-      <div class="chat-msg from">
-        안녕하세요! 리모트원 고객지원입니다 👋<br/>무엇을 도와드릴까요?
-        <div class="chat-time">오후 11:42</div>
-      </div>
-    </div>
-    <div id="chatQuicks">
-      <div class="cq" onclick="quickMsg('요금제 문의')">요금제 문의</div>
-      <div class="cq" onclick="quickMsg('접속 오류')">접속 오류</div>
-      <div class="cq" onclick="quickMsg('환불 문의')">환불 문의</div>
-      <div class="cq" onclick="quickMsg('가맹점 문의')">가맹점 문의</div>
-    </div>
-    <div id="chatInputArea">
-      <input id="chatInput" type="text" placeholder="메시지를 입력하세요..." onkeydown="if(event.key==='Enter')sendChat()"/>
-      <button id="chatSend" onclick="sendChat()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      </button>
-    </div>
-  </div>
-  <button id="chatBtn" onclick="toggleChat()">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-    <div id="chatBadge">1</div>
-  </button>
-  <div id="chatLabel" style="font-size:10px;font-weight:600;color:#475569;text-align:center;line-height:1.4;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:4px 10px;box-shadow:0 2px 8px rgba(0,0,0,.08);white-space:nowrap">실시간 상담<br/><span id="chatLabelSub" style="color:#94a3b8;font-weight:400">로그인 후 이용 가능</span></div>
-</div>
-
+<!-- ══ 채널톡 (Channel.io) 실시간 상담 ══ -->
 <script>
-let chatOpen = false;
-let chatReplying = false;
+(function(){var w=window;if(w.ChannelIO){return}var ch=function(){ch.c(arguments)};ch.q=[];ch.c=function(args){ch.q.push(args)};w.ChannelIO=ch;function l(){if(w.ChannelIOInitialized){return}w.ChannelIOInitialized=true;var s=document.createElement('script');s.type='text/javascript';s.async=true;s.src='https://cdn.channel.io/plugin/ch-plugin-web.js';var x=document.getElementsByTagName('script')[0];if(x.parentNode){x.parentNode.insertBefore(s,x)}}if(document.readyState==='complete'){l()}else{w.addEventListener('DOMContentLoaded',l);w.addEventListener('load',l)}})();
 
-const autoReplies = {
-  '요금제 문의': '요금제는 스타터(₩11,000/10시간), 스탠다드(₩30,000/30시간), 프리미엄(₩100,000/100시간) 3가지입니다. 자세한 내용은 요금제 메뉴에서 확인하실 수 있어요! 😊',
-  '접속 오류': '접속 오류가 발생하셨군요! 클라이언트 재시작 후에도 동일한 오류가 발생하면 아래 정보와 함께 문의해 주세요.\n① 오류 코드\n② 이용 중인 PC방/지역\n③ 발생 시간',
-  '환불 문의': '미사용 크레딧은 충전 후 7일 이내 전액 환불 가능합니다. 환불을 원하시면 가입 이메일과 결제 내역을 알려주시면 빠르게 처리해 드릴게요!',
-  '가맹점 문의': '가맹점 입점을 원하시나요? 아래 연락처로 문의 주시면 담당자가 안내해 드립니다.\n📞 1588-0000\n📧 partner@remote1.co.kr',
-};
-
-function toggleChat() {
-  // 로그인 체크
-  const currentUser = JSON.parse(sessionStorage.getItem('r1u')||'null');
-  if (!currentUser) {
-    // 비로그인 시 툴팁 메시지 변경 후 로그인 모달 오픈
-    const tooltip = document.getElementById('chatTooltip');
-    tooltip.textContent = '🔒 로그인 후 이용 가능합니다';
-    tooltip.style.display = 'block';
-    tooltip.style.opacity = '1';
-    setTimeout(() => {
-      tooltip.textContent = '💬 실시간 상담';
-      tooltip.style.opacity = '0';
-    }, 2000);
-    openModal('mdLogin');
-    return;
+function initChannelTalk() {
+  var user = JSON.parse(sessionStorage.getItem('r1u')||'null');
+  var bootOption = {
+    pluginKey: 'e74bcc93-7cde-4ed4-8b37-8fa7fc2243b3',
+    hideChannelButtonOnBoot: false
+  };
+  if (user) {
+    bootOption.memberId = user.id || user.email;
+    bootOption.profile = { name: user.name || user.email, email: user.email };
   }
-  chatOpen = !chatOpen;
-  const box = document.getElementById('chatBox');
-  const tooltip = document.getElementById('chatTooltip');
-  const badge = document.getElementById('chatBadge');
-  box.style.display = chatOpen ? 'block' : 'none';
-  tooltip.style.display = chatOpen ? 'none' : 'block';
-  if (chatOpen) badge.style.display = 'none';
+  ChannelIO('boot', bootOption);
 }
+initChannelTalk();
 
-function getNow() {
-  const d = new Date();
-  return '오후 ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
-}
-
-function addMsg(text, type) {
-  const msgs = document.getElementById('chatMsgs');
-  const div = document.createElement('div');
-  div.className = 'chat-msg ' + type;
-  div.innerHTML = text.replace(/\n/g, '<br/>') + '<div class="chat-time">' + getNow() + '</div>';
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-function showTyping() {
-  const msgs = document.getElementById('chatMsgs');
-  const div = document.createElement('div');
-  div.className = 'chat-typing';
-  div.id = 'typingIndicator';
-  div.innerHTML = '<span></span><span></span><span></span>';
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-function removeTyping() {
-  const el = document.getElementById('typingIndicator');
-  if (el) el.remove();
-}
-
-function autoReply(text) {
-  if (chatReplying) return;
-  chatReplying = true;
-  setTimeout(() => {
-    showTyping();
-    const reply = autoReplies[text] ||
-      '문의 주셔서 감사합니다! 담당자가 확인 후 빠르게 답변 드리겠습니다. 긴급한 경우 📞 1588-0000으로 연락 주세요.';
-    setTimeout(() => {
-      removeTyping();
-      addMsg(reply, 'from');
-      chatReplying = false;
-    }, 1200);
-  }, 600);
-}
-
-function quickMsg(text) {
-  addMsg(text, 'to');
-  autoReply(text);
-}
-
-function sendChat() {
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if (!text) return;
-  addMsg(text, 'to');
-  input.value = '';
-  autoReply(text);
-}
-
-// 채팅버튼 로그인 상태 반영
-function updateChatBtn() {
-  const currentUser = JSON.parse(sessionStorage.getItem('r1u')||'null');
-  const btn = document.getElementById('chatBtn');
-  const badge = document.getElementById('chatBadge');
-  const tooltip = document.getElementById('chatTooltip');
-  const labelSub = document.getElementById('chatLabelSub');
-  if (!currentUser) {
-    btn.style.background = '#94a3b8';
-    btn.style.boxShadow = '0 4px 12px rgba(0,0,0,.15)';
-    badge.style.display = 'none';
-    tooltip.textContent = '💬 실시간 상담 (로그인 필요)';
-    if (labelSub) labelSub.textContent = '로그인 후 이용 가능';
-  } else {
-    btn.style.background = 'linear-gradient(135deg,var(--p1),var(--p2))';
-    btn.style.boxShadow = '0 6px 24px rgba(14,165,233,.4)';
-    badge.style.display = 'flex';
-    tooltip.textContent = '💬 실시간 상담';
-    if (labelSub) labelSub.textContent = '상담 가능';
-  }
-}
-updateChatBtn();
-
-// 로그인/로그아웃 시 채팅버튼 상태 갱신 (upNav 후크)
-const _origUpNav = upNav;
-upNav = function() { _origUpNav(); updateChatBtn(); };
-
-// 3초 후 툴팁 숨기기
-setTimeout(() => {
-  const t = document.getElementById('chatTooltip');
-  if (t && !chatOpen) t.style.opacity = '0';
-}, 4000);
+var _origUpNav = upNav;
+upNav = function() { _origUpNav(); ChannelIO('shutdown'); initChannelTalk(); };
 </script>
+<!-- 이전 채팅 위젯 제거됨 -->
+
+
+
+
 </body>
 </html>

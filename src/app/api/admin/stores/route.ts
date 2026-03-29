@@ -1,8 +1,11 @@
 // src/app/api/admin/stores/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin, isAdminError } from '@/lib/adminAuth'
+import { logAdmin } from '@/lib/adminLog'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const admin = requireAdmin(req); if (isAdminError(admin)) return admin
   try {
     const stores = await prisma.store.findMany({
       orderBy: { name: 'asc' },
@@ -29,6 +32,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const admin = requireAdmin(req); if (isAdminError(admin)) return admin
   try {
     const body = await req.json()
     const { name, ipRanges, gateway1, gateway2, address } = body
@@ -41,6 +45,7 @@ export async function POST(req: NextRequest) {
       data: { name, ipRanges, gateway1, gateway2, address },
     })
 
+    await logAdmin(admin.adminId, 'STORE_ADD', name, `매장 추가: ${name}`)
     return NextResponse.json({ ok: true, store })
   } catch (error) {
     console.error('[ADMIN STORES POST]', error)

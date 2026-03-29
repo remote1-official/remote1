@@ -2,8 +2,11 @@
 // GET: 전체 PC 목록 조회 / POST: PC 등록
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin, isAdminError } from '@/lib/adminAuth'
+import { logAdmin } from '@/lib/adminLog'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const admin = requireAdmin(req); if (isAdminError(admin)) return admin
   try {
     const machines = await prisma.machine.findMany({
       orderBy: { sunshineHost: 'asc' },
@@ -43,6 +46,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const admin = requireAdmin(req); if (isAdminError(admin)) return admin
   try {
     const body = await req.json()
     const { name, sunshineHost, localIp, macAddress, spec, storeId } = body
@@ -63,6 +67,8 @@ export async function POST(req: NextRequest) {
         isAvailable: true,
       },
     })
+
+    await logAdmin(admin.adminId, 'PC_ADD', name, `PC 추가: ${name} (${sunshineHost})`)
 
     return NextResponse.json({ ok: true, machine })
   } catch (error) {

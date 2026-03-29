@@ -1,9 +1,11 @@
 // src/app/api/admin/stats/route.ts
 // GET: 전체 통계 (총 접속자, PC 상태별 수, 게임별 이용자 등)
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin, isAdminError } from '@/lib/adminAuth'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const admin = requireAdmin(req); if (isAdminError(admin)) return admin
   try {
     // 전체 PC 상태별 수
     const machines = await prisma.machine.findMany()
